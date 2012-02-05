@@ -1,0 +1,61 @@
+# vim: tabstop=4 fileformat=unix fileencoding=utf-8 filetype=sh
+
+# cross.opt
+# license: Apatche v2.0
+
+__SCRIPT_NAME=`basename "$0"`
+
+__version() {
+  echo "0.1.1"
+}
+__usage() {
+  echo "usage: ${__SCRIPT_NAME} [option] [--] [command arguments...]"
+}
+__help() {
+  __usage
+  echo "
+  --libset        library directories.
+  --cflags        cflags.
+  --archcflags    x86_64_gcc で mingw32 をコンパイルするための cflags.
+  --ldflags       ldflags.
+  -h  --help      show this message.
+      --version   print the version.
+"
+}
+
+RESULT=""
+while [ 0 -lt $# ]
+do
+  case "$1" in
+  --libset)
+    RESULT="`echo \"${XMINGW_LIBRARY_ROOT}\" | sed -e 's/:/\n/g'`"
+    ;;
+  --cflags)
+    RESULT="${RESULT} ${XMINGW_ARCHCFLAGS} ${XMINGW_CFLAGS}"
+    ;;
+  --archcflags)
+    RESULT="${RESULT} ${XMINGW_ARCHCFLAGS}"
+    ;;
+  --ldflags)
+    RESULT="${RESULT} ${XMINGW_LDFLAGS}"
+    ;;
+  -h|--help)
+    __help
+    exit 1;;
+  --version)
+    __version
+    exit 0;;
+  --)
+    shift
+    break;;
+  -*|--*)
+    echo "${__SCRIPT_NAME}: unsupported option \`$1'."
+    echo "${__SCRIPT_NAME}: try \`${__SCRIPT_NAME} --help' for more information."
+    exit 1;;
+  *)
+    break;;
+  esac
+  shift
+done
+
+

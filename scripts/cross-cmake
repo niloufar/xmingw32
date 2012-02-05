@@ -1,0 +1,54 @@
+#!/bin/bash
+# vim: tabstop=4 fileformat=unix fileencoding=utf-8 filetype=sh
+
+# license: Apatche v2.0
+
+#PREFIX=/usr/xmingw/xmingw32
+PREFIX=`dirname "$0"`
+if [ "" = "${XMINGW}" ]
+then
+  . "${PREFIX}/scripts/env.sh"
+fi
+PREFIX="${XMINGW}"
+. "${PREFIX}/scripts/cross.env"
+. "${PREFIX}/scripts/cross.exp"
+
+cmake_toolchain_file="./cmake_toolchain_file.cmake"
+library_directories=`echo ${XMINGW_LIBRARY_ROOT}|sed -e 's/:/ /g'`
+
+cat << EOS > "${cmake_toolchain_file}"
+SET(CMAKE_CACHEFILE_DIR "${PWD}")
+
+# the name of the target operating system
+SET(CMAKE_SYSTEM_NAME Windows)
+
+# which compilers to use for C and C++
+SET(CMAKE_C_COMPILER ${TARGET}-gcc)
+SET(CMAKE_CXX_COMPILER ${TARGET}-g++)
+
+# here is the target environment located
+#SET(CMAKE_FIND_ROOT_PATH  /usr/i586-mingw32msvc )
+SET(CMAKE_FIND_ROOT_PATH ${library_directories})
+
+# adjust the default behaviour of the FIND_XXX() commands:
+# search headers and libraries in the target environment, search 
+# programs in the host environment
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+EOS
+
+dir=""
+case "`basename \"$0\" | sed -e 's/\(^\|.\+-\)\([a-z]\+\)$/\2/'`" in
+ppcmake)
+    dir=".."
+    ;;
+esac
+
+cache="${PWD}/CMakeCache.txt"
+rm -f "${cache}"
+cmake "${dir}" -DCMAKE_CROSSCOMPILING:BOOL=true -DCMAKE_VERBOSE_MAKEFILE:BOOL=true -DCMAKE_TOOLCHAIN_FILE=${cmake_toolchain_file} "$@"
+status=$?
+# rm "${cmake_toolchain_file}"
+exit ${status}
+

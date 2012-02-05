@@ -1,0 +1,27 @@
+#!/bin/bash
+# vim: tabstop=4 fileformat=unix fileencoding=utf-8 filetype=sh
+
+# license: Apatche v2.0
+
+#PREFIX=/usr/xmingw/xmingw32
+PREFIX=`dirname "$0"`
+if [ "" = "${XMINGW}" ]
+then
+  . "${PREFIX}/scripts/env.sh"
+fi
+PREFIX="${XMINGW}"
+. "${PREFIX}/scripts/cross.env"
+. "${PREFIX}/scripts/cross.opt"
+. "${PREFIX}/scripts/cross.exp"
+
+if [ 0 -eq $# ]
+then
+  echo ${RESULT}
+  exit 0;
+fi
+
+prog="$1"
+shift
+$prog "$@"
+
+

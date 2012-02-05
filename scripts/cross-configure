@@ -1,0 +1,37 @@
+#!/bin/bash
+# vim: tabstop=4 fileformat=unix fileencoding=utf-8 filetype=sh
+
+# license: Apatche v2.0
+
+CONFIG_SHELL=/bin/sh
+export CONFIG_SHELL
+
+#PREFIX=/usr/xmingw/xmingw32
+PREFIX=`dirname "$0"`
+if [ "" = "${XMINGW}" ]
+then
+  . "${PREFIX}/scripts/env.sh"
+fi
+PREFIX=${XMINGW}
+. "${PREFIX}/scripts/cross.env"
+#. "${PREFIX}/cross.opt"
+. "${PREFIX}/scripts/cross.exp"
+
+echo -n "args: "
+echo "$@"
+
+dir=""
+case "`basename \"$0\" | sed -e 's/\(^\|.\+-\)\([a-z]\+\)$/\2/'`" in
+ppconfigure)
+    dir="../"
+    ;;
+esac
+
+cache=cross-config.cache
+sh "${dir}configure" --cache-file="$cache" \
+	--target=${TARGET} --host=${TARGET} --build=${MACHTYPE} \
+	"$@"
+status=$?
+rm -f "$cache"
+exit $status
+

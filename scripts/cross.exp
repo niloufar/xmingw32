@@ -1,0 +1,14 @@
+# vim: tabstop=4 fileformat=unix fileencoding=utf-8 filetype=sh
+
+# cross.exp
+# license: Apatche v2.0
+
+export C_INCLUDE_PATH=""
+export LIBRARY_PATH=""
+
+export PKG_CONFIG_PATH="${EXTRA_PKG_CONFIG_PATH}:${XMINGW_PKG_CONFIG_PATH}"
+export PATH="${XMINGW_PATH}:${PATH}"
+#export LD_LIBRARY_PATH="${XMINGW_LD_LIBRARY_PATH}:${LD_LIBRARY_PATH}"
+export MANPATH="${XMINGW_MANPATH}:${MANPATH}"
+export INFOPATH="${XMINGW_INFOPATH}:${INFOPATH}"
+

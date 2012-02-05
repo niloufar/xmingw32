@@ -1,0 +1,97 @@
+
+# vim: tabstop=4 fileformat=unix fileencoding=utf-8 filetype=sh
+
+# license: Apatche v2.0
+
+export XLIBRARY_SOURCES=${XLOCAL}/src
+export XLIBRARY_ARCHIVES=${XLOCAL}/archives
+export XLIBRARY_TEMP=${XLOCAL}/src/build
+
+find_archive() {
+local directory=$1
+local base
+local tail
+local name
+	shift
+	for base
+	do
+		for tail in tar.gz tar.bz2 tar.xz tar.lzma zip 7z
+		do 
+			name="${base}.${tail}"
+			if [ -f "${directory}/${name}" ]
+			then
+				echo "${name}"
+				return 0
+			fi
+		done
+	done
+	return 1
+}
+
+expand_archive() {
+	local NAME=$1
+	case "${NAME}" in
+	*.7z)
+		7z -y x "${NAME}"
+		;;
+	*.tar.xz)
+		tar -Jxf "${NAME}"
+		;;
+	*.tar.lzma)
+		tar --lzma -xf "${NAME}"
+		;;
+	*.tar.bz2)
+		tar -jxf "${NAME}"
+		;;
+	*.tar.gz)
+		tar -zxf "${NAME}"
+		;;
+	*.zip)
+		unzip "${NAME}"
+		;;
+	*) 
+		echo "error: unsupported archive '${NAME}'"
+		return 1
+		;;
+	esac
+	return $?
+}
+
+pack_archive() {
+	local NAME=$1
+	local DIR="manifest"
+	local MFT="${DIR}/${NAME}.mft"
+	shift &&
+	mkdir -p "${DIR}" &&
+#	find "$@" > "${MFT}" &&
+	rm -f "${MFT}" &&
+	(for f in "$@"; do
+		find ${f} >> "${MFT}"
+	done)
+	if [ ! \( -s "${MFT}" \) ]; then return 1; fi
+	echo "${MFT}" >> "${MFT}" &&
+	7z a "${NAME}.7z" -mmt -mx9 "$@" "${MFT}"
+	return $?
+}
+
+success_completed() {
+	local NAME=$1
+	local BUILDSCRIPT=$2
+	local LOG=$3
+	local directory="src/`${whoami}`/packaging"
+	echo success completed.
+	mkdir -p ${directory} &&
+	cp "${BUILDSCRIPT}" "${LOG}" "${directory}/." &&
+	7z a "${NAME}.7z" -mmt -mx9 "${directory}"
+	return $?
+}
+
+store_packed_archive() {
+	local NAME=$1
+	mv "${NAME}.7z" "${XLIBRARY_ARCHIVES}/."
+	return $?
+}
+
+
+
+
