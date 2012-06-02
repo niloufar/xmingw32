@@ -11,12 +11,12 @@ fi
 . ${XMINGW}/scripts/build_lib.func
 
 
-MOD=atk
-VER=2.1.91
+MOD=pango
+VER=1.30.0
 REV=1
 ARCH=win32
 
-ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/pic"
+ARCHIVEDIR="${XLIBRARY_SOURCES}/gtk+"
 ARCHIVE="${MOD}-${VER}"
 DIRECTORY="${MOD}-${VER}"
 
@@ -31,7 +31,6 @@ INSTALL_TARGET=${XLIBRARY_TEMP}/${HEX}
 
 
 run_expand_archive() {
-local name
 	name=`find_archive "${ARCHIVEDIR}" ${ARCHIVE}` &&
 	expand_archive "${ARCHIVEDIR}/${name}"
 }
@@ -41,16 +40,17 @@ pre_configure() {
 }
 
 run_configure() {
+	#lt_cv_deplibs_check_method='pass_all' \
 	CC='gcc -mtune=pentium4 -mthreads -msse -mno-sse2 ' \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --disable-gtk-doc --disable-static --prefix="${INSTALL_TARGET}"
+	${XMINGW}/cross-configure --enable-debug=yes --disable-gtk-doc --without-x --enable-explicit-deps=no --with-included-modules=yes --prefix="${INSTALL_TARGET}"
 }
 
 post_configure() {
-#	bash ${XMINGW}/replibtool.sh
+#	cp config.h.win32 config.h
 	echo skip > /dev/null
 }
 
@@ -67,13 +67,13 @@ pre_pack() {
 }
 
 run_pack_archive() {
-	cd "${INSTALL_TARGET}" &&
-	pack_archive "${BINZIP}" bin/*.dll &&
+	(cd "${INSTALL_TARGET}" &&
+	pack_archive "${BINZIP}" bin/*.dll lib/pango &&
 	pack_archive "${DEVZIP}" include lib/*.{def,a} lib/pkgconfig &&
-	pack_archive "${TOOLSZIP}" bin/*.{exe,manifest,local} &&
+	pack_archive "${TOOLSZIP}" bin/*.exe &&
 	store_packed_archive "${BINZIP}" &&
 	store_packed_archive "${DEVZIP}" &&
-	store_packed_archive "${TOOLSZIP}"
+	store_packed_archive "${TOOLSZIP}")
 }
 
 
@@ -81,9 +81,7 @@ run_pack_archive() {
 
 set -x
 
-#XLIBRARY_SET=${XLIBRARY}/gimp_build_set
-
-#DEPS=`latest --arch=${ARCH} zlib gettext-runtime glib`
+#DEPS=`latest --arch=${ARCH} glib pkg-config zlib libpng pixman cairo expat fontconfig freetype`
 
 #GETTEXT_RUNTIME=`latest --arch=${ARCH} gettext-runtime`
 
@@ -94,15 +92,21 @@ set -x
 
 run_expand_archive &&
 cd "${DIRECTORY}" &&
-#pre_configure &&
-#run_configure &&
-#post_configure &&
+pre_configure &&
+run_configure &&
+post_configure &&
 
-#pre_make &&
-#run_make &&
+pre_make &&
+run_make &&
 
-#pre_pack &&
-#run_pack_archive &&
+pre_pack &&
+run_pack_archive &&
+
+EXAMPLESZIP=${MOD}-${VER}-${REV}-examples_${ARCH} &&
+7z a ${EXAMPLESZIP}.7z examples/*.exe examples/.libs &&
+
+TESTSZIP=${MOD}-${VER}-${REV}-tests_${ARCH} &&
+7z a ${EXAMPLESZIP}.7z tests/*.exe tests/.libs tests/*.{txt,utf8,sh} &&
 
 echo success completed.
 

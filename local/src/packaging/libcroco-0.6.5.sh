@@ -11,12 +11,12 @@ fi
 . ${XMINGW}/scripts/build_lib.func
 
 
-MOD=atk
-VER=2.1.91
+MOD=libcroco
+VER=0.6.5
 REV=1
 ARCH=win32
 
-ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/pic"
+ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/lang"
 ARCHIVE="${MOD}-${VER}"
 DIRECTORY="${MOD}-${VER}"
 
@@ -46,11 +46,10 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --disable-gtk-doc --disable-static --prefix="${INSTALL_TARGET}"
+	${XMINGW}/cross-configure --disable-static --prefix="${INSTALL_TARGET}"
 }
 
 post_configure() {
-#	bash ${XMINGW}/replibtool.sh
 	echo skip > /dev/null
 }
 
@@ -59,17 +58,18 @@ pre_make() {
 }
 
 run_make() {
-	${XMINGW}/cross make all install
+	${XMINGW}/cross make install
 }
 
 pre_pack() {
-	echo skip > /dev/null
+local NAME=`find "${INSTALL_TARGET}/bin/" -name \*-config`
+	sed -i -e "s#^\s*\(prefix=\).*${INSTALL_TARGET}\$#\1\`dirname \$0\`/..#" "${NAME}"
 }
 
 run_pack_archive() {
 	cd "${INSTALL_TARGET}" &&
 	pack_archive "${BINZIP}" bin/*.dll &&
-	pack_archive "${DEVZIP}" include lib/*.{def,a} lib/pkgconfig &&
+	pack_archive "${DEVZIP}" bin/*-config include lib/*.a lib/pkgconfig &&
 	pack_archive "${TOOLSZIP}" bin/*.{exe,manifest,local} &&
 	store_packed_archive "${BINZIP}" &&
 	store_packed_archive "${DEVZIP}" &&
@@ -80,8 +80,6 @@ run_pack_archive() {
 (
 
 set -x
-
-#XLIBRARY_SET=${XLIBRARY}/gimp_build_set
 
 #DEPS=`latest --arch=${ARCH} zlib gettext-runtime glib`
 
@@ -94,15 +92,15 @@ set -x
 
 run_expand_archive &&
 cd "${DIRECTORY}" &&
-#pre_configure &&
-#run_configure &&
-#post_configure &&
+pre_configure &&
+run_configure &&
+post_configure &&
 
-#pre_make &&
-#run_make &&
+pre_make &&
+run_make &&
 
-#pre_pack &&
-#run_pack_archive &&
+pre_pack &&
+run_pack_archive &&
 
 echo success completed.
 

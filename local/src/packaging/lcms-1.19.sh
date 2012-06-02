@@ -11,8 +11,8 @@ fi
 . ${XMINGW}/scripts/build_lib.func
 
 
-MOD=atk
-VER=2.1.91
+MOD=lcms
+VER=1.19
 REV=1
 ARCH=win32
 
@@ -50,8 +50,8 @@ run_configure() {
 }
 
 post_configure() {
-#	bash ${XMINGW}/replibtool.sh
-	echo skip > /dev/null
+	bash ${XMINGW}/replibtool.sh
+#	echo skip > /dev/null
 }
 
 pre_make() {
@@ -59,7 +59,7 @@ pre_make() {
 }
 
 run_make() {
-	${XMINGW}/cross make all install
+	${XMINGW}/cross make install
 }
 
 pre_pack() {
@@ -70,7 +70,7 @@ run_pack_archive() {
 	cd "${INSTALL_TARGET}" &&
 	pack_archive "${BINZIP}" bin/*.dll &&
 	pack_archive "${DEVZIP}" include lib/*.{def,a} lib/pkgconfig &&
-	pack_archive "${TOOLSZIP}" bin/*.{exe,manifest,local} &&
+	pack_archive "${TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 &&
 	store_packed_archive "${BINZIP}" &&
 	store_packed_archive "${DEVZIP}" &&
 	store_packed_archive "${TOOLSZIP}"
@@ -80,8 +80,6 @@ run_pack_archive() {
 (
 
 set -x
-
-#XLIBRARY_SET=${XLIBRARY}/gimp_build_set
 
 #DEPS=`latest --arch=${ARCH} zlib gettext-runtime glib`
 
@@ -94,15 +92,15 @@ set -x
 
 run_expand_archive &&
 cd "${DIRECTORY}" &&
-#pre_configure &&
-#run_configure &&
-#post_configure &&
+pre_configure &&
+run_configure &&
+post_configure &&
 
-#pre_make &&
-#run_make &&
+pre_make &&
+run_make &&
 
-#pre_pack &&
-#run_pack_archive &&
+pre_pack &&
+run_pack_archive &&
 
 echo success completed.
 

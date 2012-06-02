@@ -11,12 +11,12 @@ fi
 . ${XMINGW}/scripts/build_lib.func
 
 
-MOD=atk
-VER=2.1.91
+MOD=gtk+
+VER=3.4.1
 REV=1
 ARCH=win32
 
-ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/pic"
+ARCHIVEDIR="${XLIBRARY_SOURCES}/gtk+"
 ARCHIVE="${MOD}-${VER}"
 DIRECTORY="${MOD}-${VER}"
 
@@ -46,12 +46,11 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --disable-gtk-doc --disable-static --prefix="${INSTALL_TARGET}"
+	${XMINGW}/cross-configure --without-x --enable-win32-backend --with-included-immodules --enable-debug=yes --enable-explicit-deps=no --disable-schemas-compile --disable-glibtest --disable-gtk-doc --disable-static --prefix="${INSTALL_TARGET}"
 }
 
 post_configure() {
-#	bash ${XMINGW}/replibtool.sh
-	echo skip > /dev/null
+	bash ${XMINGW}/replibtool.sh
 }
 
 pre_make() {
@@ -59,7 +58,7 @@ pre_make() {
 }
 
 run_make() {
-	${XMINGW}/cross make all install
+	${XMINGW}/cross make install
 }
 
 pre_pack() {
@@ -67,13 +66,13 @@ pre_pack() {
 }
 
 run_pack_archive() {
-	cd "${INSTALL_TARGET}" &&
-	pack_archive "${BINZIP}" bin/*.dll &&
-	pack_archive "${DEVZIP}" include lib/*.{def,a} lib/pkgconfig &&
-	pack_archive "${TOOLSZIP}" bin/*.{exe,manifest,local} &&
+	(cd "${INSTALL_TARGET}" &&
+	pack_archive "${BINZIP}" bin/*.dll etc `find lib -name \*.dll` share/{locale,themes} &&
+	pack_archive "${DEVZIP}" include `find lib -name \*.def -or -name \*.a` lib/pkgconfig share/{aclocal,glib-2.0,gtk-3.0,gtk-doc} &&
+	pack_archive "${TOOLSZIP}" bin/*.{exe,manifest} share/man &&
 	store_packed_archive "${BINZIP}" &&
 	store_packed_archive "${DEVZIP}" &&
-	store_packed_archive "${TOOLSZIP}"
+	store_packed_archive "${TOOLSZIP}")
 }
 
 
@@ -81,28 +80,35 @@ run_pack_archive() {
 
 set -x
 
-#XLIBRARY_SET=${XLIBRARY}/gimp_build_set
-
-#DEPS=`latest --arch=${ARCH} zlib gettext-runtime glib`
-
+#DEPS=`latest --arch=${ARCH} zlib gettext-runtime glib pkg-config atk cairo freetype fontconfig pango gdk-pixbuf libpng`
 #GETTEXT_RUNTIME=`latest --arch=${ARCH} gettext-runtime`
+
+#LIBPNG=`latest --arch=${ARCH} libpng`
+#ZLIB=`latest --arch=${ARCH} zlib`
 
 #for D in $DEPS; do
 #    PATH="/devel/dist/${ARCH}/$D/bin:$PATH"
 #    PKG_CONFIG_PATH=/devel/dist/${ARCH}/$D/lib/pkgconfig:$PKG_CONFIG_PATH
 #done
 
-run_expand_archive &&
+export XLIBRARY_SET=${XLIBRARY}/gimp_build_set
+
+#run_expand_archive &&
 cd "${DIRECTORY}" &&
 #pre_configure &&
 #run_configure &&
 #post_configure &&
 
 #pre_make &&
-#run_make &&
+run_make &&
 
-#pre_pack &&
-#run_pack_archive &&
+pre_pack &&
+run_pack_archive &&
+
+(
+TESTSZIP=${MOD}-${VER}-${REV}-tests_${ARCH} &&
+pack_archive "${TESTSZIP}" tests/*.{exe,png,xpm,ui,1,css} tests/.libs tests/{a11y,css,reftests,visuals}
+) &&
 
 echo success completed.
 

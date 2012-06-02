@@ -75,7 +75,7 @@ XLIBRARY_ARCHIVES=${XLOCAL}/archives
 XLIBRARY_TEMP=${XLOCAL}/src/build
 
 ビルド スクリプトはこのように実行します。実行するとログが作成されます。エラーなく
-終了すると最後に。 success completed. と表示されます。
+終了すると最後に success completed. と表示されます。
 
 bash bzip2-1.0.6.sh
 

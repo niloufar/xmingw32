@@ -11,12 +11,12 @@ fi
 . ${XMINGW}/scripts/build_lib.func
 
 
-MOD=atk
-VER=2.1.91
+MOD=gdk-pixbuf
+VER=2.26.0
 REV=1
 ARCH=win32
 
-ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/pic"
+ARCHIVEDIR="${XLIBRARY_SOURCES}/gtk+"
 ARCHIVE="${MOD}-${VER}"
 DIRECTORY="${MOD}-${VER}"
 
@@ -41,17 +41,18 @@ pre_configure() {
 }
 
 run_configure() {
-	CC='gcc -mtune=pentium4 -mthreads -msse -mno-sse2 ' \
-	CPPFLAGS="`${XMINGW}/cross --cflags`" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
-	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --disable-gtk-doc --disable-static --prefix="${INSTALL_TARGET}"
+	CFLAGS="-pipe -mtune=pentium4 -mthreads -msse -mno-sse2 -O2 -fomit-frame-pointer -ffast-math `${XMINGW}/cross --cflags`" \
+	${XMINGW}/cross-configure --without-gdiplus --with-included-loaders --without-libjasper --enable-debug=yes --enable-explicit-deps=no --disable-gtk-doc --disable-static --without-x --disable-xlib --prefix="${INSTALL_TARGET}"
 }
 
 post_configure() {
-#	bash ${XMINGW}/replibtool.sh
-	echo skip > /dev/null
+	bash ${XMINGW}/replibtool.sh
+	# xlib 系をビルドしようとするので対称から外す。
+	sed -i -e 's/^\(DIST_SUBDIRS = \)\(gdk-pixbuf-xlib\)/\1# \2/' \
+		-e 's/^\(am__append_1 = \)\(gdk-pixbuf-xlib\)/\1# \2/' \
+		contrib/Makefile
 }
 
 pre_make() {
@@ -59,7 +60,7 @@ pre_make() {
 }
 
 run_make() {
-	${XMINGW}/cross make all install
+	${XMINGW}/cross make install
 }
 
 pre_pack() {
@@ -68,9 +69,9 @@ pre_pack() {
 
 run_pack_archive() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${BINZIP}" bin/*.dll &&
+	pack_archive "${BINZIP}" bin/*.dll lib/gdk-pixbuf-2.0 &&
 	pack_archive "${DEVZIP}" include lib/*.{def,a} lib/pkgconfig &&
-	pack_archive "${TOOLSZIP}" bin/*.{exe,manifest,local} &&
+	pack_archive "${TOOLSZIP}" bin/*.exe &&
 	store_packed_archive "${BINZIP}" &&
 	store_packed_archive "${DEVZIP}" &&
 	store_packed_archive "${TOOLSZIP}"
@@ -81,28 +82,30 @@ run_pack_archive() {
 
 set -x
 
-#XLIBRARY_SET=${XLIBRARY}/gimp_build_set
-
-#DEPS=`latest --arch=${ARCH} zlib gettext-runtime glib`
-
+#DEPS=`latest --arch=${ARCH} zlib glib pkg-config libpng`
 #GETTEXT_RUNTIME=`latest --arch=${ARCH} gettext-runtime`
+
+#LIBPNG=`latest --arch=${ARCH} libpng`
+#ZLIB=`latest --arch=${ARCH} zlib`
 
 #for D in $DEPS; do
 #    PATH="/devel/dist/${ARCH}/$D/bin:$PATH"
 #    PKG_CONFIG_PATH=/devel/dist/${ARCH}/$D/lib/pkgconfig:$PKG_CONFIG_PATH
 #done
 
+export XLIBRARY_SET=${XLIBRARY}/gimp_build_set
+
 run_expand_archive &&
 cd "${DIRECTORY}" &&
-#pre_configure &&
-#run_configure &&
-#post_configure &&
+pre_configure &&
+run_configure &&
+post_configure &&
 
-#pre_make &&
-#run_make &&
+pre_make &&
+run_make &&
 
-#pre_pack &&
-#run_pack_archive &&
+pre_pack &&
+run_pack_archive &&
 
 echo success completed.
 

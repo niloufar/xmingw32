@@ -1,4 +1,6 @@
 #!/bin/bash
+# vim: tabstop=4 fileformat=unix fileencoding=utf-8 filetype=sh
+
 # license: Apatche v2.0
 
 PREFIX=`dirname "$0"`
@@ -7,9 +9,9 @@ then
   . "${PREFIX}/scripts/env.sh"
 fi
 
-function make_symlink() {ru
-	local sym=$1
-	local rl=$2
+function make_symlink() {
+local sym=$1
+local rl=$2
 	if test -e ${sym}
 	then
 		echo "exist: ${sym}"
@@ -23,6 +25,7 @@ function make_symlink() {ru
 chost=i686-w64-mingw32
 source=/usr/bin
 destination=${XMINGW}/bin
+mkdir -p destination
 while read fl
 do
 	sym="${destination}/${fl}"
@@ -86,7 +89,7 @@ do
 	sym="${destination}/cross-${fl}"
 	rl="${source}/cross-${fl}"
 	make_symlink "${sym}" "${rl}"
-	rl="${source}/cross-pp${fl}"
+	sym="${destination}/cross-pp${fl}"
 	make_symlink "${sym}" "${rl}"
 done <<- EOS
 cmake

@@ -11,8 +11,8 @@ fi
 . ${XMINGW}/scripts/build_lib.func
 
 
-MOD=atk
-VER=2.1.91
+MOD=freetype
+VER=2.4.9
 REV=1
 ARCH=win32
 
@@ -42,16 +42,17 @@ pre_configure() {
 
 run_configure() {
 	CC='gcc -mtune=pentium4 -mthreads -msse -mno-sse2 ' \
+	CC_BUILD=build-cc \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --disable-gtk-doc --disable-static --prefix="${INSTALL_TARGET}"
+	${XMINGW}/cross-configure --disable-static --prefix="${INSTALL_TARGET}"
 }
 
 post_configure() {
-#	bash ${XMINGW}/replibtool.sh
-	echo skip > /dev/null
+	# freetype6.dll の形にするため書き換える。
+	sed -i.orig -e 's#^soname_spec=.*#soname_spec="\\\`echo "\\\${libname}\\\${versuffix}" | \\\$SED -e "s/^lib//" -e "s/-//"\\\`\\\${shared_ext}"#' builds/unix/libtool
 }
 
 pre_make() {
@@ -63,25 +64,21 @@ run_make() {
 }
 
 pre_pack() {
-	echo skip > /dev/null
+	sed -i -e 's#^\(prefix=\).*#\1\`dirname \$0\`/..#' "${INSTALL_TARGET}/bin/freetype-config"
 }
 
 run_pack_archive() {
 	cd "${INSTALL_TARGET}" &&
 	pack_archive "${BINZIP}" bin/*.dll &&
-	pack_archive "${DEVZIP}" include lib/*.{def,a} lib/pkgconfig &&
-	pack_archive "${TOOLSZIP}" bin/*.{exe,manifest,local} &&
+	pack_archive "${DEVZIP}" bin/*-config include lib/*.a lib/pkgconfig share/aclocal &&
 	store_packed_archive "${BINZIP}" &&
-	store_packed_archive "${DEVZIP}" &&
-	store_packed_archive "${TOOLSZIP}"
+	store_packed_archive "${DEVZIP}"
 }
 
 
 (
 
 set -x
-
-#XLIBRARY_SET=${XLIBRARY}/gimp_build_set
 
 #DEPS=`latest --arch=${ARCH} zlib gettext-runtime glib`
 
@@ -94,15 +91,15 @@ set -x
 
 run_expand_archive &&
 cd "${DIRECTORY}" &&
-#pre_configure &&
-#run_configure &&
-#post_configure &&
+pre_configure &&
+run_configure &&
+post_configure &&
 
-#pre_make &&
-#run_make &&
+pre_make &&
+run_make &&
 
-#pre_pack &&
-#run_pack_archive &&
+pre_pack &&
+run_pack_archive &&
 
 echo success completed.
 

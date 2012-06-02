@@ -11,8 +11,12 @@ fi
 . ${XMINGW}/scripts/build_lib.func
 
 
-MOD=atk
-VER=2.1.91
+# bsdtar -zxf mingw32-xpm-nox-4.2.0-4.15.src.rpm で
+# xpm-nox-4.2.0.tar.bz2 と
+# xpm-nox-4.2.0-mingw.patch を取り出しておく。
+
+MOD=xpm-nox
+VER=4.2.0
 REV=1
 ARCH=win32
 
@@ -37,20 +41,15 @@ local name
 }
 
 pre_configure() {
-	echo skip > /dev/null
+	patch -p 1 -i "${ARCHIVEDIR}/${MOD}-${VER}-mingw.patch"
+#	echo skip > /dev/null
 }
 
 run_configure() {
-	CC='gcc -mtune=pentium4 -mthreads -msse -mno-sse2 ' \
-	CPPFLAGS="`${XMINGW}/cross --cflags`" \
-	LDFLAGS="`${XMINGW}/cross --ldflags` \
-	-Wl,--enable-auto-image-base -Wl,-s" \
-	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --disable-gtk-doc --disable-static --prefix="${INSTALL_TARGET}"
+	echo skip > /dev/null
 }
 
 post_configure() {
-#	bash ${XMINGW}/replibtool.sh
 	echo skip > /dev/null
 }
 
@@ -59,7 +58,13 @@ pre_make() {
 }
 
 run_make() {
-	${XMINGW}/cross make all install
+	${XMINGW}/cross make all install \
+	CC='gcc -mtune=pentium4 -mthreads -msse -mno-sse2 ' \
+	CPPFLAGS="`${XMINGW}/cross --cflags`" \
+	LDFLAGS="`${XMINGW}/cross --ldflags` \
+	-Wl,--enable-auto-image-base -Wl,-s" \
+	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
+	prefix="${INSTALL_TARGET}"
 }
 
 pre_pack() {
@@ -69,8 +74,8 @@ pre_pack() {
 run_pack_archive() {
 	cd "${INSTALL_TARGET}" &&
 	pack_archive "${BINZIP}" bin/*.dll &&
-	pack_archive "${DEVZIP}" include lib/*.{def,a} lib/pkgconfig &&
-	pack_archive "${TOOLSZIP}" bin/*.{exe,manifest,local} &&
+	pack_archive "${DEVZIP}" include lib/*.{def,a} &&
+	pack_archive "${TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 &&
 	store_packed_archive "${BINZIP}" &&
 	store_packed_archive "${DEVZIP}" &&
 	store_packed_archive "${TOOLSZIP}"
@@ -80,8 +85,6 @@ run_pack_archive() {
 (
 
 set -x
-
-#XLIBRARY_SET=${XLIBRARY}/gimp_build_set
 
 #DEPS=`latest --arch=${ARCH} zlib gettext-runtime glib`
 
@@ -94,15 +97,15 @@ set -x
 
 run_expand_archive &&
 cd "${DIRECTORY}" &&
-#pre_configure &&
-#run_configure &&
-#post_configure &&
+pre_configure &&
+run_configure &&
+post_configure &&
 
-#pre_make &&
-#run_make &&
+pre_make &&
+run_make &&
 
-#pre_pack &&
-#run_pack_archive &&
+pre_pack &&
+run_pack_archive &&
 
 echo success completed.
 

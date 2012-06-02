@@ -11,8 +11,8 @@ fi
 . ${XMINGW}/scripts/build_lib.func
 
 
-MOD=atk
-VER=2.1.91
+MOD=librsvg
+VER=2.36.0
 REV=1
 ARCH=win32
 
@@ -37,20 +37,22 @@ local name
 }
 
 pre_configure() {
-	echo skip > /dev/null
+	# 関数名の変更？
+	sed -i.orig -e 's/^rsvg_cairo_to_pixbuf$/rsvg_cairo_surface_to_pixbuf/' librsvg.def
 }
 
 run_configure() {
+	#lt_cv_deplibs_check_method='pass_all' \
 	CC='gcc -mtune=pentium4 -mthreads -msse -mno-sse2 ' \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
+	`${XMINGW}/cross pkg-config --libs gmodule-2.0` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --disable-gtk-doc --disable-static --prefix="${INSTALL_TARGET}"
+	${XMINGW}/cross-configure  --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --disable-gtk-doc-html --disable-introspection
 }
 
 post_configure() {
-#	bash ${XMINGW}/replibtool.sh
 	echo skip > /dev/null
 }
 
@@ -68,9 +70,9 @@ pre_pack() {
 
 run_pack_archive() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${BINZIP}" bin/*.dll &&
-	pack_archive "${DEVZIP}" include lib/*.{def,a} lib/pkgconfig &&
-	pack_archive "${TOOLSZIP}" bin/*.{exe,manifest,local} &&
+	pack_archive "${BINZIP}" bin/*.dll `find lib -name \*.dll` share/themes &&
+	pack_archive "${DEVZIP}" include `find lib -name \*.a` lib/pkgconfig &&
+	pack_archive "${TOOLSZIP}" bin/*.{exe,manifest,local} bin/rsvg share/man/man1 &&
 	store_packed_archive "${BINZIP}" &&
 	store_packed_archive "${DEVZIP}" &&
 	store_packed_archive "${TOOLSZIP}"
@@ -81,8 +83,6 @@ run_pack_archive() {
 
 set -x
 
-#XLIBRARY_SET=${XLIBRARY}/gimp_build_set
-
 #DEPS=`latest --arch=${ARCH} zlib gettext-runtime glib`
 
 #GETTEXT_RUNTIME=`latest --arch=${ARCH} gettext-runtime`
@@ -92,17 +92,19 @@ set -x
 #    PKG_CONFIG_PATH=/devel/dist/${ARCH}/$D/lib/pkgconfig:$PKG_CONFIG_PATH
 #done
 
+export XLIBRARY_SET=${XLIBRARY}/gimp_build_set
+
 run_expand_archive &&
 cd "${DIRECTORY}" &&
-#pre_configure &&
-#run_configure &&
-#post_configure &&
+pre_configure &&
+run_configure &&
+post_configure &&
 
-#pre_make &&
-#run_make &&
+pre_make &&
+run_make &&
 
-#pre_pack &&
-#run_pack_archive &&
+pre_pack &&
+run_pack_archive &&
 
 echo success completed.
 

@@ -1,8 +1,4 @@
-#!/bin/bash
-# vim: tabstop=4 fileformat=unix fileencoding=utf-8 filetype=sh
-
-# license: Apatche v2.0
-
+#!/use/bin/bash
 if [ "" = "${XMINGW}" ]
 then
 	echo fail: XMINGW 環境で実行してください。
@@ -11,13 +7,14 @@ fi
 . ${XMINGW}/scripts/build_lib.func
 
 
-MOD=atk
-VER=2.1.91
+MOD=fontconfig
+VER=2.9.0
 REV=1
 ARCH=win32
 
 ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/pic"
 ARCHIVE="${MOD}-${VER}"
+DEBPATCH="${MOD}_${VER}-${REV}.diff.gz"
 DIRECTORY="${MOD}-${VER}"
 
 THIS=${MOD}-${VER}-${REV}_${ARCH}
@@ -31,7 +28,6 @@ INSTALL_TARGET=${XLIBRARY_TEMP}/${HEX}
 
 
 run_expand_archive() {
-local name
 	name=`find_archive "${ARCHIVEDIR}" ${ARCHIVE}` &&
 	expand_archive "${ARCHIVEDIR}/${name}"
 }
@@ -41,16 +37,17 @@ pre_configure() {
 }
 
 run_configure() {
+	#lt_cv_deplibs_check_method='pass_all' \
 	CC='gcc -mtune=pentium4 -mthreads -msse -mno-sse2 ' \
+	CC_FOR_BUILD="build-cc" \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
-	-Wl,--enable-auto-image-base -Wl,-s" \
+	-Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --disable-gtk-doc --disable-static --prefix="${INSTALL_TARGET}"
+	${XMINGW}/cross-configure --enable-libxml2 --with-arch=mingw32 --prefix="${INSTALL_TARGET}"
 }
 
 post_configure() {
-#	bash ${XMINGW}/replibtool.sh
 	echo skip > /dev/null
 }
 
@@ -59,7 +56,7 @@ pre_make() {
 }
 
 run_make() {
-	${XMINGW}/cross make all install
+	${XMINGW}/cross make install
 }
 
 pre_pack() {
@@ -68,24 +65,20 @@ pre_pack() {
 
 run_pack_archive() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${BINZIP}" bin/*.dll &&
-	pack_archive "${DEVZIP}" include lib/*.{def,a} lib/pkgconfig &&
-	pack_archive "${TOOLSZIP}" bin/*.{exe,manifest,local} &&
-	store_packed_archive "${BINZIP}" &&
+	pack_archive "${BINZIP}" bin/*.dll etc &&
+	pack_archive "${DEVZIP}" include lib/*.{a,def} lib/pkgconfig share/doc share/man/man{3,5} &&
+	pack_archive "${TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 &&	store_packed_archive "${BINZIP}" &&
 	store_packed_archive "${DEVZIP}" &&
 	store_packed_archive "${TOOLSZIP}"
 }
+
 
 
 (
 
 set -x
 
-#XLIBRARY_SET=${XLIBRARY}/gimp_build_set
-
-#DEPS=`latest --arch=${ARCH} zlib gettext-runtime glib`
-
-#GETTEXT_RUNTIME=`latest --arch=${ARCH} gettext-runtime`
+#DEPS=`latest --arch=${ARCH} libxml2 freetype iconv`
 
 #for D in $DEPS; do
 #    PATH="/devel/dist/${ARCH}/$D/bin:$PATH"
@@ -94,15 +87,15 @@ set -x
 
 run_expand_archive &&
 cd "${DIRECTORY}" &&
-#pre_configure &&
-#run_configure &&
-#post_configure &&
+pre_configure &&
+run_configure &&
+post_configure &&
 
-#pre_make &&
-#run_make &&
+pre_make &&
+run_make &&
 
-#pre_pack &&
-#run_pack_archive &&
+pre_pack &&
+run_pack_archive &&
 
 echo success completed.
 

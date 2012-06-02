@@ -11,8 +11,8 @@ fi
 . ${XMINGW}/scripts/build_lib.func
 
 
-MOD=atk
-VER=2.1.91
+MOD=openjpeg
+VER=1.5.0
 REV=1
 ARCH=win32
 
@@ -41,6 +41,8 @@ pre_configure() {
 }
 
 run_configure() {
+	TIFF_CFLAGS="`${XMINGW}/cross pkg-config libtiff-4 --cflags`" \
+	TIFF_LIBS="`${XMINGW}/cross pkg-config libtiff-4 --libs`" \
 	CC='gcc -mtune=pentium4 -mthreads -msse -mno-sse2 ' \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
@@ -68,9 +70,9 @@ pre_pack() {
 
 run_pack_archive() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${BINZIP}" bin/*.dll &&
+	pack_archive "${BINZIP}" bin/*.dll share/doc &&
 	pack_archive "${DEVZIP}" include lib/*.{def,a} lib/pkgconfig &&
-	pack_archive "${TOOLSZIP}" bin/*.{exe,manifest,local} &&
+	pack_archive "${TOOLSZIP}" bin/*.{exe,manifest,local} share/man &&
 	store_packed_archive "${BINZIP}" &&
 	store_packed_archive "${DEVZIP}" &&
 	store_packed_archive "${TOOLSZIP}"
@@ -81,9 +83,9 @@ run_pack_archive() {
 
 set -x
 
-#XLIBRARY_SET=${XLIBRARY}/gimp_build_set
+XLIBRARY_SET=${XLIBRARY}/gimp_build_set
 
-#DEPS=`latest --arch=${ARCH} zlib gettext-runtime glib`
+#DEPS=`latest --arch=${ARCH} zlib libpng tiff lcms`
 
 #GETTEXT_RUNTIME=`latest --arch=${ARCH} gettext-runtime`
 
@@ -94,15 +96,15 @@ set -x
 
 run_expand_archive &&
 cd "${DIRECTORY}" &&
-#pre_configure &&
-#run_configure &&
-#post_configure &&
+pre_configure &&
+run_configure &&
+post_configure &&
 
-#pre_make &&
-#run_make &&
+pre_make &&
+run_make &&
 
-#pre_pack &&
-#run_pack_archive &&
+pre_pack &&
+run_pack_archive &&
 
 echo success completed.
 

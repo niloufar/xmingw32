@@ -11,12 +11,12 @@ fi
 . ${XMINGW}/scripts/build_lib.func
 
 
-MOD=atk
-VER=2.1.91
+MOD=zlib
+VER=1.2.6
 REV=1
 ARCH=win32
 
-ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/pic"
+ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/compress"
 ARCHIVE="${MOD}-${VER}"
 DIRECTORY="${MOD}-${VER}"
 
@@ -31,7 +31,6 @@ INSTALL_TARGET=${XLIBRARY_TEMP}/${HEX}
 
 
 run_expand_archive() {
-local name
 	name=`find_archive "${ARCHIVEDIR}" ${ARCHIVE}` &&
 	expand_archive "${ARCHIVEDIR}/${name}"
 }
@@ -41,16 +40,10 @@ pre_configure() {
 }
 
 run_configure() {
-	CC='gcc -mtune=pentium4 -mthreads -msse -mno-sse2 ' \
-	CPPFLAGS="`${XMINGW}/cross --cflags`" \
-	LDFLAGS="`${XMINGW}/cross --ldflags` \
-	-Wl,--enable-auto-image-base -Wl,-s" \
-	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --disable-gtk-doc --disable-static --prefix="${INSTALL_TARGET}"
+	echo skip > /dev/null
 }
 
 post_configure() {
-#	bash ${XMINGW}/replibtool.sh
 	echo skip > /dev/null
 }
 
@@ -59,7 +52,14 @@ pre_make() {
 }
 
 run_make() {
-	${XMINGW}/cross make all install
+	mkdir -p ${INSTALL_TARGET}/bin &&
+	${XMINGW}/cross make all install \
+	CC='gcc -mtune=pentium4 -mthreads -msse -mno-sse2 ' \
+	CPPFLAGS="`${XMINGW}/cross --cflags`" \
+	LDFLAGS="`${XMINGW}/cross --ldflags` \
+	-Wl,--enable-auto-image-base -Wl,-s" \
+	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
+	-f win32/Makefile.gcc SHARED_MODE=1 "BINARY_PATH=${INSTALL_TARGET}/bin" "INCLUDE_PATH=${INSTALL_TARGET}/include" "LIBRARY_PATH=${INSTALL_TARGET}/lib"
 }
 
 pre_pack() {
@@ -69,19 +69,15 @@ pre_pack() {
 run_pack_archive() {
 	cd "${INSTALL_TARGET}" &&
 	pack_archive "${BINZIP}" bin/*.dll &&
-	pack_archive "${DEVZIP}" include lib/*.{def,a} lib/pkgconfig &&
-	pack_archive "${TOOLSZIP}" bin/*.{exe,manifest,local} &&
+	pack_archive "${DEVZIP}" include lib/*.{def,a} &&
 	store_packed_archive "${BINZIP}" &&
-	store_packed_archive "${DEVZIP}" &&
-	store_packed_archive "${TOOLSZIP}"
+	store_packed_archive "${DEVZIP}"
 }
 
 
 (
 
 set -x
-
-#XLIBRARY_SET=${XLIBRARY}/gimp_build_set
 
 #DEPS=`latest --arch=${ARCH} zlib gettext-runtime glib`
 
@@ -94,15 +90,15 @@ set -x
 
 run_expand_archive &&
 cd "${DIRECTORY}" &&
-#pre_configure &&
-#run_configure &&
-#post_configure &&
+pre_configure &&
+run_configure &&
+post_configure &&
 
-#pre_make &&
-#run_make &&
+pre_make &&
+run_make &&
 
-#pre_pack &&
-#run_pack_archive &&
+pre_pack &&
+run_pack_archive &&
 
 echo success completed.
 

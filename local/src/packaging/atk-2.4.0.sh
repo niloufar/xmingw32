@@ -12,11 +12,11 @@ fi
 
 
 MOD=atk
-VER=2.1.91
+VER=2.4.0
 REV=1
 ARCH=win32
 
-ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/pic"
+ARCHIVEDIR="${XLIBRARY_SOURCES}/gtk+"
 ARCHIVE="${MOD}-${VER}"
 DIRECTORY="${MOD}-${VER}"
 
@@ -41,6 +41,7 @@ pre_configure() {
 }
 
 run_configure() {
+	#lt_cv_deplibs_check_method='pass_all' \
 	CC='gcc -mtune=pentium4 -mthreads -msse -mno-sse2 ' \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
@@ -50,12 +51,12 @@ run_configure() {
 }
 
 post_configure() {
-#	bash ${XMINGW}/replibtool.sh
-	echo skip > /dev/null
+	# ./atk/atk.def の1行目が -e EXPORTS になってしまう。頭の -e を削除する。
+	sed -i -e 's/^\(\s\+(echo\) -e \(EXPORTS;\)/\1 \2/' ./atk/Makefile
 }
 
 pre_make() {
-	echo skip > /dev/null
+	(cd atk && ${XMINGW}/cross make atkmarshal.h atkmarshal.c)
 }
 
 run_make() {
@@ -70,10 +71,8 @@ run_pack_archive() {
 	cd "${INSTALL_TARGET}" &&
 	pack_archive "${BINZIP}" bin/*.dll &&
 	pack_archive "${DEVZIP}" include lib/*.{def,a} lib/pkgconfig &&
-	pack_archive "${TOOLSZIP}" bin/*.{exe,manifest,local} &&
 	store_packed_archive "${BINZIP}" &&
-	store_packed_archive "${DEVZIP}" &&
-	store_packed_archive "${TOOLSZIP}"
+	store_packed_archive "${DEVZIP}"
 }
 
 
@@ -81,28 +80,19 @@ run_pack_archive() {
 
 set -x
 
-#XLIBRARY_SET=${XLIBRARY}/gimp_build_set
-
 #DEPS=`latest --arch=${ARCH} zlib gettext-runtime glib`
-
-#GETTEXT_RUNTIME=`latest --arch=${ARCH} gettext-runtime`
-
-#for D in $DEPS; do
-#    PATH="/devel/dist/${ARCH}/$D/bin:$PATH"
-#    PKG_CONFIG_PATH=/devel/dist/${ARCH}/$D/lib/pkgconfig:$PKG_CONFIG_PATH
-#done
 
 run_expand_archive &&
 cd "${DIRECTORY}" &&
-#pre_configure &&
-#run_configure &&
-#post_configure &&
+pre_configure &&
+run_configure &&
+post_configure &&
 
-#pre_make &&
-#run_make &&
+pre_make &&
+run_make &&
 
-#pre_pack &&
-#run_pack_archive &&
+pre_pack &&
+run_pack_archive &&
 
 echo success completed.
 
