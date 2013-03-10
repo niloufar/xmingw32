@@ -10,6 +10,8 @@ then
 fi
 . ${XMINGW}/scripts/build_lib.func
 
+#XLIBRARY_SET=${XLIBRARY}/gimp_build_set
+
 
 MOD=atk
 VER=2.1.91
@@ -41,16 +43,21 @@ pre_configure() {
 }
 
 run_configure() {
-	CC='gcc -mtune=pentium4 -mthreads -msse -mno-sse2 ' \
+	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
-	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
+	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math  -static-libgcc" \
 	${XMINGW}/cross-configure --disable-gtk-doc --disable-static --prefix="${INSTALL_TARGET}"
 }
 
 post_configure() {
-#	bash ${XMINGW}/replibtool.sh
+	# shared ファイルを作ってくれない場合の対処。
+#	bash ${XMINGW}/replibtool.sh &&
+	# static なライブラリーのリンクはこうしないと libtool がいろいろ面倒をみてしまう。
+#	bash ${XMINGW}/replibtool.sh mix
+	# libstdc++ を静的リンクする。
+#	bash ${XMINGW}/replibtool.sh static-libgcc
 	echo skip > /dev/null
 }
 
@@ -80,8 +87,6 @@ run_pack_archive() {
 (
 
 set -x
-
-#XLIBRARY_SET=${XLIBRARY}/gimp_build_set
 
 #DEPS=`latest --arch=${ARCH} zlib gettext-runtime glib`
 
