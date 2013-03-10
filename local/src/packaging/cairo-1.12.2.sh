@@ -51,9 +51,9 @@ run_configure() {
 }
 
 post_configure() {
-	bash ${XMINGW}/replibtool.sh
+	bash ${XMINGW}/replibtool.sh &&
 	# static なライブラリーのリンクはこうしないと libtool がいろいろ面倒をみてしまう。
-	sed -i -e "s/^\(deplibs_check_method=\).+\$/\1pass_all/" libtool
+	sed -i -e "s/^\(deplibs_check_method=\).\+\$/\1pass_all/" libtool
 }
 
 pre_make() {

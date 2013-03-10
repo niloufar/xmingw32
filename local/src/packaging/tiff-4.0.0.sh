@@ -69,8 +69,8 @@ pre_pack() {
 run_pack_archive() {
 	cd "${INSTALL_TARGET}" &&
 	pack_archive "${BINZIP}" bin/*.dll &&
-	pack_archive "${DEVZIP}" include lib/*.{def,a} lib/pkgconfig share/man/man3 share &&
-	pack_archive "${TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1&&
+	pack_archive "${DEVZIP}" include lib/*.{def,a} lib/pkgconfig share/man/man3 share/doc &&
+	pack_archive "${TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 &&
 	store_packed_archive "${BINZIP}" &&
 	store_packed_archive "${DEVZIP}" &&
 	store_packed_archive "${TOOLSZIP}"
