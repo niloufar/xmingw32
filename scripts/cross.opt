@@ -16,7 +16,7 @@ __help() {
   echo "
   --libset        library directories.
   --cflags        cflags.
-  --archcflags    x86_64_gcc で mingw32 をコンパイルするための cflags.
+  --archcflags    アーキテクチャ関係のコンパイルオプション。x86_64_gcc で mingw32 をコンパイルするための cflags を含む。
   --ldflags       ldflags.
   -h  --help      show this message.
       --version   print the version.
@@ -31,7 +31,7 @@ do
     RESULT="`echo \"${XMINGW_LIBRARY_ROOT}\" | sed -e 's/:/\n/g'`"
     ;;
   --cflags)
-    RESULT="${RESULT} ${XMINGW_ARCHCFLAGS} ${XMINGW_CFLAGS}"
+    RESULT="${RESULT} ${XMINGW_CFLAGS}"
     ;;
   --archcflags)
     RESULT="${RESULT} ${XMINGW_ARCHCFLAGS}"
