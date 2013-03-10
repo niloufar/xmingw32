@@ -1,4 +1,4 @@
-Ubuntu 11.10 で MinGW32 をクロスビルドするためのスクリプト集です。
+Ubuntu 12.04 で MinGW32 をクロスビルドするためのスクリプト集です。
 公開を考えて作成していないスクリプトですので、ひどい内容となっています。
 
 スクリプトを /usr/xmingw/xmingw32 に配置してください。異なる場所に配置したい
@@ -9,11 +9,14 @@ Ubuntu 11.10 で MinGW32 をクロスビルドするためのスクリプト集�
 Ubuntu の開発環境を整えます。つぎのツール、ライブラリーを使用するために
 インストールします。
 
-sudo apt-get install gcc-mingw-w64
-sudo apt-get install automake autoconf
+sudo apt-get install gcc-mingw-w64 g++-mingw-w64
+sudo apt-get install automake autoconf libtool
 sudo apt-get install intltool
+#sudo apt-get install flex bison
+#sudo apt-get install gobject-introspection
 sudo apt-get install libgtk2.0-dev
 sudo apt-get install libffi-dev
+sudo apt-get install bsdtar 7zip*
 
 配置したディレクトリーに移動し、 bash make_link.sh を実行します。
 
