@@ -13,7 +13,7 @@ local base
 local tail
 local name
 	shift
-	for base
+	for base in "$1" `echo $1 | sed -e's/-/_/' -e's/\$/.orig/'`
 	do
 		for tail in tar.gz tar.bz2 tar.xz tar.lzma zip 7z
 		do 
