@@ -42,9 +42,9 @@ local name
 pre_configure() {
 	# configure が -lpng 決め打ちで依存チェックしているのでごまかす。
 	mkdir -p libpng &&
-	ln -f -s ${XLIBRARY}/lib/include/libpng15 libpng/include &&
+	ln -f -s ${XLIBRARY}/lib/include/libpng16 libpng/include &&
 	mkdir -p libpng/lib &&
-	ln -f -s ${XLIBRARY}/lib/lib/libpng15.dll.a libpng/lib/libpng.dll.a &&
+	ln -f -s ${XLIBRARY}/lib/lib/libpng16.dll.a libpng/lib/libpng.dll.a &&
 	patch -p 1 <<\EOF
 --- libwmf-0.2.8.4.orig/src/ipa/ipa/bmp.h
 +++ libwmf-0.2.8.4/src/ipa/ipa/bmp.h
@@ -61,7 +61,7 @@ EOF
 }
 
 run_configure() {
-	CC='gcc -mtune=pentium4 -mthreads -msse -mno-sse2 ' \
+	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
