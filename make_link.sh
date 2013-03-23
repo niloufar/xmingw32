@@ -23,15 +23,24 @@ local rl=$2
 
 # mingw gcc and binutils
 chost=i686-w64-mingw32
+chost64=x86_64-w64-mingw32
 source=/usr/bin
 destination=${XMINGW}/bin
-mkdir -p destination
+destination64=${XMINGW}/bin64
+mkdir -p ${destination}
+mkdir -p ${destination64}
 while read fl
 do
 	sym="${destination}/${fl}"
 	rl="${source}/${chost}-${fl}"
 	make_symlink "${sym}" "${rl}"
 	sym="${destination}/${TARGET}-${fl}"
+	make_symlink "${sym}" "${rl}"
+
+	sym="${destination64}/${fl}"
+	rl="${source}/${chost64}-${fl}"
+	make_symlink "${sym}" "${rl}"
+	sym="${destination64}/${TARGET}-${fl}"
 	make_symlink "${sym}" "${rl}"
 done <<- EOS
 ar
