@@ -62,7 +62,7 @@ run_make() {
 }
 
 pre_pack() {
-	${XMINGW}/cross make install
+	echo skip > /dev/null
 }
 
 run_pack_archive() {
