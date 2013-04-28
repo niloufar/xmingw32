@@ -6,7 +6,7 @@
 PREFIX=`dirname "$0"`
 if [ "" = "${XMINGW}" ]
 then
-  . "${PREFIX}/scripts/env.sh"
+	. "${PREFIX}/scripts/env.sh"
 fi
 
 function make_symlink() {
@@ -66,17 +66,24 @@ EOS
 
 # my scripts
 
+# ホストのコンパイラを使うためのスクリプト。
 source=${XMINGW}/scripts
 destination=${XMINGW}/bin
+destination64=${XMINGW}/bin64
 while read fl
 do
 	sym="${destination}/${fl}"
+	rl="${source}/${fl}"
+	make_symlink "${sym}" "${rl}"
+
+	sym="${destination64}/${fl}"
 	rl="${source}/${fl}"
 	make_symlink "${sym}" "${rl}"
 done <<- EOS
 build-cc
 EOS
 
+# ${XMINGW}/* で使えるスクリプトのリンク。
 source=${XMINGW}/scripts
 destination=${XMINGW}
 while read fl
@@ -85,12 +92,15 @@ do
 	rl="${source}/${fl}"
 	make_symlink "${sym}" "${rl}"
 done <<- EOS
-cross
 env.sh
+cross
+cross-host
+package
 replibtool.sh
 reppc.sh
 EOS
 
+# ${XMINGW}/* で使えるスクリプトのリンクで、内部で ../ するリンクも作成する。
 source=${XMINGW}/scripts
 destination=${XMINGW}
 while read fl
@@ -104,4 +114,14 @@ done <<- EOS
 cmake
 configure
 EOS
+
+# ディレクトリーの作成。
+mkdir -p "${XLOCAL}"
+mkdir -p "${XLOCAL}/libs"
+mkdir -p "${XLOCAL}/libs64"
+mkdir -p "${XLOCAL}/archives"
+mkdir -p "${XLOCAL}/src"
+mkdir -p "${XLOCAL}/src/build"
+mkdir -p "${XLOCAL}/src/packaging"
+
 

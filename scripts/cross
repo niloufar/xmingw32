@@ -14,6 +14,8 @@ PREFIX="${XMINGW}"
 . "${PREFIX}/scripts/cross.opt"
 . "${PREFIX}/scripts/cross.exp"
 
+export IN_CROSS_SCRIPT="#"
+
 if [ 0 -eq $# ]
 then
   echo ${RESULT}
@@ -22,6 +24,6 @@ fi
 
 prog="$1"
 shift
-$prog "$@"
+${prog} "$@"
 
 

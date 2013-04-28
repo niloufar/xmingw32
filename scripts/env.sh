@@ -3,9 +3,31 @@
 
 # license: Apatche v2.0
 
-export XMINGW=/usr/xmingw/xmingw32
-#export XMINGW=`dirname "$0"`
+XMINGW=/usr/xmingw/xmingw32
+#XMINGW=`dirname "$0"`
+XMINGW_PLATFORM=win32
+while [ 0 -lt $# ]
+do
+  case "$1" in
+  win32)
+    XMINGW_PLATFORM=win32
+    ;;
+  win64)
+    XMINGW_PLATFORM=win64
+    ;;
+  -*|--*|*)
+    echo "$0: unsupported option \`$1'."
+#    echo "$0: try \`$0 --help' for more information."
+    return 1
+    ;;
+  esac
+  shift
+done
+export XMINGW
+export XMINGW_PLATFORM
 
+if [ "" = "${XMINGW_ORIG_PATH}" ]
+then
 export XMINGW_ORIG_PATH=${PATH}
 export XMINGW_ORIG_CC=${CC}
 export XMINGW_ORIG_CXX=${CXX}
@@ -17,12 +39,18 @@ export XMINGW_ORIG_C_INCLUDE_PATH=${C_INCLUDE_PATH}
 export XMINGW_ORIG_CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}
 export XMINGW_ORIG_LIBRARY_PATH=${LIBRARY_PATH}
 export XMINGW_ORIG_ACLOCAL_FLAGS=${ACLOCAL_FLAGS}
+fi
 
-export XLOCAL=${XMINGW}/local
-export XLIBRARY=${XLOCAL}/libs
-export XLIBRARY_SET=${XLIBRARY}/default_set
+case "${XMINGW_PLATFORM}" in
+win32)
+	TARGET=i686-pc-mingw32
+	;;
+win64)
+	TARGET=x86_64-w64-mingw32
+	;;
+esac
+export TARGET
 
-export TARGET=mingw32
 #__prefix=/usr/bin/i586-mingw32msvc-
 #__prefix=${XMINGW}/bin/
 #export AR="${__prefix}ar"
@@ -43,5 +71,27 @@ export TARGET=mingw32
 
 export BUILD_CC="${XMINGW}/bin/build-cc "
 
+export XLOCAL=${XMINGW}/local
+
+case "${XMINGW_PLATFORM}" in
+win32)
+	XMINGW_BIN=${XMINGW}/bin
+	;;
+win64)
+	XMINGW_BIN=${XMINGW}/bin64
+	;;
+esac
+export XMINGW_BIN
+
+case "${XMINGW_PLATFORM}" in
+win32)
+	XLIBRARY=${XLOCAL}/libs
+	;;
+win64)
+	XLIBRARY=${XLOCAL}/libs64
+	;;
+esac
+export XLIBRARY
+export XLIBRARY_SET=${XLIBRARY}/default_set
 
 

@@ -3,33 +3,41 @@
 
 # license: Apatche v2.0
 
-if [ "" = "${XMINGW}" ]
+if [ "" = "${IN_PACKAGE_SCRIPT}" ]
 then
-	echo fail: XMINGW 環境で実行してください。
+	echo FAIL: \${XMINGW}/package から実行してください。
 	exit 1
 fi
-. ${XMINGW}/scripts/build_lib.func
 
 
-MOD=gettext
-VER=0.18.2
-REV=1
-ARCH=win32
+# ARCH は package が設定している。
+# XLIBRARY_SOURCES は xmingw のための環境変数鵜。 env.sh で設定している。
+init_var() {
+	# package に返す変数。
+	MOD=gettext
+	if [ "" = "${VER}" ]
+	then
+	VER=0.18.2
+	REV=1
+	fi
+	DIRECTORY="${MOD}-${VER}"
 
-ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/text"
-ARCHIVE="${MOD}-${VER}"
-DIRECTORY="${MOD}-${VER}"
+	# 内部で使用する変数。
+	__ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/text"
+	__ARCHIVE="${MOD}-${VER}"
+}
 
-THIS=${MOD}-${VER}-${REV}_${ARCH}
-
-HEX=`echo ${THIS} | md5sum | cut -d' ' -f1`
-INSTALL_TARGET=${XLIBRARY_TEMP}/${HEX}
-
+dependencies() {
+	cat <<EOS
+libiconv
+EOS
+	# optional なライブラリーは DEPENDENCIES 参照。
+}
 
 run_expand_archive() {
 local name
-	name=`find_archive "${ARCHIVEDIR}" ${ARCHIVE}` &&
-	expand_archive "${ARCHIVEDIR}/${name}"
+	name=`find_archive "${__ARCHIVEDIR}" ${__ARCHIVE}` &&
+	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
 pre_configure() {
@@ -37,7 +45,6 @@ pre_configure() {
 }
 
 run_configure() {
-	#lt_cv_deplibs_check_method='pass_all' \
 	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
@@ -62,7 +69,7 @@ pre_pack() {
 	echo skip > /dev/null
 }
 
-run_pack_archive() {
+run_pack() {
 	cd "${INSTALL_TARGET}" &&
 	# gettext-runtime
 	RBINZIP=${MOD}-runtime-${VER}-${REV}-bin_${ARCH} &&
@@ -81,36 +88,4 @@ run_pack_archive() {
 	store_packed_archive "${TTOOLSZIP}"
 }
 
-
-(
-
-set -x
-
-#DEPS=`latest --arch=${ARCH} glib libcroco libiconv libxml2`
-
-#GETTEXT_RUNTIME=`latest --arch=${ARCH} gettext-runtime`
-
-#for D in $DEPS; do
-#    PATH="/devel/dist/${ARCH}/$D/bin:$PATH"
-#    PKG_CONFIG_PATH=/devel/dist/${ARCH}/$D/lib/pkgconfig:$PKG_CONFIG_PATH
-#done
-
-run_expand_archive &&
-cd "${DIRECTORY}" &&
-pre_configure &&
-run_configure &&
-post_configure &&
-
-pre_make &&
-run_make &&
-
-pre_pack &&
-run_pack_archive &&
-
-echo success completed.
-
-) 2>&1 | tee ${PWD}/${THIS}.log
-
-
-echo done.
 

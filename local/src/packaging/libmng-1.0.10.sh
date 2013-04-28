@@ -3,37 +3,61 @@
 
 # license: Apatche v2.0
 
-if [ "" = "${XMINGW}" ]
+if [ "" = "${IN_PACKAGE_SCRIPT}" ]
 then
-	echo fail: XMINGW 環境で実行してください。
+	echo FAIL: \${XMINGW}/package から実行してください。
 	exit 1
 fi
-. ${XMINGW}/scripts/build_lib.func
 
 
-MOD=libmng
-VER=1.0.10
-REV=1
-ARCH=win32
+# ARCH は package が設定している。
+# XLIBRARY_SOURCES は xmingw のための環境変数鵜。 env.sh で設定している。
+init_var() {
+	# cross に渡す変数。
+	XLIBRARY_SET=${XLIBRARY}/gimp_build_set
 
-ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/pic"
-ARCHIVE="${MOD}-${VER}"
-DIRECTORY="${MOD}-${VER}"
+	# package に返す変数。
+	MOD=libmng
+	if [ "" = "${VER}" ]
+	then
+	VER=1.0.10
+	REV=1
+	fi
+	DIRECTORY="${MOD}-${VER}"
 
-THIS=${MOD}-${VER}-${REV}_${ARCH}
+	# 内部で使用する変数。
+	__ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/pic"
+	__ARCHIVE="${MOD}-${VER}"
 
-BINZIP=${MOD}-${VER}-${REV}-bin_${ARCH}
-DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCH}
-TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCH}
+	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCH}
+	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCH}
+	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCH}
+}
 
-HEX=`echo ${THIS} | md5sum | cut -d' ' -f1`
-INSTALL_TARGET=${XLIBRARY_TEMP}/${HEX}
+dependencies() {
+	cat <<EOS
+zlib
+EOS
+}
 
+optional_dependencies() {
+	cat <<EOS
+jpeg
+lcms
+EOS
+}
+
+license() {
+	cat <<EOS
+libmng LICENSE
+
+EOS
+}
 
 run_expand_archive() {
 local name
-	name=`find_archive "${ARCHIVEDIR}" ${ARCHIVE}` &&
-	expand_archive "${ARCHIVEDIR}/${name}"
+	name=`find_archive "${__ARCHIVEDIR}" ${__ARCHIVE}` &&
+	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
 pre_configure() {
@@ -43,7 +67,7 @@ pre_configure() {
 }
 
 run_configure() {
-	CC='gcc -mtune=pentium4 -mthreads -msse -mno-sse2 ' \
+	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
@@ -56,60 +80,17 @@ post_configure() {
 #	echo skip > /dev/null
 }
 
-pre_make() {
-	echo skip > /dev/null
-}
-
 run_make() {
 	${XMINGW}/cross make install
 }
 
-pre_pack() {
-	echo skip > /dev/null
-}
-
-run_pack_archive() {
+run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${BINZIP}" bin/*.dll &&
-	pack_archive "${DEVZIP}" include lib/*.{def,a} share/man/man{3,5} # lib/pkgconfig &&
-#	pack_archive "${TOOLSZIP}" bin/*.{exe,manifest,local} &&
-	store_packed_archive "${BINZIP}" &&
-	store_packed_archive "${DEVZIP}" #&&
-#	store_packed_archive "${TOOLSZIP}"
+	pack_archive "${__BINZIP}" bin/*.dll &&
+	pack_archive "${__DEVZIP}" include lib/*.{def,a} share/man/man{3,5} &&
+	store_packed_archive "${__BINZIP}" &&
+	store_packed_archive "${__DEVZIP}"
 }
 
 
-(
-
-set -x
-
-XLIBRARY_SET=${XLIBRARY}/gimp_build_set
-
-#DEPS=`latest --arch=${ARCH} zlib jpeg lcms`
-
-#GETTEXT_RUNTIME=`latest --arch=${ARCH} gettext-runtime`
-
-#for D in $DEPS; do
-#    PATH="/devel/dist/${ARCH}/$D/bin:$PATH"
-#    PKG_CONFIG_PATH=/devel/dist/${ARCH}/$D/lib/pkgconfig:$PKG_CONFIG_PATH
-#done
-
-run_expand_archive &&
-cd "${DIRECTORY}" &&
-pre_configure &&
-run_configure &&
-post_configure &&
-
-pre_make &&
-run_make &&
-
-pre_pack &&
-run_pack_archive &&
-
-echo success completed.
-
-) 2>&1 | tee ${PWD}/${THIS}.log
-
-
-echo done.
 

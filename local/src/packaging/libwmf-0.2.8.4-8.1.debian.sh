@@ -1,42 +1,81 @@
-#!/use/bin/bash
-if [ "" = "${XMINGW}" ]
+#!/bin/bash
+# vim: tabstop=4 fileformat=unix fileencoding=utf-8 filetype=sh
+
+# license: Apatche v2.0
+
+if [ "" = "${IN_PACKAGE_SCRIPT}" ]
 then
-	echo fail: XMINGW 環境で実行してください。
+	echo FAIL: \${XMINGW}/package から実行してください。
 	exit 1
 fi
-. ${XMINGW}/scripts/build_lib.func
-
-#XLIBRARY_SET=${XLIBRARY}/gimp_build_set
 
 
-MOD=libwmf
-VER=0.2.8.4
-REV=8.1.debian
-ARCH=win32
+# ARCH は package が設定している。
+# XLIBRARY_SOURCES は xmingw のための環境変数鵜。 env.sh で設定している。
+init_var() {
+	# package に返す変数。
+	MOD=libwmf
+	if [ "" = "${VER}" ]
+	then
+	VER=0.2.8.4
+	REV=1
+	PATCH=8.1.debian
+	fi
+	DIRECTORY="${MOD}-${VER}"
 
-ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/pic"
-ARCHIVE="${MOD}-${VER} ${MOD}_${VER}.orig"
-DIRECTORY="${MOD}-${VER}"
-LIBNAME="libwmf"
+	# 内部で使用する変数。
+	__LIBNAME="libwmf"
 
-THIS=${MOD}-${VER}-${REV}_${ARCH}
+	__ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/pic"
+	__ARCHIVE="${MOD}-${VER}"
+	__PATCH_ARCHIVE="${MOD}_${VER}-${PATCH}"
 
-BINZIP=${MOD}-${VER}-${REV}-bin_${ARCH}
-DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCH}
-TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCH}
+	__BINZIP=${MOD}-${VER}-${PATCH}-${REV}-bin_${ARCH}
+	__DEVZIP=${MOD}-dev-${VER}-${PATCH}-${REV}_${ARCH}
+	__TOOLSZIP=${MOD}-${VER}-${PATCH}-${REV}-tools_${ARCH}
+}
 
-HEX=`echo ${THIS} | md5sum | cut -d' ' -f1`
-INSTALL_TARGET=${XLIBRARY_TEMP}/${HEX}
+# libxml2 のかわりに expat が使える。
+dependencies() {
+	cat <<EOS
+freetype2
+libpng
+libxml2
+zlib
+EOS
+}
 
+optional_dependencies() {
+	cat <<EOS
+gd
+gdk-pixbuf
+glib
+jpeg
+plot
+EOS
+}
+
+license() {
+	cat <<EOS
+GNU GENERAL PUBLIC LICENSE
+Version 2, June 1991
+EOS
+}
 
 run_expand_archive() {
 local name
-	name=`find_archive "${ARCHIVEDIR}" ${ARCHIVE}` &&
-	expand_archive "${ARCHIVEDIR}/${name}" &&
-	(cd ${DIRECTORY} &&
-	 expand_archive "${ARCHIVEDIR}/`echo \"${name}\" | sed -e 's/\.orig.\+$//'`-${REV}.tar.gz" &&
-	 for p in debian/patches/*.patch; do patch -p 1 -i $p; done
-	 )
+	name=`find_archive "${__ARCHIVEDIR}" ${__ARCHIVE}` &&
+	expand_archive "${__ARCHIVEDIR}/${name}" &&
+	name=`find_archive "${__ARCHIVEDIR}" ${__ARCHIVE}` &&
+	expand_archive "${__ARCHIVEDIR}/${name}" &&
+	cd "${DIRECTORY}" &&
+	name=`find_archive "${__ARCHIVEDIR}" ${__PATCH_ARCHIVE}` &&
+	expand_archive "${__ARCHIVEDIR}/${name}" &&
+	for fl in `cat debian/patches/series`
+	do
+		patch --batch -p 1 -i debian/patches/${fl}
+	done &&
+	cd ..
 }
 
 pre_configure() {
@@ -70,11 +109,9 @@ run_configure() {
 }
 
 post_configure() {
-	echo skip > /dev/null
-}
-
-pre_make() {
-	echo skip > /dev/null
+	# win64 のための処理。
+	# libtool が x86 ではない *.dll.a ファイルを static と誤認するため。
+	bash ${XMINGW}/replibtool.sh mix
 }
 
 run_make() {
@@ -82,48 +119,19 @@ run_make() {
 }
 
 pre_pack() {
-local NAME="${INSTALL_TARGET}/bin/${LIBNAME}-config"
+local NAME="${INSTALL_TARGET}/bin/${__LIBNAME}-config"
 	sed -i -e "s#^\s*\(prefix=\).*${INSTALL_TARGET}\$#\1\`dirname \$0\`/..#" "${NAME}"
 }
 
-run_pack_archive() {
+run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${BINZIP}" bin/*.dll share/libwmf `find lib -name \*.dll` &&
-	pack_archive "${DEVZIP}" bin/libwmf-config include `find lib -name \*.a` &&
-	pack_archive "${TOOLSZIP}" bin/*.{exe,manifest,local} bin/libwmf-fontmap &&
-	store_packed_archive "${BINZIP}" &&
-	store_packed_archive "${DEVZIP}" &&
-	store_packed_archive "${TOOLSZIP}"
+	pack_archive "${__BINZIP}" bin/*.dll share/libwmf `find lib -name \*.dll` &&
+	pack_archive "${__DEVZIP}" bin/libwmf-config include `find lib -name \*.a` &&
+	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} bin/libwmf-fontmap &&
+	store_packed_archive "${__BINZIP}" &&
+	store_packed_archive "${__DEVZIP}" &&
+	store_packed_archive "${__TOOLSZIP}"
 }
 
 
-(
-
-set -x
-
-#DEPS=`latest --arch=${ARCH} freetype2 libjpeg libpng libxml2 zlib`
-
-#for D in $DEPS; do
-#    PATH="/devel/dist/${ARCH}/$D/bin:$PATH"
-#    PKG_CONFIG_PATH=/devel/dist/${ARCH}/$D/lib/pkgconfig:$PKG_CONFIG_PATH
-#done
-
-run_expand_archive &&
-cd "${DIRECTORY}" &&
-pre_configure &&
-run_configure &&
-post_configure &&
-
-pre_make &&
-run_make &&
-
-pre_pack &&
-run_pack_archive &&
-
-echo success completed.
-
-) 2>&1 | tee ${PWD}/${THIS}.log
-
-
-echo done.
 

@@ -16,6 +16,7 @@ do
   for f in `find "${dir}" -type f -name \*.pc`
   do
     if grep 'prefix=.*' "${f}" >/dev/null 2>&1; then
+#      echo "try ${f}"
       cat "${f}" | sed -e "s&^prefix=.*&prefix=${pre}&" > "${f}.rep"
       mv "${f}.rep" "${f}"
     fi

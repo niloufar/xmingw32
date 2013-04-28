@@ -1,35 +1,48 @@
-#!/use/bin/bash
-if [ "" = "${XMINGW}" ]
+#!/bin/bash
+# vim: tabstop=4 fileformat=unix fileencoding=utf-8 filetype=sh
+
+# license: Apatche v2.0
+
+if [ "" = "${IN_PACKAGE_SCRIPT}" ]
 then
-	echo fail: XMINGW 環境で実行してください。
+	echo FAIL: \${XMINGW}/package から実行してください。
 	exit 1
 fi
-. ${XMINGW}/scripts/build_lib.func
 
 
-MOD=fontconfig
-VER=2.10.91
-REV=1
-ARCH=win32
+# ARCH は package が設定している。
+# XLIBRARY_SOURCES は xmingw のための環境変数鵜。 env.sh で設定している。
+init_var() {
+	# package に返す変数。
+	MOD=fontconfig
+	if [ "" = "${VER}" ]
+	then
+	VER=2.10.91
+	REV=1
+	fi
+	DIRECTORY="${MOD}-${VER}"
 
-ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/pic"
-ARCHIVE="${MOD}-${VER}"
-DEBPATCH="${MOD}_${VER}-${REV}.diff.gz"
-DIRECTORY="${MOD}-${VER}"
+	# 内部で使用する変数。
+	__ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/pic"
+	__ARCHIVE="${MOD}-${VER}"
 
-THIS=${MOD}-${VER}-${REV}_${ARCH}
+	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCH}
+	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCH}
+	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCH}
+}
 
-BINZIP=${MOD}-${VER}-${REV}-bin_${ARCH}
-DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCH}
-TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCH}
-
-HEX=`echo ${THIS} | md5sum | cut -d' ' -f1`
-INSTALL_TARGET=${XLIBRARY_TEMP}/${HEX}
+dependencies() {
+	cat <<EOS
+freetype2
+libiconv
+libxml2
+EOS
+}
 
 
 run_expand_archive() {
-	name=`find_archive "${ARCHIVEDIR}" ${ARCHIVE}` &&
-	expand_archive "${ARCHIVEDIR}/${name}"
+	name=`find_archive "${__ARCHIVEDIR}" ${__ARCHIVE}` &&
+	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
 pre_configure() {
@@ -38,7 +51,6 @@ pre_configure() {
 
 run_configure() {
 	CC="gcc `${XMINGW}/cross --archcflags`" \
-	CC_FOR_BUILD="build-cc" \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,-s" \
@@ -46,60 +58,18 @@ run_configure() {
 	${XMINGW}/cross-configure --enable-libxml2 --with-arch=mingw32 --prefix="${INSTALL_TARGET}"
 }
 
-post_configure() {
-	echo skip > /dev/null
-}
-
-pre_make() {
-	echo skip > /dev/null
-}
-
 run_make() {
 	${XMINGW}/cross make install
 }
 
-pre_pack() {
-	echo skip > /dev/null
-}
-
-run_pack_archive() {
+run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${BINZIP}" bin/*.dll etc &&
-	pack_archive "${DEVZIP}" include lib/*.{a,def} lib/pkgconfig share/doc share/man/man{3,5} &&
-	pack_archive "${TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 &&	store_packed_archive "${BINZIP}" &&
-	store_packed_archive "${DEVZIP}" &&
-	store_packed_archive "${TOOLSZIP}"
+	pack_archive "${__BINZIP}" bin/*.dll etc &&
+	pack_archive "${__DEVZIP}" include lib/*.{a,def} lib/pkgconfig share/doc share/man/man{3,5} &&
+	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 &&
+	store_packed_archive "${__BINZIP}" &&
+	store_packed_archive "${__DEVZIP}" &&
+	store_packed_archive "${__TOOLSZIP}"
 }
 
-
-
-(
-
-set -x
-
-#DEPS=`latest --arch=${ARCH} libxml2`
-
-#for D in $DEPS; do
-#    PATH="/devel/dist/${ARCH}/$D/bin:$PATH"
-#    PKG_CONFIG_PATH=/devel/dist/${ARCH}/$D/lib/pkgconfig:$PKG_CONFIG_PATH
-#done
-
-run_expand_archive &&
-cd "${DIRECTORY}" &&
-pre_configure &&
-run_configure &&
-post_configure &&
-
-pre_make &&
-run_make &&
-
-pre_pack &&
-run_pack_archive &&
-
-echo success completed.
-
-) 2>&1 | tee ${PWD}/${THIS}.log
-
-
-echo done.
 

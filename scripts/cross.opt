@@ -6,7 +6,7 @@
 __SCRIPT_NAME=`basename "$0"`
 
 __version() {
-  echo "0.1.1"
+  echo "0.1.2"
 }
 __usage() {
   echo "usage: ${__SCRIPT_NAME} [option] [--] [command arguments...]"
@@ -14,12 +14,13 @@ __usage() {
 __help() {
   __usage
   echo "
-  --libset        library directories.
+  --archcflags    アーキテクチャ関係のコンパイルオプション。
   --cflags        cflags.
-  --archcflags    アーキテクチャ関係のコンパイルオプション。x86_64_gcc で mingw32 をコンパイルするための cflags を含む。
   --ldflags       ldflags.
+  --libset        library directories.
+
   -h  --help      show this message.
-      --version   print the version.
+  --version       print the version.
 "
 }
 
@@ -27,18 +28,24 @@ RESULT=""
 while [ 0 -lt $# ]
 do
   case "$1" in
-  --libset)
-    RESULT="`echo \"${XMINGW_LIBRARY_ROOT}\" | sed -e 's/:/\n/g'`"
+  --archcflags)
+    if [ "win64" = "${XMINGW_PLATFORM}" ]
+    then
+      RESULT="${RESULT} ${XMINGW_ARCHCFLAGS_X64}"
+    else
+      RESULT="${RESULT} ${XMINGW_ARCHCFLAGS}"
+    fi
     ;;
   --cflags)
     RESULT="${RESULT} ${XMINGW_CFLAGS}"
     ;;
-  --archcflags)
-    RESULT="${RESULT} ${XMINGW_ARCHCFLAGS}"
-    ;;
   --ldflags)
     RESULT="${RESULT} ${XMINGW_LDFLAGS}"
     ;;
+  --libset)
+    RESULT="`echo \"${XMINGW_LIBRARY_ROOT}\" | sed -e 's/:/\n/g'`"
+    ;;
+
   -h|--help)
     __help
     exit 1;;

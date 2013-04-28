@@ -74,18 +74,6 @@ pack_archive() {
 	return $?
 }
 
-success_completed() {
-	local NAME=$1
-	local BUILDSCRIPT=$2
-	local LOG=$3
-	local directory="src/`${whoami}`/packaging"
-	echo success completed.
-	mkdir -p ${directory} &&
-	cp "${BUILDSCRIPT}" "${LOG}" "${directory}/." &&
-	7z a "${NAME}.7z" -mmt -mx9 "${directory}"
-	return $?
-}
-
 store_packed_archive() {
 	local NAME=$1
 	mv "${NAME}.7z" "${XLIBRARY_ARCHIVES}/."
