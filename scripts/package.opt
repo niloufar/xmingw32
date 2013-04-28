@@ -1,0 +1,87 @@
+# vim: tabstop=4 fileformat=unix fileencoding=utf-8 filetype=sh
+
+# license: Apatche v2.0
+
+__SCRIPT_NAME=`basename "$0"`
+
+__version() {
+	echo "0.1.0"
+}
+__usage() {
+	echo "usage: ${__SCRIPT_NAME} [option] package-version"
+}
+__help() {
+	__usage
+	echo "
+  --deps
+  --dependencies  print dependencies.
+  --optdeps
+  --optional-dependencies
+                  print optional dependencies.
+  --license       license.
+  --range top [bottom]
+                  処理を行う範囲。pre_, run_, post_ を指定できる。
+                  expand_archive, configure, make, make_test, pack.
+
+  -h  --help      show this message.
+  --version       print the version.
+"
+}
+
+package=
+range_top=
+range_bottom=
+mode=build
+while [ 0 -lt $# ]
+do
+	case "$1" in
+	--deps|--dependencies)
+		mode=dependencies
+		;;
+	--optdeps|--optional-dependencies)
+		mode=optional-dependencies
+		;;
+	--license|--licence)
+		mode=license
+		;;
+	--range)
+		range_top=$2
+		shift
+		range_bottom=
+		if [ "-" != "`echo \"$2\" | sed -e 's/^\(.\).*/\1/'`" ]
+		then
+			range_bottom=$2
+			shift
+		fi
+		;;
+	-h|--help)
+		__help
+		exit 1
+		;;
+	--version)
+		__version
+		exit 0
+		;;
+	--)
+		shift
+		break
+		;;
+	-*|--*)
+		echo "${__SCRIPT_NAME}: unsupported option \`$1'."
+		echo "${__SCRIPT_NAME}: try \`${__SCRIPT_NAME} --help' for more information."
+		exit 1
+		;;
+	*)
+		package=$1
+		;;
+	esac
+	shift
+done
+
+if [ "" = "${package}" ]
+then
+	echo "${__SCRIPT_NAME}: パッケージ名を指定してください."
+	exit 1
+fi
+
+

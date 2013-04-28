@@ -1,0 +1,95 @@
+#!/bin/bash
+# vim: tabstop=4 fileformat=unix fileencoding=utf-8 filetype=sh
+
+# license: Apatche v2.0
+
+#PREFIX=/usr/xmingw/xmingw32
+PREFIX=`dirname "$0"`
+if [ "" = "${XMINGW}" ]
+then
+	. "${PREFIX}/scripts/env.sh"
+fi
+
+if [ ! "" = "${IN_CROSS_SCRIPT}" ]
+then
+	__fail_exit "\${XMINGW}/cross から実行しないでください。不具合が紛れ込むおそれがあります。"
+fi
+
+PREFIX=${XMINGW}
+. "${PREFIX}/scripts/package_lib.func"
+. "${PREFIX}/scripts/build_lib.func"
+
+# 引数を処理する。
+. "${PREFIX}/scripts/package.opt"
+
+IN_PACKAGE_SCRIPT="#"
+
+# win32 or win64
+ARCH=${XMINGW_PLATFORM}
+
+# ビルド スクリプトをカレント コンテキストに読み込む。
+buildscript=${package}.sh
+if [ ! -f ${buildscript} ]
+then
+	__fail_exit "ビルド スクリプト ``${buildscript}'' が見つかりません。"
+fi
+. ${package}.sh
+
+MOD=		# module name
+VER=		# version
+REV=		# 1
+DIRECTORY=	# "${MOD}-${VER}"
+PATCH=		# debian patch ( optional )
+init_var
+
+# 処理に必要な変数が定義されているかチェックする。
+valid=true
+for var in MOD VER REV DIRECTORY
+do
+	if [ "" = "`eval echo \`echo \\$\{${var}\}\``" ]
+	then
+		echo "${var} 変数に値を設定してください。"
+		valid=false
+	fi
+done
+if [ ! "true" = "${valid}" ]
+then
+	__fail_exit "ビルド スクリプトに不備があります。"
+fi
+
+# ユニーク名。仮インストール先のディレクトリ名と log ファイル名に使用している。
+if [ "" = "${PATCH}" ]
+then
+	THIS=${MOD}-${VER}-${REV}_${ARCH}
+else
+	THIS=${MOD}-${VER}-${PATCH}-${REV}_${ARCH}
+fi
+
+# 仮インストール先のディレクトリ名
+HEX=`echo "${THIS}" | md5sum | cut -d' ' -f1`
+INSTALL_TARGET=${XLIBRARY_TEMP}/${HEX}
+
+
+case ${mode} in
+dependencies)
+	dependencies
+	exit $?
+	;;
+optional-dependencies)
+	optional_dependencies
+	exit $?
+	;;
+license)
+	license
+	exit $?
+	;;
+build)
+	. "${PREFIX}/scripts/package.build"
+	;;
+*)
+	echo "INTERNALERROR: サポートしていない処理モード ${mode} を要求しました。 package 関連スクリプトに不整合があります。"
+	exit 255
+	;;
+esac
+
+

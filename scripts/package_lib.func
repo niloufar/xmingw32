@@ -1,0 +1,87 @@
+#!/bin/bash
+# vim: tabstop=4 fileformat=unix fileencoding=utf-8 filetype=sh
+
+# license: Apatche v2.0
+
+# --range オプションの処理。
+# working	yes or ""
+__work_range() {
+local work=$1
+	if [ "" = "${range_top}" -o "${work}" = "${range_top}" ]
+	then
+		working=yes
+	fi
+	if [ "${work}" = "${range_bottom}" ]
+	then
+		working=
+	fi
+}
+
+# 関数が存在するか調べる。
+__defined() {
+local name=$1
+local result
+	if type -t ${name} >/dev/null
+	then
+		result=0
+	else
+		result=1
+	fi
+# echo result: ${result}
+	return ${result}
+}
+
+# prefix が pre, run, post になっている関数を実行する。
+# suffix が ${ARCH} の関数があればそちらを優先する。
+__prerunpost() {
+local name=$1
+local step
+local func
+	# prefix のない関数から始める/終わる。
+	__work_range ${name}
+
+	for step in pre run post
+	do
+		func=${step}_${name}
+
+		# prefix のある関数から始める/終わる。
+		__work_range ${func}
+
+		# working はグローバル変数。
+		if [ ! "yes" = "${working}" ]
+		then
+			continue
+		fi
+
+		# アーキテクチャに特化した関数があればそちらを優先する。
+		if __defined ${func}_${ARCH}
+		then
+			func=${func}_${ARCH}
+		fi
+
+		if __defined ${func}
+		then
+			eval ${func}
+			if [ ! 0 -eq $? ]
+			then
+				return 1
+			fi
+		fi
+	done
+	return 0
+}
+
+# message=$1
+# exit_code=$2
+__fail_exit() {
+	echo "FAIL: $1"
+	echo "ビルドを中止します。"
+	if [ "" = "$2" ]
+	then
+		exit $2
+	else
+		exit 1
+	fi
+}
+
+

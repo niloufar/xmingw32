@@ -1,0 +1,29 @@
+#!/bin/bash
+# vim: tabstop=4 fileformat=unix fileencoding=utf-8 filetype=sh
+
+# license: Apatche v2.0
+
+if [ "" != "${XMINGW}"]
+then
+export PATH=${XMINGW_ORIG_PATH}
+export CC=${XMINGW_ORIG_CC}
+export CXX=${XMINGW_ORIG_CXX}
+export PKG_CONFIG_PATH=${XMINGW_ORIG_PKG_CONFIG_PATH}
+export LD_LIBRARY_PATH=${XMINGW_ORIG_LD_LIBRARY_PATH}
+export MANPATH=${XMINGW_ORIG_MANPATH}
+export INFOPATH=${XMINGW_ORIG_INFOPATH}
+export C_INCLUDE_PATH=${XMINGW_ORIG_C_INCLUDE_PATH}
+export CPLUS_INCLUDE_PATH=${XMINGW_ORIG_CPLUS_INCLUDE_PATH}
+export LIBRARY_PATH=${XMINGW_ORIG_LIBRARY_PATH}
+else
+	# これが実行されることはないはず。
+	echo "WARRNING: XMINGW 環境のそとで実行しています。このスクリプトは、 XMINGW 環境下でホスト環境を再設定しプログラムを実行します。"
+fi
+
+export IN_CROSS_HOST_SCRIPT="#"
+
+prog="$1"
+shift
+${prog} "$@"
+
+

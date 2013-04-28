@@ -1,0 +1,49 @@
+# vim: tabstop=4 fileformat=unix fileencoding=utf-8 filetype=sh
+
+# license: Apatche v2.0
+
+
+# --range のための変数。
+working=
+
+# 本処理。処理内容をログに記録するためコマンドをエコーしている。
+set -x
+
+{
+
+# アーカイブを展開する。
+# すでにディレクトリーが存在している場合は警告する。
+if [ -d "${DIRECTORY}" ]
+then
+	echo "WARRING: 古い、展開されたディレクトリー ``${DIRECTORY}'' が存在します。ビルドに不具合が紛れ込む可能性があります。ビルドを中止し、ディレクトリーを削除してから、再度ビルドを試みることをおすすめします。"
+fi
+__prerunpost expand_archive
+if [ ! 0 -eq $? ]
+then
+	__fail_exit "ソース アーカイブを発見できませんでした。"
+fi
+cd ${DIRECTORY}
+if [ ! 0 -eq $? ]
+then
+	__fail_exit "ソース ディレクトリーに移動できません。ソース アーカイブの解凍に失敗した、もしくはビルドスクリプトの設定が間違っています。"
+fi
+
+for work in configure make make_test pack
+do
+	pre=${working}
+
+	__prerunpost ${work}
+	if [ ! 0 -eq $? ]
+	then
+		__fail_exit "ビルド プロセスでエラーが発生しました。"
+	fi
+done
+
+echo SUCCESS COMPLETED.
+
+# ログの出力場所は再考した方が良さそう。 fixme
+} 2>&1 | tee ${PWD}/${THIS}.log
+
+echo done.
+
+
