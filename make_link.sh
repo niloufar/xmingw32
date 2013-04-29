@@ -34,13 +34,13 @@ do
 	sym="${destination}/${fl}"
 	rl="${source}/${chost}-${fl}"
 	make_symlink "${sym}" "${rl}"
-	sym="${destination}/${TARGET}-${fl}"
+	sym="${destination}/${chost}-${fl}"
 	make_symlink "${sym}" "${rl}"
 
 	sym="${destination64}/${fl}"
 	rl="${source}/${chost64}-${fl}"
 	make_symlink "${sym}" "${rl}"
-	sym="${destination64}/${TARGET}-${fl}"
+	sym="${destination64}/${chost64}-${fl}"
 	make_symlink "${sym}" "${rl}"
 done <<- EOS
 ar
