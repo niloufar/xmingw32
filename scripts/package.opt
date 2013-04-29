@@ -5,7 +5,7 @@
 __SCRIPT_NAME=`basename "$0"`
 
 __version() {
-	echo "0.1.0"
+	echo "0.1.1"
 }
 __usage() {
 	echo "usage: ${__SCRIPT_NAME} [option] package-version"
@@ -31,6 +31,8 @@ __help() {
 package=
 range_top=
 range_bottom=
+opt_ver=
+opt_rev=1
 mode=build
 while [ 0 -lt $# ]
 do
@@ -53,6 +55,22 @@ do
 			range_bottom=$2
 			shift
 		fi
+		;;
+	-D)
+		k=`echo "${2}" | sed -e's/^\(\w\+\)=.*/\1/'`
+		v=`echo "${2}" | sed -e's/^\w\+=//'`
+		shift
+		case "${k}" in
+		VER)
+			opt_ver=${v}
+			;;
+		REV)
+			opt_rev=${v}
+			;;
+		*)
+			echo "${__SCRIPT_NAME}: 値を設定できる変数は VER, REV です。"
+			;;
+		esac
 		;;
 	-h|--help)
 		__help

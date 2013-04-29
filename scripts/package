@@ -40,6 +40,14 @@ VER=		# version
 REV=		# 1
 DIRECTORY=	# "${MOD}-${VER}"
 PATCH=		# debian patch ( optional )
+if [ ! "" = "${opt_ver}" ]
+then
+	VER=${opt_ver}
+fi
+if [ ! "" = "${opt_rev}" ]
+then
+	REV=${opt_rev}
+fi
 init_var
 
 # 処理に必要な変数が定義されているかチェックする。
