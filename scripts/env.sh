@@ -16,8 +16,8 @@ do
     XMINGW_PLATFORM=win64
     ;;
   -*|--*|*)
-    echo "$0: unsupported option \`$1'."
-#    echo "$0: try \`$0 --help' for more information."
+    echo "unsupported option \`$1'."
+#    echo "try \`$0 --help' for more information."
     return 1
     ;;
   esac
@@ -47,6 +47,10 @@ win32)
 	;;
 win64)
 	TARGET=x86_64-w64-mingw32
+	;;
+*)
+    echo "${LINENO}: INTERNAL ERROR: unsupported."
+    return 1
 	;;
 esac
 export TARGET
@@ -80,6 +84,10 @@ win32)
 win64)
 	XMINGW_BIN=${XMINGW}/bin64
 	;;
+*)
+    echo "${LINENO}: INTERNAL ERROR: unsupported."
+    return 1
+	;;
 esac
 export XMINGW_BIN
 
@@ -89,6 +97,10 @@ win32)
 	;;
 win64)
 	XLIBRARY=${XLOCAL}/libs64
+	;;
+*)
+    echo "${LINENO}: INTERNAL ERROR: unsupported."
+    return 1
 	;;
 esac
 export XLIBRARY
