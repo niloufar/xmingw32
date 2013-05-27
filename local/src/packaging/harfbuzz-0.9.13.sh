@@ -26,9 +26,9 @@ init_var() {
 	__ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/pic"
 	__ARCHIVE="${MOD}-${VER}"
 
-	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCH}
-	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCH}
-	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCH}
+	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
+	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
+	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 }
 
 dependencies() {
@@ -49,6 +49,13 @@ run_expand_archive() {
 local name
 	name=`find_archive "${__ARCHIVEDIR}" ${__ARCHIVE}` &&
 	expand_archive "${__ARCHIVEDIR}/${name}"
+}
+
+# XP のための特別な処理。
+pre_configure_xp() {
+	# Uniscribe ( usp10.dll ) を使用しない。 OpenType Font 関係。
+	# Vista 以降で追加された関数を使用しているため。
+	sed -i.orig -e 's/have_uniscribe=true/have_uniscribe=false/' configure
 }
 
 run_configure() {
