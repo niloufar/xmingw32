@@ -61,7 +61,7 @@ local func
 
 		if __defined ${func}
 		then
-			eval ${func}
+			(eval ${func})
 			if [ ! 0 -eq $? ]
 			then
 				return 1
