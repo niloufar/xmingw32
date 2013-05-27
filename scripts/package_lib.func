@@ -32,11 +32,13 @@ local result
 }
 
 # prefix が pre, run, post になっている関数を実行する。
-# suffix が ${ARCH} の関数があればそちらを優先する。
+# suffix が ${opt_os} や ${ARCH} の関数があればそちらを優先する。
 __prerunpost() {
 local name=$1
 local step
 local func
+local def
+local list
 	# prefix のない関数から始める/終わる。
 	__work_range ${name}
 
@@ -53,20 +55,25 @@ local func
 			continue
 		fi
 
-		# アーキテクチャに特化した関数があればそちらを優先する。
-		if __defined ${func}_${ARCH}
+		# OS、アーキテクチャに特化した関数があればそちらを優先する。
+		list="${func}_${ARCH} ${func}"
+		if [ ! -z "${opt_os}" ]
 		then
-			func=${func}_${ARCH}
+			list="${func}_${opt_os}_${ARCH} ${func}_${opt_os} ${list}"
 		fi
 
-		if __defined ${func}
-		then
-			(eval ${func})
-			if [ ! 0 -eq $? ]
+		for def in ${list}
+		do
+			if __defined ${def}
 			then
-				return 1
+				(eval ${def})
+				if [ ! 0 -eq $? ]
+				then
+					return 1
+				fi
+				break
 			fi
-		fi
+		done
 	done
 	return 0
 }

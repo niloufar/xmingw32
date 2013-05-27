@@ -33,6 +33,7 @@ range_top=
 range_bottom=
 opt_ver=
 opt_rev=1
+opt_os=
 mode=build
 while [ 0 -lt $# ]
 do
@@ -71,6 +72,10 @@ do
 			echo "${__SCRIPT_NAME}: 値を設定できる変数は VER, REV です。"
 			;;
 		esac
+		;;
+	--os)
+		opt_os=`echo "${2}" | sed -e's/^\([a-z0-9]*\).*/\1/'`
+		shift
 		;;
 	-h|--help)
 		__help

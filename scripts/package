@@ -26,6 +26,11 @@ IN_PACKAGE_SCRIPT="#"
 
 # win32 or win64
 ARCH=${XMINGW_PLATFORM}
+ARCHSUFFIX="${ARCH}"
+if [ ! -z "${opt_os}" ]
+then
+	ARCHSUFFIX="${opt_os}_${ARCHSUFFIX}"
+fi
 
 # ビルド スクリプトをカレント コンテキストに読み込む。
 buildscript=${package}.sh
@@ -68,9 +73,9 @@ fi
 # ユニーク名。仮インストール先のディレクトリ名と log ファイル名に使用している。
 if [ "" = "${PATCH}" ]
 then
-	THIS=${MOD}-${VER}-${REV}_${ARCH}
+	THIS=${MOD}-${VER}-${REV}_${ARCHSUFFIX}
 else
-	THIS=${MOD}-${VER}-${PATCH}-${REV}_${ARCH}
+	THIS=${MOD}-${VER}-${PATCH}-${REV}_${ARCHSUFFIX}
 fi
 
 # 仮インストール先のディレクトリ名

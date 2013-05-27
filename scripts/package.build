@@ -22,7 +22,7 @@ if [ ! 0 -eq $? ]
 then
 	__fail_exit "ソース アーカイブを発見できませんでした。"
 fi
-cd ${DIRECTORY}
+cd "${DIRECTORY}"
 if [ ! 0 -eq $? ]
 then
 	__fail_exit "ソース ディレクトリーに移動できません。ソース アーカイブの解凍に失敗した、もしくはビルドスクリプトの設定が間違っています。"
