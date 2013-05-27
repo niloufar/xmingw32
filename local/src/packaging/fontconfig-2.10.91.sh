@@ -26,9 +26,9 @@ init_var() {
 	__ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/pic"
 	__ARCHIVE="${MOD}-${VER}"
 
-	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCH}
-	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCH}
-	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCH}
+	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
+	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
+	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 }
 
 dependencies() {
@@ -41,12 +41,29 @@ EOS
 
 
 run_expand_archive() {
+local name
 	name=`find_archive "${__ARCHIVEDIR}" ${__ARCHIVE}` &&
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
-pre_configure() {
-	echo skip > /dev/null
+# XP のための特別な処理。
+pre_configure_xp() {
+	# XP の %windir%\system32\msvcrt.dll に _mktemp_s が定義されていない。
+	# Win7 には定義されている。
+	# configure で LDFLAGS に -lmsvcr100 を渡す方がよいのかもしれない。
+	patch --batch -p 0 <<EOF
+--- src/fccompat.c.orig
++++ src/fccompat.c
+@@ -96,7 +96,7 @@
+     }
+ #  endif
+ #elif HAVE__MKTEMP_S
+-   if (_mktemp_s(template, strlen(template) + 1) != 0)
++   if (_mktemp(template) != 0)
+        return -1;
+    fd = FcOpen(template, O_RDWR | O_EXCL | O_CREAT, 0600);
+ #else
+EOF
 }
 
 run_configure() {
