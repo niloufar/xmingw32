@@ -26,9 +26,9 @@ init_var() {
 	__ARCHIVEDIR="${XLIBRARY_SOURCES}/gtk+"
 	__ARCHIVE="${MOD}-${VER}"
 
-	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCH}
-	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCH}
-	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCH}
+	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
+	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
+	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 }
 
 dependencies() {
@@ -52,6 +52,13 @@ run_expand_archive() {
 local name
 	name=`find_archive "${__ARCHIVEDIR}" ${__ARCHIVE}` &&
 	expand_archive "${__ARCHIVEDIR}/${name}"
+}
+
+# win64 ビルドのための特別な処理。
+pre_configure_win64() {
+	# MinGW-w64 LD が PRIVATE キーワードを無視する(？)ため対処する。
+	# Ubuntu 12.04 および 13.04 の MinGW-w64 でエラーになる。
+	sed -i.orig -e 's/^.\+ PRIVATE$//' gtk/gtk.def
 }
 
 run_configure() {
