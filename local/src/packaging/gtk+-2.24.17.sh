@@ -54,13 +54,6 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
-# win64 ビルドのための特別な処理。
-pre_configure_win64() {
-	# MinGW-w64 LD が PRIVATE キーワードを無視する(？)ため対処する。
-	# Ubuntu 12.04 および 13.04 の MinGW-w64 でエラーになる。
-	sed -i.orig -e 's/^.\+ PRIVATE$//' gtk/gtk.def
-}
-
 run_configure() {
 	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
@@ -72,6 +65,16 @@ run_configure() {
 
 post_configure() {
 	bash ${XMINGW}/replibtool.sh
+}
+
+# win64 ビルドのための特別な処理。
+pre_make_win64() {
+	# README.win32 によると win64 ビルドは gtk/gtk.def を削除せよとのこと。
+	mv gtk/gtk.def gtk/gtk.def.off
+	# しかし Makefile の echo -e EXPORTS; が -e EXPORTS と出力しこける。
+	(cd gtk &&
+	${XMINGW}/cross make gtk.def &&
+	sed -i -e 's/^-e //' gtk.def)
 }
 
 run_make() {
