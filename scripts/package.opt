@@ -25,6 +25,11 @@ __help() {
 
   -h  --help      show this message.
   --version       print the version.
+
+参照する環境変数。
+XMINGW             Cross MinGW のルート。 env.sh で設定される。
+XMINGW_PLATFORM    OS のタイプ(win32, win64)。 env.sh で設定される。
+XLIBRARY          ライブラリー等のルート。 env.sh で設定される。
 "
 }
 
