@@ -18,6 +18,10 @@ fi
 PREFIX=${XMINGW}
 . "${PREFIX}/scripts/package_lib.func"
 . "${PREFIX}/scripts/build_lib.func"
+# export XLIBRARY_SOURCES=${XLOCAL}/src
+# export XLIBRARY_ARCHIVES=${XLOCAL}/archives
+# export XLIBRARY_TEMP=${XLOCAL}/src/build
+export XLIBRARY_PACKAGING=${XLIBRARY_SOURCES}/packaging
 
 # 引数を処理する。
 . "${PREFIX}/scripts/package.opt"
@@ -34,11 +38,22 @@ fi
 
 # ビルド スクリプトをカレント コンテキストに読み込む。
 buildscript=${package}.sh
-if [ ! -f ${buildscript} ]
+buildscript_path=
+for d in . ${XLIBRARY_PACKAGING}
+do
+	f="${d}/${buildscript}"
+	if [ -f ${f} ]
+	then
+		buildscript_path=${f}
+		break
+	fi
+done
+
+if [ "" = "${buildscript_path}" ]
 then
-	__fail_exit "ビルド スクリプト ``${buildscript}'' が見つかりません。"
+	__fail_exit "ビルド スクリプト ${buildscript} が見つかりません。"
 fi
-. ${package}.sh
+. "${buildscript_path}"
 
 MOD=		# module name
 VER=		# version
