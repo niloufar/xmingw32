@@ -4,28 +4,25 @@
 # license: Apatche v2.0
 
 cmd=`basename "$0" | sed -e 's/^build-//' | tr '[a-z]' '[A-Z]'`
-val=`eval echo \$\{${cmd}\}`
-if test "" = "${val}"
-then
-	case "${cmd}" in
-	CC)
-		val="`which cc`"
-		;;
-	CXX)
-		val="`which c++`"
-		;;
-	PKGCONFIG|PKG-CONFIG)
-		val="`which pkg-config`"
-		;;
-	*)
-		echo unsupported
-		exit 1
-	esac
-fi
+val=
+case "${cmd}" in
+CC)
+	val="`which cc`"
+	;;
+CXX)
+	val="`which c++`"
+	;;
+PKGCONFIG|PKG-CONFIG)
+	val="`which pkg-config`"
+	;;
+*)
+	echo unsupported
+	exit 1
+esac
 
 if [ "" != "${XMINGW}" ]
 then
-	${XMINGW}/cross-host ${val} "$@"
+	"${XMINGW}/cross-host" ${val} "$@"
 else
 	# これが実行されることはないはず。
 	echo "WARRNING: XMINGW 環境のそとで実行しています。このスクリプトは、 XMINGW 環境下でホスト環境を再設定しプログラムを実行します。"

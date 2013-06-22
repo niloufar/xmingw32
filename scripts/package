@@ -39,7 +39,7 @@ fi
 # ビルド スクリプトをカレント コンテキストに読み込む。
 buildscript=${package}.sh
 buildscript_path=
-for d in . ${XLIBRARY_PACKAGING}
+for d in . "${XLIBRARY_PACKAGING}"
 do
 	f="${d}/${buildscript}"
 	if [ -f ${f} ]

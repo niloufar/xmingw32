@@ -3,7 +3,7 @@
 
 # license: Apatche v2.0
 
-if [ "" != "${XMINGW}"]
+if [ "" != "${XMINGW}" ]
 then
 export PATH=${XMINGW_ORIG_PATH}
 export CC=${XMINGW_ORIG_CC}
