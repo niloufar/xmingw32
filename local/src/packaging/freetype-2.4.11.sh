@@ -26,9 +26,9 @@ init_var() {
 	__ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/pic"
 	__ARCHIVE="${MOD}-${VER}"
 
-	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCH}
-	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCH}
-	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCH}
+	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
+	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
+	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 }
 
 dependencies() {
@@ -42,6 +42,42 @@ run_expand_archive() {
 local name
 	name=`find_archive "${__ARCHIVEDIR}" ${__ARCHIVE}` &&
 	expand_archive "${__ARCHIVEDIR}/${name}"
+}
+
+# 2.5.0.1 の問題に対処する。
+pre_configure() {
+	(patch --batch --quiet -p 0 <<\EOF; return 0)
+--- builds/unix/unix-def.in.orig
++++ builds/unix/unix-def.in
+@@ -103,10 +103,10 @@
+ 	    -e 's|%LIBBZ2%|$(LIBBZ2)|' \
+ 	    -e 's|%LIBZ%|$(LIBZ)|' \
+ 	    -e 's|%build_libtool_libs%|$(build_libtool_libs)|' \
+-	    -e 's|%exec_prefix%|$(exec_prefix)|' \
++	    -e 's|%exec_prefix%|$${prefix}|' \
+ 	    -e 's|%ft_version%|$(ft_version)|' \
+-	    -e 's|%includedir%|$(includedir)|' \
+-	    -e 's|%libdir%|$(libdir)|' \
++	    -e 's|%includedir%|$${prefix}/include|' \
++	    -e 's|%libdir%|$${exec_prefix}/lib|' \
+ 	    -e 's|%prefix%|$(prefix)|' \
+ 	    $< \
+ 	    > $@.tmp
+@@ -120,10 +120,10 @@
+ 	    -e 's|%LIBBZ2%|$(LIBBZ2)|' \
+ 	    -e 's|%LIBZ%|$(LIBZ)|' \
+ 	    -e 's|%build_libtool_libs%|$(build_libtool_libs)|' \
+-	    -e 's|%exec_prefix%|$(exec_prefix)|' \
++	    -e 's|%exec_prefix%|$${prefix}|' \
+ 	    -e 's|%ft_version%|$(ft_version)|' \
+-	    -e 's|%includedir%|$(includedir)|' \
+-	    -e 's|%libdir%|$(libdir)|' \
++	    -e 's|%includedir%|$${prefix}/include|' \
++	    -e 's|%libdir%|$${exec_prefix}/lib|' \
+ 	    -e 's|%prefix%|$(prefix)|' \
+ 	    $< \
+ 	    > $@.tmp
+EOF
 }
 
 run_configure() {
@@ -64,6 +100,7 @@ run_make() {
 }
 
 pre_pack() {
+	# スクリプト内の prefix を置き換える。
 	sed -i -e 's#^\(prefix=\).*#\1\`dirname \$0\`/..#' "${INSTALL_TARGET}/bin/freetype-config"
 }
 

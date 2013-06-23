@@ -63,8 +63,8 @@ run_configure() {
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
-	CFLAGS="-pipe -fpic -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --disable-gtk-doc --disable-shared --enable-static --prefix="${INSTALL_TARGET}"
+	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
+	${XMINGW}/cross-configure --disable-shared --enable-static --prefix="${INSTALL_TARGET}" --with-uniscribe=auto
 }
 
 run_make() {
