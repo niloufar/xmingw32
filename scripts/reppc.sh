@@ -6,6 +6,7 @@
 PREFIX=`dirname "$0"`
 if [ "" = "${XMINGW}" ]
 then
+  echo "WARRNING: XMINGW 環境のそとで実行しています。 env.sh の既定の環境で実行します。"
   . "${PREFIX}/scripts/env.sh"
 fi
 
