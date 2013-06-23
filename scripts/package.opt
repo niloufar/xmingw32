@@ -73,8 +73,12 @@ do
 		REV)
 			opt_rev=${v}
 			;;
+		PATCH)
+			opt_patch=${v}
+			;;
 		*)
-			echo "${__SCRIPT_NAME}: 値を設定できる変数は VER, REV です。"
+			echo "${__SCRIPT_NAME}: 値を設定できる変数は VER, REV, PATCH です。"
+			exit 1
 			;;
 		esac
 		;;

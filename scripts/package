@@ -68,6 +68,10 @@ if [ ! "" = "${opt_rev}" ]
 then
 	REV=${opt_rev}
 fi
+if [ ! "" = "${opt_patch}" ]
+then
+	PATCH=${opt_patch}
+fi
 init_var
 
 # 処理に必要な変数が定義されているかチェックする。
