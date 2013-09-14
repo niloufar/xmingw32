@@ -97,9 +97,22 @@ else
 	THIS=${MOD}-${VER}-${PATCH}-${REV}_${ARCHSUFFIX}
 fi
 
+LOG_PATH="${PWD}/${THIS}.log"
+
 # 仮インストール先のディレクトリ名
 HEX=`echo "${THIS}" | md5sum | cut -d' ' -f1`
 INSTALL_TARGET=${XLIBRARY_TEMP}/${HEX}
+
+
+__print_path() {
+local PATH=$1
+#	if [ ! -e "${PATH}" ]
+#	then
+#		echo "# warning: file not exist." >&2
+#	fi
+	echo "${PATH}"
+	exit 0
+}
 
 
 case ${mode} in
@@ -114,6 +127,24 @@ optional-dependencies)
 license)
 	license
 	exit $?
+	;;
+archives)
+	# fixme: 簡易実装。
+	set | grep -e "^__[A-Z]\+ZIP" | while read var
+	do
+		arch=`echo "${var}" | sed -e "s/^.\+=//"`
+		echo "${arch}.7z"
+	done
+	exit 0
+	;;
+log-path)
+	__print_path "${LOG_PATH}"
+	;;
+script-path)
+	__print_path "${buildscript_path}"
+	;;
+install-path)
+	__print_path "${INSTALL_TARGET}"
 	;;
 build)
 	. "${PREFIX}/scripts/package.build"

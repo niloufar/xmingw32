@@ -52,6 +52,18 @@ do
 	--license|--licence)
 		mode=license
 		;;
+	--archives)
+		mode=archives
+		;;
+	--log-path)
+		mode=log-path
+		;;
+	--script-path)
+		mode=script-path
+		;;
+	--install-path)
+		mode=install-path
+		;;
 	--range)
 		range_top=$2
 		shift
