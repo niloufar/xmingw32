@@ -25,10 +25,10 @@ fi
 cd "${DIRECTORY}"
 if [ ! 0 -eq $? ]
 then
-	__fail_exit "ソース ディレクトリーに移動できません。ソース アーカイブの解凍に失敗した、もしくはビルドスクリプトの設定が間違っています。"
+	__fail_exit "ソース ディレクトリーに移動できません。ソース アーカイブの解凍に失敗した、もしくはビルド スクリプトの設定が間違っています。"
 fi
 
-for work in configure make make_test pack
+for work in patch configure make make_test make_example pack
 do
 	pre=${working}
 
@@ -39,11 +39,16 @@ do
 	fi
 done
 
-echo SUCCESS COMPLETED.
+if [ "" = "${working}" ]
+then
+	__fail_exit "ビルド プロセスを実行せず終了しました。"
+else
+	echo "SUCCESS COMPLETED."
+fi
 
 # ログの出力場所は再考した方が良さそう。 fixme
-} 2>&1 | tee ${PWD}/${THIS}.log
+} 2>&1 | tee "${LOG_PATH}"
 
-echo done.
+echo "done."
 
 
