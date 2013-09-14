@@ -21,12 +21,14 @@ init_var() {
 	then
 	VER=<VERSION>
 	REV=1
+#	PATCH=2.debian
 	fi
 	DIRECTORY="${MOD}-${VER}"
 
 	# 内部で使用する変数。
 	__ARCHIVEDIR="${XLIBRARY_SOURCES}/<SUBDIR>"
 	__ARCHIVE="${MOD}-${VER}"
+#	__PATCH_ARCHIVE="${MOD}_${VER}-${PATCH}"
 
 	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
 	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
@@ -52,6 +54,13 @@ run_expand_archive() {
 local name
 	name=`find_archive "${__ARCHIVEDIR}" ${__ARCHIVE}` &&
 	expand_archive "${__ARCHIVEDIR}/${name}"
+}
+
+run_patch() {
+local name
+	# name=`find_archive "${__ARCHIVEDIR}" ${__PATCH_ARCHIVE}` &&
+	# 	patch_debian "${__ARCHIVEDIR}/${name}"
+	echo skip > /dev/null
 }
 
 pre_configure() {
@@ -84,6 +93,14 @@ pre_make() {
 
 run_make() {
 	${XMINGW}/cross make all install
+}
+
+run_make_test() {
+	echo skip > /dev/null
+}
+
+run_make_example() {
+	echo skip > /dev/null
 }
 
 pre_pack() {
