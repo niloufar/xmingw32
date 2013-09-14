@@ -13,7 +13,7 @@ local base
 local tail
 local name
 	shift
-	for base in "$1" `echo $1 | sed -e's/-/_/' -e's/\$/.orig/'`
+	for base in "$1" `echo "$1" | sed -e's/-/_/' -e's/\$/.orig/'`
 	do
 		for tail in tar.gz tar.bz2 tar.xz tar.lzma zip 7z
 		do 
@@ -80,6 +80,15 @@ store_packed_archive() {
 	return $?
 }
 
+patch_debian() {
+local patch_archive=$1
+local patches_dir="debian/patches"
+	expand_archive "${patch_archive}" &&
+	for fl in `cat ${patches_dir}/series`
+	do
+		patch --batch -p 1 -i ${patches_dir}/${fl}
+	done
+}
 
 
 
