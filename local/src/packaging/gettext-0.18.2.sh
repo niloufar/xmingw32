@@ -76,7 +76,7 @@ run_pack() {
 	RDEVZIP=${MOD}-runtime-dev-${VER}-${REV}_${ARCH} &&
 #	pack_archive "${RBINZIP}" bin/{libasprintf,libintl,intl}*.dll &&
 	pack_archive "${RBINZIP}" bin/{libasprintf,libintl}*.dll &&
-	pack_archive "${RDEVZIP}" include/{autosprintf,libintl}.h lib/lib{libasprintf,intl}*.a share/{aclocal,doc,gettext,info} share/man/man3 &&
+	pack_archive "${RDEVZIP}" include/{autosprintf,libintl}.h lib/lib{asprintf,intl}*.a share/{aclocal,doc,gettext,info} share/man/man3 &&
 	store_packed_archive "${RBINZIP}" &&
 	store_packed_archive "${RDEVZIP}" &&
 	# gettext-tools
