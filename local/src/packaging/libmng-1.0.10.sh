@@ -62,7 +62,12 @@ local name
 
 pre_configure() {
 	# configure を生成する。
-	./unmaintained/autogen.sh 
+local autogen=./unmaintained/autogen.sh 
+	# libmng 1 系のための処理。 2 系から不要。
+	if [ -e "${autogen}" ]
+	then
+		"${autogen}"
+	fi
 #	echo skip > /dev/null
 }
 

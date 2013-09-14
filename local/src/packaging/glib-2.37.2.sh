@@ -50,6 +50,8 @@ local name
 
 pre_configure() {
 	make clean 2>&1 > /dev/null
+	# glib 2.37.7 のバグ？
+	sed -i.orig -e "s/if test @GLIBC21@ = no; then/if test no = no; then/" glib/libcharset/Makefile.am
 	# ubuntu 13.04 では automake のバージョン不一致によりビルドできない。
 	# automake >= 1.10 であり 1.11 はサポートされている。
 	# ./autogen.sh
