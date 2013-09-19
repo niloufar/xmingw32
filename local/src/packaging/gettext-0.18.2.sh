@@ -25,23 +25,26 @@ init_var() {
 	# 内部で使用する変数。
 	__ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/text"
 	__ARCHIVE="${MOD}-${VER}"
+
+	# gettext-runtime
+	__RBINZIP="${MOD}-runtime-${VER}-${REV}-bin_${ARCH}"
+	__RDEVZIP="${MOD}-runtime-dev-${VER}-${REV}_${ARCH}"
+	# gettext-tools
+	__TDEVZIP="${MOD}-tools-dev-${VER}-${REV}_${ARCH}"
+	__TTOOLSZIP="${MOD}-tools-${VER}-${REV}-tools_${ARCH}"
 }
 
 dependencies() {
 	cat <<EOS
 libiconv
 EOS
-	# optional なライブラリーは DEPENDENCIES 参照。
+	# optional なライブラリーはソース アーカイブの DEPENDENCIES を参照。
 }
 
 run_expand_archive() {
 local name
 	name=`find_archive "${__ARCHIVEDIR}" ${__ARCHIVE}` &&
 	expand_archive "${__ARCHIVEDIR}/${name}"
-}
-
-pre_configure() {
-	echo skip > /dev/null
 }
 
 run_configure() {
@@ -53,39 +56,23 @@ run_configure() {
 	${XMINGW}/cross-configure --disable-static --disable-java --disable-native-java --disable-rpath --disable-openmp --enable-threads=win32 --enable-relocatable --prefix="${INSTALL_TARGET}"
 }
 
-post_configure() {
-	echo skip > /dev/null
-}
-
-pre_make() {
-	echo skip > /dev/null
-}
-
 run_make() {
 	${XMINGW}/cross make GNULIB_MEMCHR=0 install
-}
-
-pre_pack() {
-	echo skip > /dev/null
 }
 
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
 	# gettext-runtime
-	RBINZIP=${MOD}-runtime-${VER}-${REV}-bin_${ARCH} &&
-	RDEVZIP=${MOD}-runtime-dev-${VER}-${REV}_${ARCH} &&
-#	pack_archive "${RBINZIP}" bin/{libasprintf,libintl,intl}*.dll &&
-	pack_archive "${RBINZIP}" bin/{libasprintf,libintl}*.dll &&
-	pack_archive "${RDEVZIP}" include/{autosprintf,libintl}.h lib/lib{asprintf,intl}*.a share/{aclocal,doc,gettext,info} share/man/man3 &&
-	store_packed_archive "${RBINZIP}" &&
-	store_packed_archive "${RDEVZIP}" &&
+#	pack_archive "${__RBINZIP}" bin/{libasprintf,libintl,intl}*.dll &&
+	pack_archive "${__RBINZIP}" bin/{libasprintf,libintl}*.dll &&
+	pack_archive "${__RDEVZIP}" include/{autosprintf,libintl}.h lib/lib{asprintf,intl}*.a share/{aclocal,doc,gettext,info} share/man/man3 &&
+	store_packed_archive "${__RBINZIP}" &&
+	store_packed_archive "${__RDEVZIP}" &&
 	# gettext-tools
-	TDEVZIP=${MOD}-tools-dev-${VER}-${REV}_${ARCH} &&
-	TTOOLSZIP=${MOD}-tools-${VER}-${REV}-tools_${ARCH} &&
-	pack_archive "${TDEVZIP}" include/gettext-po.h lib/libgettext*.a share/man/man1 &&
-	pack_archive "${TTOOLSZIP}" bin/*.{exe,manifest,local} bin/libgettext*.dll bin/{autopoint,gettext.sh,gettextize} lib/gettext share/locale share/man/man1 &&
-	store_packed_archive "${TDEVZIP}" &&
-	store_packed_archive "${TTOOLSZIP}"
+	pack_archive "${__TDEVZIP}" include/gettext-po.h lib/libgettext*.a share/man/man1 &&
+	pack_archive "${__TTOOLSZIP}" bin/*.{exe,manifest,local} bin/libgettext*.dll bin/{autopoint,gettext.sh,gettextize} lib/gettext share/locale share/man/man1 &&
+	store_packed_archive "${__TDEVZIP}" &&
+	store_packed_archive "${__TTOOLSZIP}"
 }
 
 
