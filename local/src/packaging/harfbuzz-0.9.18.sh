@@ -51,7 +51,7 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
-pre_configure() {
+run_patch() {
 	# harfbuzz.pc で prefix 変数を参照するべきところを埋め込みにしている。
 	(patch --batch --quiet -p 0 <<\EOF; return 0) &&
 --- src/Makefile.in.orig
@@ -114,7 +114,8 @@ run_configure() {
 }
 
 run_make() {
-	${XMINGW}/cross make all install
+	# hb-uniscribe.cc のコンパイルでエラーになるため -fpermissive している。
+	${XMINGW}/cross make "UNISCRIBE_CFLAGS=-fpermissive" all install
 }
 
 pre_pack() {
