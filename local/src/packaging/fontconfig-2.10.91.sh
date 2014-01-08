@@ -75,6 +75,11 @@ run_configure() {
 	${XMINGW}/cross-configure --enable-libxml2 --with-arch=mingw32 --prefix="${INSTALL_TARGET}"
 }
 
+post_configure() {
+	# 2.11.0 の test/test-migration.c が面倒なので test を外す。
+	sed -i.orig -e's/\(^\s\+conf.d \)test /\1/' Makefile
+}
+
 run_make() {
 	${XMINGW}/cross make install
 }

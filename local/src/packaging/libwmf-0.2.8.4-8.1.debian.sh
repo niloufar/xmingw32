@@ -66,8 +66,6 @@ run_expand_archive() {
 local name
 	name=`find_archive "${__ARCHIVEDIR}" ${__ARCHIVE}` &&
 	expand_archive "${__ARCHIVEDIR}/${name}" &&
-	name=`find_archive "${__ARCHIVEDIR}" ${__ARCHIVE}` &&
-	expand_archive "${__ARCHIVEDIR}/${name}" &&
 	cd "${DIRECTORY}" &&
 	name=`find_archive "${__ARCHIVEDIR}" ${__PATCH_ARCHIVE}` &&
 	expand_archive "${__ARCHIVEDIR}/${name}" &&

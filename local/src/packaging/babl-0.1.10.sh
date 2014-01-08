@@ -47,6 +47,14 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
+pre_configure() {
+local gen=1
+	[ -e configure ] || gen=0
+	[ 1 -eq ${gen} ] && find configure.ac -newer configure && gen=0
+	[ 0 -eq ${gen} ] && sh autogen.sh
+	return 0
+}
+
 run_configure() {
 	# timespec は sys/timeb.h と pthread.h で定義されている。
 	# 	pthread.h の定義を寝かせた。

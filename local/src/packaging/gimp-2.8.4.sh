@@ -31,7 +31,7 @@ init_var() {
 
 	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
 	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
-	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
+#	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 }
 
 # INSTALL と configure.ac を参考にした。

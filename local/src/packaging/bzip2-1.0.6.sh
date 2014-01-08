@@ -26,9 +26,9 @@ init_var() {
 	__ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/compress"
 	__ARCHIVE="${MOD}-${VER}"
 
-	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCH}
-	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCH}
-	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCH}
+	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
+	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
+	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 }
 
 dependencies() {
@@ -54,11 +54,32 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
-pre_configure() {
+run_patch() {
 	# bzip2.c の sys\stat.h を sys/stat.h に置き換える。
 	sed -i.orig -e 's!sys\\stat!sys/stat!' bzip2.c &&
-	# bzlib.h の WINAPI を DECLSPEC_EXPORT に置き換える。
-	sed -i.orig -e 's/WINAPI/DECLSPEC_EXPORT/' bzlib.h &&
+#	# bzlib.h の WINAPI を DECLSPEC_EXPORT に置き換える。
+	patch -p 0 <<\EOS &&
+--- bzlib.h.orig
++++ bzlib.h
+@@ -81,12 +81,15 @@
+       /* windows.h define small to char */
+ #      undef small
+ #   endif
++#   ifndef DECLSPEC_EXPORT
++#   define DECLSPEC_EXPORT __declspec(dllexport)
++#   endif
+ #   ifdef BZ_EXPORT
+-#   define BZ_API(func) WINAPI func
++#   define BZ_API(func) DECLSPEC_EXPORT func
+ #   define BZ_EXTERN extern
+ #   else
+    /* import windows dll dynamically */
+-#   define BZ_API(func) (WINAPI * func)
++#   define BZ_API(func) (DECLSPEC_EXPORT * func)
+ #   define BZ_EXTERN
+ #   endif
+ #else
+EOS
 	# Makefile
 	patch -p 0 <<\EOS &&
 --- Makefile.orig

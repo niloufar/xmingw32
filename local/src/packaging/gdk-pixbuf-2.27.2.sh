@@ -70,6 +70,8 @@ post_configure() {
 	sed -i -e 's/^\(DIST_SUBDIRS = \)\(gdk-pixbuf-xlib\)/\1# \2/' \
 		-e 's/^\(am__append_1 = \)\(gdk-pixbuf-xlib\)/\1# \2/' \
 		contrib/Makefile
+	# tests でいろいろエラーになるため外す。
+	sed -i -e 's/^\(SUBDIRS = .\+\) tests /\1 /' Makefile
 }
 
 run_make() {

@@ -52,15 +52,13 @@ EOS
 run_expand_archive() {
 local name
 	name=`find_archive "${__ARCHIVEDIR}" ${__ARCHIVE}` &&
-	expand_archive "${__ARCHIVEDIR}/${name}" &&
-	cd "${DIRECTORY}" &&
+	expand_archive "${__ARCHIVEDIR}/${name}"
+}
+
+run_patch() {
+local name
 	name=`find_archive "${__ARCHIVEDIR}" ${__PATCH_ARCHIVE}` &&
-	expand_archive "${__ARCHIVEDIR}/${name}" &&
-	for fl in `cat debian/patches/series`
-	do
-		patch --batch -p 1 -i debian/patches/${fl}
-	done &&
-	cd ..
+	patch_debian "${__ARCHIVEDIR}/${name}"
 }
 
 run_configure() {
