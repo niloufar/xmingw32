@@ -7,7 +7,8 @@
 PREFIX=`dirname "$0"`
 if [ "" = "${XMINGW}" ]
 then
-	. "${PREFIX}/scripts/env.sh"
+    echo "WARRNING: XMINGW 環境のそとで実行しています。 env.sh の既定の環境で実行します。"
+    . "${PREFIX}/scripts/env.sh" ""
 fi
 
 if [ ! "" = "${IN_CROSS_SCRIPT}" ]
@@ -30,11 +31,20 @@ IN_PACKAGE_SCRIPT="#"
 
 # win32 or win64
 ARCH=${XMINGW_PLATFORM}
-ARCHSUFFIX="${ARCH}"
-if [ ! -z "${opt_os}" ]
-then
-	ARCHSUFFIX="${opt_os}_${ARCHSUFFIX}"
-fi
+ARCHSUFFIX=
+for s in "${opt_feature}" "${opt_os}" "${ARCH}"
+do
+	if [ "" = "${s}" ]
+	then
+		continue
+	fi
+	if [ ! "" = "${ARCHSUFFIX}" ]
+	then
+		ARCHSUFFIX="${ARCHSUFFIX}_${s}"
+	else
+		ARCHSUFFIX="${s}"
+	fi
+done
 
 # ビルド スクリプトをカレント コンテキストに読み込む。
 buildscript=${package}.sh
@@ -60,6 +70,7 @@ VER=		# version
 REV=		# 1
 DIRECTORY=	# "${MOD}-${VER}"
 PATCH=		# debian patch ( optional )
+FEATURE=
 if [ ! "" = "${opt_ver}" ]
 then
 	VER=${opt_ver}
@@ -71,6 +82,10 @@ fi
 if [ ! "" = "${opt_patch}" ]
 then
 	PATCH=${opt_patch}
+fi
+if [ ! "" = "${opt_feature}" ]
+then
+	FEATURE=${opt_feature}
 fi
 init_var
 

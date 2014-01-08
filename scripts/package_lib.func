@@ -21,7 +21,7 @@ local work=$1
 __defined() {
 local name=$1
 local result
-	if type -t ${name} >/dev/null
+	if [ "function" = "`type -t \"${name}\"`" ]
 	then
 		result=0
 	else
@@ -31,8 +31,43 @@ local result
 	return ${result}
 }
 
+__feature_table() {
+local left=$1
+	shift
+local length=$#
+local number=1
+local index
+local curr
+local str
+	if [ 0 -eq $# ]
+	then
+		return 0
+	fi
+
+	while [ ${number} -le ${length} ]
+	do
+	number=`expr ${number} + 1`
+
+		index=${number}
+		str="${left}_${1}"
+		while [ ${index} -le ${length} ]
+		do
+			curr=`eval echo "\\\$${index}"`
+
+			str="${str}_${curr}"
+
+		index=`expr ${index} + 1`
+		done
+
+		echo "${str}"
+	done
+
+	shift
+	__feature_table "${left}" "$@"
+}
+
 # prefix が pre, run, post になっている関数を実行する。
-# suffix が ${opt_os} や ${ARCH} の関数があればそちらを優先する。
+# suffix が ${opt_feature}, ${opt_os}, ${ARCH} の関数があればそちらを優先する。
 __prerunpost() {
 local name=$1
 local step
@@ -56,13 +91,9 @@ local list
 		fi
 
 		# OS、アーキテクチャに特化した関数があればそちらを優先する。
-		list="${func}_${ARCH} ${func}"
-		if [ ! -z "${opt_os}" ]
-		then
-			list="${func}_${opt_os}_${ARCH} ${func}_${opt_os} ${list}"
-		fi
+		list=`__feature_table ${func} ${opt_feature} ${opt_os} ${ARCH}`
 
-		for def in ${list}
+		for def in ${list} ${func}
 		do
 			if __defined ${def}
 			then

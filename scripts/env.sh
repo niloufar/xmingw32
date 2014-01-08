@@ -16,7 +16,12 @@ do
     XMINGW_PLATFORM=win64
     ;;
   -*|--*|*)
-    echo "unsupported option \`$1'."
+  	if [ "" = "$1" ]
+  	then
+  		shift
+  	    continue
+  	fi
+    echo "$0: unsupported option \`$1'."
 #    echo "try \`$0 --help' for more information."
     return 1
     ;;

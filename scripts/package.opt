@@ -5,7 +5,7 @@
 __SCRIPT_NAME=`basename "$0"`
 
 __version() {
-	echo "0.1.1"
+	echo "0.1.2"
 }
 __usage() {
 	echo "usage: ${__SCRIPT_NAME} [option] package-version"
@@ -19,9 +19,27 @@ __help() {
   --optional-dependencies
                   print optional dependencies.
   --license       license.
+
   --range top [bottom]
-                  処理を行う範囲。pre_, run_, post_ を指定できる。
-                  expand_archive, configure, make, make_test, pack.
+                  処理を行う範囲。 pre_, run_, post_ を指定できる。
+                  expand_archive, patch, configure, make, make_test, make_example, pack.
+  -D key=value
+                  key は VER, REV, PATCH のいずれか指定します。
+                  ビルドにチートが必要ない場合にバージョン番号を指定します。
+  --feature name
+                  FFTW などの、オプションにより異なるバイナリーを生成する場合に使用します。
+  --os type
+                  OS 専用の処理がある場合にそれを優先します。
+
+  --archives
+                  アーカイブ一覧。
+  --log-path
+                  ログが保存されているアドレス。
+                  ログはカレントディレクトリーに保存されるため、戻り値はファイル名になります。
+  --script-path
+                  スクリプトが保存されているアドレス。
+  --install-path
+                  インストール先のアドレス。
 
   -h  --help      show this message.
   --version       print the version.
@@ -94,7 +112,12 @@ do
 			;;
 		esac
 		;;
+	--feature)
+		opt_feature=`echo "${2}" | sed -e's/^\([a-z0-9]*\).*/\1/'`
+		shift
+		;;
 	--os)
+		# --feature に押し込んでもいいが、おそらく別のもの。
 		opt_os=`echo "${2}" | sed -e's/^\([a-z0-9]*\).*/\1/'`
 		shift
 		;;
