@@ -11,7 +11,7 @@ fi
 
 
 # ARCH は package が設定している。
-# XLIBRARY_SOURCES は xmingw のための環境変数鵜。 env.sh で設定している。
+# XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
 	# package に返す変数。
 	MOD=pango
