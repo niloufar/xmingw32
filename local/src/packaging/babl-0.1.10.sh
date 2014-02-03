@@ -11,7 +11,7 @@ fi
 
 
 # ARCH は package が設定している。
-# XLIBRARY_SOURCES は xmingw のための環境変数鵜。 env.sh で設定している。
+# XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
 	# package に返す変数。
 	MOD=babl
@@ -26,8 +26,8 @@ init_var() {
 	__ARCHIVEDIR="${XLIBRARY_SOURCES}/gimp/dep"
 	__ARCHIVE="${MOD}-${VER}"
 
-	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCH}
-	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCH}
+	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
+	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
 }
 
 dependencies() {
@@ -45,6 +45,12 @@ run_expand_archive() {
 local name
 	name=`find_archive "${__ARCHIVEDIR}" ${__ARCHIVE}` &&
 	expand_archive "${__ARCHIVEDIR}/${name}"
+}
+
+run_patch() {
+	# C 標準関数ではない random/srandom を標準関数に置き換える。
+	# git-4ba26ea で問題があった。
+	sed -i.orig -e "s/random /rand/g" tests/babl_fish_path_fitness.c tools/babl-gen-test-pixels.c
 }
 
 pre_configure() {
