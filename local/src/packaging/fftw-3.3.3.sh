@@ -11,7 +11,7 @@ fi
 
 
 # ARCH は package が設定している。
-# XLIBRARY_SOURCES は xmingw のための環境変数鵜。 env.sh で設定している。
+# XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
 local typ=
 	#XLIBRARY_SET=${XLIBRARY}/gimp_build_set
@@ -75,14 +75,6 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
-run_patch() {
-	echo skip > /dev/null
-}
-
-pre_configure() {
-	echo skip > /dev/null
-}
-
 run_configure_float() {
 	__run_configure --enable-float --enable-sse2 --enable-avx
 }
@@ -117,24 +109,8 @@ post_configure() {
 	echo skip > /dev/null
 }
 
-pre_make() {
-	echo skip > /dev/null
-}
-
 run_make() {
 	${XMINGW}/cross make all install
-}
-
-run_make_test() {
-	echo skip > /dev/null
-}
-
-run_make_example() {
-	echo skip > /dev/null
-}
-
-pre_pack() {
-	echo skip > /dev/null
 }
 
 run_pack() {
