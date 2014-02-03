@@ -11,7 +11,7 @@ fi
 
 
 # ARCH は package が設定している。
-# XLIBRARY_SOURCES は xmingw のための環境変数鵜。 env.sh で設定している。
+# XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
 	#XLIBRARY_SET=${XLIBRARY}/gimp_build_set
 
@@ -73,13 +73,13 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math  -static-libgcc" \
-	${XMINGW}/cross-configure --disable-gtk-doc --disable-static --prefix="${INSTALL_TARGET}"
+	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}"
 }
 
 post_configure() {
 	# 使用する場合は bash ${XMINGW}/replibtool.sh にオプションを並べる。
 	# shared ファイルを作ってくれない場合の対処。
-#	bash ${XMINGW}/replibtool.sh shared &&
+#	bash ${XMINGW}/replibtool.sh shared
 	# static なライブラリーのリンクはこうしないと libtool がいろいろ面倒をみてしまう。
 #	bash ${XMINGW}/replibtool.sh mix
 	# libstdc++ を静的リンクする。
