@@ -1,4 +1,4 @@
-Ubuntu 12.04 で MinGW-w64 をクロスビルドするためのスクリプト集です。
+Ubuntu 13.10 で MinGW-w64 をクロスビルドするためのスクリプト集です。
 公開を考えて作成していないスクリプトですので、ひどい内容となっています。
 
 スクリプトを /usr/xmingw/xmingw32 に配置してください。異なる場所に配置したい
@@ -16,9 +16,10 @@ sudo apt-get install intltool
 #sudo apt-get install flex bison
 #sudo apt-get install gobject-introspection
 sudo apt-get install libgtk2.0-dev
+#sudo apt-get install libgtk-3-dev
 sudo apt-get install libffi-dev
 sudo apt-get install bsdtar 7zip*
-sudo apt-get install unix2dos
+sudo apt-get install dos2unix
 
 配置したディレクトリーに移動し、 bash make_link.sh を実行します。
 
