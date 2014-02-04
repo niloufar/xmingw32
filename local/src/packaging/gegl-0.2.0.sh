@@ -29,17 +29,17 @@ init_var() {
 	__ARCHIVEDIR="${XLIBRARY_SOURCES}/gimp/dep"
 	__ARCHIVE="${MOD}-${VER}"
 
-	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCH}
-	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCH}
-	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCH}
+	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
+	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
+	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 
 	if `echo "${PATCH}" | grep -ie debian`
 	then
 		__PATCH_ARCHIVE="${MOD}_${VER}-${PATCH}"
 
-		__BINZIP=${MOD}-${VER}-${PATCH}-${REV}-bin_${ARCH}
-		__DEVZIP=${MOD}-dev-${VER}-${PATCH}-${REV}_${ARCH}
-		__TOOLSZIP=${MOD}-${VER}-${PATCH}-${REV}-tools_${ARCH}
+		__BINZIP=${MOD}-${VER}-${PATCH}-${REV}-bin_${ARCHSUFFIX}
+		__DEVZIP=${MOD}-dev-${VER}-${PATCH}-${REV}_${ARCHSUFFIX}
+		__TOOLSZIP=${MOD}-${VER}-${PATCH}-${REV}-tools_${ARCHSUFFIX}
 	fi
 }
 
@@ -51,7 +51,7 @@ glib
 EOS
 }
 
-dependencies_opt() {
+optional_dependencies() {
 	cat <<EOS
 cairo
 gdk-pixbuf

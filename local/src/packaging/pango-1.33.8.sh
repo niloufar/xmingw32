@@ -39,7 +39,7 @@ freetype2
 EOS
 }
 
-dependencies_opt() {
+optional_dependencies() {
 	cat <<EOS
 cairo
 harfbuzz
@@ -89,10 +89,10 @@ run_pack() {
 	store_packed_archive "${__DEVZIP}" &&
 	store_packed_archive "${__TOOLSZIP}") &&
 
-	EXAMPLESZIP=${MOD}-${VER}-${REV}-examples_${ARCH}
+	EXAMPLESZIP=${MOD}-${VER}-${REV}-examples_${ARCHSUFFIX}
 	7z a ${EXAMPLESZIP}.7z examples/*.exe examples/.libs
 
-	TESTSZIP=${MOD}-${VER}-${REV}-tests_${ARCH}
+	TESTSZIP=${MOD}-${VER}-${REV}-tests_${ARCHSUFFIX}
 	7z a ${EXAMPLESZIP}.7z tests/*.exe tests/.libs tests/*.{txt,utf8,sh}
 }
 

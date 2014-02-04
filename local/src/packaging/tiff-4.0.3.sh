@@ -26,14 +26,21 @@ init_var() {
 	__ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/pic"
 	__ARCHIVE="${MOD}-${VER}"
 
-	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCH}
-	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCH}
-	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCH}
+	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
+	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
+	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 }
 
 dependencies() {
 	cat <<EOS
+EOS
+}
+
+optional_dependencies() {
+	cat <<EOS
 libjpeg
+liblzma
+opengl
 zlib
 EOS
 }
@@ -43,10 +50,6 @@ run_expand_archive() {
 local name
 	name=`find_archive "${__ARCHIVEDIR}" ${__ARCHIVE}` &&
 	expand_archive "${__ARCHIVEDIR}/${name}"
-}
-
-pre_configure() {
-	echo skip > /dev/null
 }
 
 run_configure() {

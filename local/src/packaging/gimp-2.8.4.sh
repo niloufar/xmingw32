@@ -159,7 +159,7 @@ run_pack() {
 	(
 	(cd app/tests && ${XMINGW}/cross make test-core.exe test-gimpidtable.exe test-save-and-export.exe test-session-2-6-compatibility.exe test-session-2-8-compatibility-multi-window.exe test-session-2-8-compatibility-single-window.exe test-single-window-mode.exe test-tools.exe test-ui.exe test-xcf.exe) &&
 
-	TESTSZIP=${MOD}-${VER}-${REV}-tests_${ARCH} &&
+	TESTSZIP=${MOD}-${VER}-${REV}-tests_${ARCHSUFFIX} &&
 	pack_archive "${TESTSZIP}" app/tests/*.exe app/tests/{.libs,files,gimpdir,gimpdir-empty,gimpdir-output} tools/test-clipboard.exe tools/.libs/\*test-clipboard\*
 	)
 }

@@ -27,11 +27,11 @@ init_var() {
 	__ARCHIVE="${MOD}-${VER}"
 
 	# gettext-runtime
-	__RBINZIP="${MOD}-runtime-${VER}-${REV}-bin_${ARCH}"
-	__RDEVZIP="${MOD}-runtime-dev-${VER}-${REV}_${ARCH}"
+	__RBINZIP="${MOD}-runtime-${VER}-${REV}-bin_${ARCHSUFFIX}"
+	__RDEVZIP="${MOD}-runtime-dev-${VER}-${REV}_${ARCHSUFFIX}"
 	# gettext-tools
-	__TDEVZIP="${MOD}-tools-dev-${VER}-${REV}_${ARCH}"
-	__TTOOLSZIP="${MOD}-tools-${VER}-${REV}-tools_${ARCH}"
+	__TDEVZIP="${MOD}-tools-dev-${VER}-${REV}_${ARCHSUFFIX}"
+	__TTOOLSZIP="${MOD}-tools-${VER}-${REV}-tools_${ARCHSUFFIX}"
 }
 
 dependencies() {

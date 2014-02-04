@@ -35,7 +35,7 @@ dependencies() {
 EOS
 }
 
-dependencies_opt() {
+optional_dependencies() {
 	cat <<EOS
 EOS
 }

@@ -21,11 +21,11 @@ ARCHIVE="${MOD}-${VER}"
 DIRECTORY="${MOD}-${VER}"
 LIBNAME="libpng15"
 
-THIS=${MOD}-${VER}-${REV}_${ARCH}
+THIS=${MOD}-${VER}-${REV}_${ARCHSUFFIX}
 
-BINZIP=${MOD}-${VER}-${REV}-bin_${ARCH}
-DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCH}
-TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCH}
+BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
+DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
+TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 
 HEX=`echo ${THIS} | md5sum | cut -d' ' -f1`
 INSTALL_TARGET=${XLIBRARY_TEMP}/${HEX}

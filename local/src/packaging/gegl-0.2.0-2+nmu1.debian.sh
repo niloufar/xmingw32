@@ -31,9 +31,9 @@ init_var() {
 	__ARCHIVE="${MOD}-${VER}"
 	__PATCH_ARCHIVE="${MOD}_${VER}-${PATCH}"
 
-	__BINZIP=${MOD}-${VER}-${PATCH}-${REV}-bin_${ARCH}
-	__DEVZIP=${MOD}-dev-${VER}-${PATCH}-${REV}_${ARCH}
-	__TOOLSZIP=${MOD}-${VER}-${PATCH}-${REV}-tools_${ARCH}
+	__BINZIP=${MOD}-${VER}-${PATCH}-${REV}-bin_${ARCHSUFFIX}
+	__DEVZIP=${MOD}-dev-${VER}-${PATCH}-${REV}_${ARCHSUFFIX}
+	__TOOLSZIP=${MOD}-${VER}-${PATCH}-${REV}-tools_${ARCHSUFFIX}
 }
 
 dependencies() {
@@ -44,7 +44,7 @@ glib
 EOS
 }
 
-dependencies_opt() {
+optional_dependencies() {
 	cat <<EOS
 EOS
 }

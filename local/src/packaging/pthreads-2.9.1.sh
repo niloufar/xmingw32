@@ -26,8 +26,8 @@ init_var() {
 	__ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/etc"
 	__ARCHIVE="${MOD}-w32-`echo "${VER}" | sed -e"s/\./-/g"`-release"
 
-	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCH}
-	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCH}
+	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
+	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
 }
 
 dependencies() {
@@ -35,7 +35,7 @@ dependencies() {
 EOS
 }
 
-dependencies_opt() {
+optional_dependencies() {
 	cat <<EOS
 EOS
 }
