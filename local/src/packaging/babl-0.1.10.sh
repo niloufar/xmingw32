@@ -54,12 +54,6 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
-run_patch() {
-	# C 標準関数ではない random/srandom を標準関数に置き換える。
-	# git-4ba26ea で問題があった。
-	sed -i.orig -e "s/random /rand/g" tests/babl_fish_path_fitness.c tools/babl-gen-test-pixels.c
-}
-
 pre_configure() {
 local gen=1
 	[ -e configure ] || gen=0
