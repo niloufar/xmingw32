@@ -32,38 +32,18 @@ local result
 }
 
 __feature_table() {
-local left=$1
+local body=$1
+local append
 	shift
-local length=$#
-local number=1
-local index
-local curr
-local str
 	if [ 0 -eq $# ]
 	then
-		return 0
+		echo "${body}"
+	else
+		append=$1
+		shift
+		__feature_table "${body}_${append}" "$@"
+		__feature_table "${body}" "$@"
 	fi
-
-	while [ ${number} -le ${length} ]
-	do
-	number=`expr ${number} + 1`
-
-		index=${number}
-		str="${left}_${1}"
-		while [ ${index} -le ${length} ]
-		do
-			curr=`eval echo "\\\$${index}"`
-
-			str="${str}_${curr}"
-
-		index=`expr ${index} + 1`
-		done
-
-		echo "${str}"
-	done
-
-	shift
-	__feature_table "${left}" "$@"
 }
 
 # prefix が pre, run, post になっている関数を実行する。
@@ -93,7 +73,7 @@ local list
 		# OS、アーキテクチャに特化した関数があればそちらを優先する。
 		list=`__feature_table ${func} ${opt_feature} ${opt_os} ${ARCH}`
 
-		for def in ${list} ${func}
+		for def in ${list}
 		do
 			if __defined ${def}
 			then
