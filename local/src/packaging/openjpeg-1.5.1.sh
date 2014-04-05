@@ -47,6 +47,15 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
+pre_configure() {
+	if [ ! -e "configure" ]
+	then
+		./bootstrap.sh
+	fi
+	# libpng16 を使用する。
+	sed -i.orig -e's/libpng15 /libpng16 /' configure
+}
+
 run_configure() {
 	TIFF_CFLAGS="`${XMINGW}/cross pkg-config libtiff-4 --cflags`" \
 	TIFF_LIBS="`${XMINGW}/cross pkg-config libtiff-4 --libs`" \

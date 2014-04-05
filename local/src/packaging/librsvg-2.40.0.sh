@@ -60,18 +60,25 @@ run_patch() {
 	patch --batch -p 1 <<EOS
 --- librsvg-2.40.0.orig/rsvg-base.c
 +++ librsvg-2.40.0/rsvg-base.c
-@@ -55,6 +55,42 @@
+@@ -57,6 +57,56 @@
  #include "rsvg-paint-server.h"
  #include "rsvg-xml.h"
  
-+#if defined(_WIN32) && ! defined(canonicalize_file_name)
++#if defined(_WIN32) && ! defined(realpath)
 +#include <shlwapi.h>
-+TCHAR* canonicalize_file_name(const TCHAR* i_path)
++TCHAR* realpath(const TCHAR* i_path, TCHAR* i_resolved_path)
 +{
 +TCHAR*	lpStr = NULL;
 +BOOL	valid = TRUE;
 +
-+	lpStr = (TCHAR*) malloc( MAX_PATH * sizeof(TCHAR) );
++	if ( NULL == i_resolved_path )
++	{
++		lpStr = (TCHAR*) malloc( MAX_PATH * sizeof(TCHAR) );
++	}
++	else
++	{
++		lpStr = i_resolved_path;
++	}
 +
 +	if ( PathIsUNC( i_path ) )
 +	{
@@ -97,6 +104,13 @@ run_patch() {
 +		lpStr = NULL;
 +	}
 +	return lpStr;
++}
++#endif
++
++#if defined(_WIN32) && ! defined(canonicalize_file_name)
++TCHAR* canonicalize_file_name(const TCHAR* i_path)
++{
++	return realpath( i_path, NULL );
 +}
 +#endif
 +

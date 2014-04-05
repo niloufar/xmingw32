@@ -19,7 +19,7 @@ init_var() {
 	MOD=gtk+
 	if [ "" = "${VER}" ]
 	then
-	VER=3.10.6
+	VER=3.12.0
 	REV=1
 #	PATCH=2.debian
 	fi
@@ -68,8 +68,8 @@ run_patch() {
 	# .symboles ファイルを使用しない関数のエクスポートに対処する。
 	# 3.9.2 で行われた変更の不備。
 	patch --batch --quiet -p 1 <<\EOS
---- gtk+-3.10.6.orig/gdk/Makefile.in
-+++ gtk+-3.10.6/gdk/Makefile.in
+--- gtk+-3.12.0.orig/gdk/Makefile.in
++++ gtk+-3.12.0/gdk/Makefile.in
 @@ -94,7 +94,7 @@
  @USE_WIN32_FALSE@	$(am__append_1) $(am__append_3) \
  @USE_WIN32_FALSE@	$(am__append_5) $(am__append_7) \
@@ -79,7 +79,7 @@ run_patch() {
  @USE_BROADWAY_TRUE@am__append_7 = broadway/libgdk-broadway.la
  @USE_WAYLAND_TRUE@am__append_8 = wayland/libgdk-wayland.la
  @HAVE_INTROSPECTION_TRUE@am__append_9 = Gdk-3.0.gir
-@@ -737,7 +737,7 @@
+@@ -741,7 +741,7 @@
  libgdk_3_la_LIBADD = $(GDK_DEP_LIBS) $(am__append_1) $(am__append_3) \
  	$(am__append_5) $(am__append_7) $(am__append_8)
  libgdk_3_la_LDFLAGS = $(LDADD) $(am__append_6)
@@ -88,7 +88,7 @@ run_patch() {
  @HAVE_INTROSPECTION_TRUE@introspection_files = \
  @HAVE_INTROSPECTION_TRUE@	$(filter-out gdkkeysyms-compat.h, $(gdk_public_h_sources))	\
  @HAVE_INTROSPECTION_TRUE@	$(gdk_c_sources)	\
-@@ -1625,16 +1625,8 @@
+@@ -1640,16 +1640,8 @@
  
  @HAVE_INTROSPECTION_TRUE@@USE_X11_TRUE@GdkX11-3.0.gir: libgdk-3.la Gdk-3.0.gir Makefile
  
@@ -107,7 +107,7 @@ run_patch() {
  
  @MS_LIB_AVAILABLE_TRUE@install-ms-lib:
  @MS_LIB_AVAILABLE_TRUE@	mkdir -p $(DESTDIR)$(libdir)
-@@ -1714,9 +1706,9 @@
+@@ -1729,9 +1721,9 @@
  	$(CPP) -P - <$(top_srcdir)/build/win32/vs10/gdk.vcxproj.filtersin >$@
  	rm libgdk.vs10.sourcefiles.filters
  
@@ -119,9 +119,9 @@ run_patch() {
  	rm -f $(DESTDIR)$(configexecincludedir)/gdkconfig.h
  
  # if srcdir!=builddir, clean out maintainer-clean files from builddir
---- gtk+-3.10.6.orig/gtk/Makefile.in
-+++ gtk+-3.10.6/gtk/Makefile.in
-@@ -1047,8 +1047,6 @@
+ --- gtk+-3.12.0.orig/gtk/Makefile.in
++++ gtk+-3.12.0/gtk/Makefile.in
+@@ -1067,8 +1067,6 @@
  	$(INCLUDED_IMMODULE_DEFINE)
  
  @PLATFORM_WIN32_TRUE@no_undefined = -no-undefined
@@ -130,16 +130,16 @@ run_patch() {
  @OS_WIN32_TRUE@gtk_win32_res = gtk-win32-res.o
  @OS_WIN32_TRUE@gtk_win32_res_ldflag = -Wl,gtk-win32-res.o
  @MS_LIB_AVAILABLE_TRUE@noinst_DATA = gtk-win32-$(GTK_API_VERSION).lib
-@@ -1959,7 +1957,7 @@
- libgtk_3_la_LDFLAGS = $(libtool_opts) $(am__append_15)
- libgtk_3_la_LIBADD = $(libadd) $(am__append_14)
- libgtk_3_la_DEPENDENCIES = $(deps) $(am__append_16)
+@@ -1972,7 +1970,7 @@
+ libgtk_3_la_LDFLAGS = $(libtool_opts) $(am__append_17)
+ libgtk_3_la_LIBADD = $(libadd) $(am__append_16)
+ libgtk_3_la_DEPENDENCIES = $(deps) $(am__append_18)
 -@USE_WIN32_TRUE@libgtk_target_ldflags = $(gtk_win32_res_ldflag) $(gtk_win32_symbols)
 +@USE_WIN32_TRUE@libgtk_target_ldflags = $(gtk_win32_res_ldflag)
  DEPS = libgtk-3.la $(top_builddir)/gdk/libgdk-3.la
  TEST_DEPS = $(DEPS) immodules.cache
  LDADDS = \
-@@ -5912,15 +5910,8 @@
+@@ -5965,15 +5963,8 @@
  @OS_WIN32_TRUE@gtk-win32-res.o : gtk-win32.rc
  @OS_WIN32_TRUE@	$(WINDRES) gtk-win32.rc $@
  
@@ -157,7 +157,7 @@ run_patch() {
  
  @MS_LIB_AVAILABLE_TRUE@install-ms-lib:
  @MS_LIB_AVAILABLE_TRUE@	$(INSTALL) gtk-win32-$(GTK_API_VERSION).lib $(DESTDIR)$(libdir)
-@@ -6055,13 +6046,13 @@
+@@ -6108,13 +6099,13 @@
  	rm libgtk.vs10.sourcefiles.filters
  
  # Install a RC file for the default GTK+ theme, and key themes
