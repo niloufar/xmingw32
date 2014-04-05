@@ -47,7 +47,6 @@ Version 3, 29 June 2007
 EOS
 }
 
-
 run_expand_archive() {
 local name
 	name=`find_archive "${__ARCHIVEDIR}" ${__ARCHIVE}` &&
