@@ -84,6 +84,7 @@ post_configure() {
 #	bash ${XMINGW}/replibtool.sh mix
 	# libstdc++ を静的リンクする。
 #	bash ${XMINGW}/replibtool.sh static-libgcc
+	# 追加で libtool を書き換える場合は replibtool.sh の実行後に行う。
 	echo skip > /dev/null
 }
 
