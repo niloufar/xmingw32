@@ -61,8 +61,14 @@ run_configure() {
 }
 
 post_configure() {
-	# ./atk/atk.def の1行目が -e EXPORTS になってしまう。頭の -e を削除する。
-	sed -i -e 's/^\(\s\+(echo\) -e \(EXPORTS;\)/\1 \2/' ./atk/Makefile
+	if [ -e ./atk/atk.symbols ]
+	then
+		# ./atk/atk.def の1行目が -e EXPORTS になってしまう。頭の -e を削除する。
+		sed -i -e 's/^\(\s\+(echo\) -e \(EXPORTS;\)/\1 \2/' ./atk/Makefile
+	else
+		# ソースの修正漏れでビルドできない。
+		sed -i -e 's/-export-symbols atk\.def //' ./atk/Makefile
+	fi
 }
 
 pre_make() {
