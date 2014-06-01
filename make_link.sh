@@ -64,6 +64,16 @@ windmc
 windres
 EOS
 
+# mingw-w64 の pkg-config が使いづらいため、素直にネイティブの pkg-config を使用する。
+	fl="pkg-config"
+	sym="${destination}/${chost}-${fl}"
+	rl="`which ${fl}`"
+	make_symlink "${sym}" "${rl}"
+
+	sym="${destination64}/${chost64}-${fl}"
+	make_symlink "${sym}" "${rl}"
+
+
 # my scripts
 
 # ホストのコンパイラを使うためのスクリプト。
