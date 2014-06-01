@@ -18,7 +18,7 @@ sudo apt-get install intltool
 sudo apt-get install libgtk2.0-dev
 #sudo apt-get install libgtk-3-dev
 sudo apt-get install libffi-dev
-sudo apt-get install bsdtar 7zip*
+sudo apt-get install bsdtar p7zip
 sudo apt-get install dos2unix
 
 配置したディレクトリーに移動し、 bash make_link.sh を実行します。
