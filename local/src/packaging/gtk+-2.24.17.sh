@@ -54,6 +54,25 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
+pre_configure() {
+	if gtk-update-icon-cache --help | grep -ie "--include-image-data" > /dev/null
+	then
+		# ignore
+		echo skip >/dev/null
+	else
+		# ネイティブで動作する gtk-update-icon-cache を作成する。
+		# 2.24.24 から gtk-update-icon-cache が新しくなり、
+		# 古いバージョンと一部非互換になった。
+		./configure &&
+		(
+		cd gtk &&
+		make gtk-update-icon-cache && 
+		cp gtk-update-icon-cache _gtk-update-icon-cache &&
+		make clean
+		)
+	fi
+}
+
 run_configure() {
 	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
@@ -64,6 +83,14 @@ run_configure() {
 }
 
 post_configure() {
+	if [ -e "${PWD}/gtk/_gtk-update-icon-cache" ]
+	then
+		for mf in `find . -name Makefile`
+		do
+			sed -i -e "s!^\(GTK_UPDATE_ICON_CACHE\) =.*!\\1 =\"${PWD}/gtk/_gtk-update-icon-cache\"!" "${mf}"
+		done
+	fi &&
+
 	bash ${XMINGW}/replibtool.sh
 }
 
@@ -82,9 +109,14 @@ run_make() {
 }
 
 run_pack() {
+	if [ -e "${PWD}/gtk/_gtk-update-icon-cache" ]
+	then
+		cp "${PWD}/gtk/_gtk-update-icon-cache" "${INSTALL_TARGET}/bin/."
+	fi &&
+
 	cd "${INSTALL_TARGET}" &&
 	pack_archive "${__BINZIP}" bin/*.dll etc `find lib -name \*.dll` share/{locale,themes} &&
-	pack_archive "${__DEVZIP}" bin/gtk-builder-convert include `find lib -name \*.def -or -name \*.a` lib/gtk-2.0/include lib/pkgconfig share/{aclocal,gtk-2.0,gtk-doc} &&
+	pack_archive "${__DEVZIP}" bin/_* bin/gtk-builder-convert include `find lib -name \*.def -or -name \*.a` lib/gtk-2.0/include lib/pkgconfig share/{aclocal,gtk-2.0,gtk-doc} &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest} &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
