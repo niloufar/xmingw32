@@ -102,7 +102,7 @@ run_configure() {
 }
 
 post_configure() {
-	bash ${XMINGW}/replibtool.sh &&
+	bash ${XMINGW}/replibtool.sh shared static-libgcc &&
 	# libwmf が -lpng 決め打ちしているのでごまかす。
 	# 下は libpng16 を設定している。場所は ${XLIBRARY}/lib 
 	mkdir -p libpng &&

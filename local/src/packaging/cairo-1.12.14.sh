@@ -68,7 +68,7 @@ run_configure() {
 }
 
 post_configure() {
-	bash ${XMINGW}/replibtool.sh shared mix
+	bash ${XMINGW}/replibtool.sh shared mix static-libgcc
 }
 
 run_make() {

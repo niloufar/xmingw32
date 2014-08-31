@@ -57,6 +57,37 @@ local name
 }
 
 run_patch() {
+	# 2.40.3 の不備。
+	patch --batch -p 1 <<EOS
+--- librsvg-2.40.3.orig/rsvg-convert.c
++++ librsvg-2.40.3/rsvg-convert.c
+@@ -36,7 +36,11 @@
+ #include <locale.h>
+ #include <glib/gi18n.h>
+ #include <gio/gio.h>
++#if defined(_WIN32)
++#include <gio/gwin32inputstream.h>
++#else
+ #include <gio/gunixinputstream.h>
++#endif
+ 
+ #include "rsvg-css.h"
+ #include "rsvg.h"
+@@ -213,7 +217,11 @@
+ 
+         if (using_stdin) {
+             file = NULL;
++#if defined(_WIN32)
++            stream = g_win32_input_stream_new (STDIN_FILENO, FALSE);
++#else
+             stream = g_unix_input_stream_new (STDIN_FILENO, FALSE);
++#endif
+         } else {
+             file = g_file_new_for_commandline_arg (args[i]);
+             stream = (GInputStream *) g_file_read (file, NULL, &error);
+EOS
+
+	# windows に realpath, canonicalize_file_name はない。
 	patch --batch -p 1 <<EOS
 --- librsvg-2.40.0.orig/rsvg-base.c
 +++ librsvg-2.40.0/rsvg-base.c

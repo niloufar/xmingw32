@@ -72,7 +72,7 @@ run_configure() {
 
 post_configure() {
 #	cp config.h.win32 config.h &&
-	bash ${XMINGW}/replibtool.sh shared mix
+	bash ${XMINGW}/replibtool.sh shared mix static-libgcc
 #	echo skip > /dev/null
 }
 

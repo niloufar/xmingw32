@@ -106,6 +106,12 @@ run_make() {
 }
 
 pre_pack() {
+	# 2.41.3 の gio.pc が cflags に gio-win32-2.0 を設定しない。
+	if [ -d "${INSTALL_TARGET}/include/gio-win32-2.0" ]
+	then
+		sed -i -e 's|^Cflags:$|\0 -I${includedir}/gio-win32-2.0|' "${INSTALL_TARGET}/lib/pkgconfig/gio-2.0.pc"
+	fi
+
 	sed -i -e "s/^\(glib_genmarshal=\)\(glib-genmarshal\)/\1_\2/" "${INSTALL_TARGET}/lib/pkgconfig/glib-2.0.pc" &&
 	cp gobject/_glib-genmarshal "${INSTALL_TARGET}/bin/." &&
 	cp gio/_glib-compile-schemas "${INSTALL_TARGET}/bin/." &&

@@ -56,6 +56,23 @@ run_configure() {
 	${XMINGW}/cross-configure --disable-static --disable-java --disable-native-java --disable-rpath --disable-openmp --enable-threads=win32 --enable-relocatable --prefix="${INSTALL_TARGET}"
 }
 
+post_configure() {
+	# 使用する場合は bash ${XMINGW}/replibtool.sh にオプションを並べる。
+	# shared ファイルを作ってくれない場合の対処。
+#	bash ${XMINGW}/replibtool.sh shared
+	# static なライブラリーのリンクはこうしないと libtool がいろいろ面倒をみてしまう。
+#	bash ${XMINGW}/replibtool.sh mix
+	# libstdc++ を静的リンクする。
+	for subdir in gettext-runtime gettext-runtime/libasprintf gettext-tools
+	do
+		(
+			cd ${subdir} &&
+			bash ${XMINGW}/replibtool.sh static-libgcc
+		)
+	done
+	# 追加で libtool を書き換える場合は replibtool.sh の実行後に行う。
+}
+
 run_make() {
 	${XMINGW}/cross make GNULIB_MEMCHR=0 install
 }
