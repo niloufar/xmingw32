@@ -57,6 +57,27 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
+pre_configure() {
+	# 1.14.0: configure のつまらないバグ。
+	(patch --batch --quiet --ignore-whitespace -p 0 <<\EOF; return 0)
+--- configure.orig
++++ configure
+@@ -18930,10 +18930,10 @@
+ if ac_fn_c_try_link "$LINENO"; then :
+ 
+ 
+-if strings - conftest | grep noonsees >/dev/null ; then
++if strings - conftest$ac_exeext | grep noonsees >/dev/null ; then
+   ax_cv_c_float_words_bigendian=yes
+ fi
+-if strings - conftest | grep seesnoon >/dev/null ; then
++if strings - conftest$ac_exeext | grep seesnoon >/dev/null ; then
+   if test "$ax_cv_c_float_words_bigendian" = unknown; then
+     ax_cv_c_float_words_bigendian=no
+   else
+EOF
+}
+
 run_configure() {
 	png_REQUIRES=libpng16 \
 	CC="gcc `${XMINGW}/cross --archcflags`" \

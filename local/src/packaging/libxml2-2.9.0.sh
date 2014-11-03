@@ -37,11 +37,44 @@ iconv
 EOS
 }
 
+optional_dependencies() {
+	cat <<EOS
+zlib
+xz
+EOS
+}
+
 
 run_expand_archive() {
 local name
 	name=`find_archive "${__ARCHIVEDIR}" ${__ARCHIVE}` &&
 	expand_archive "${__ARCHIVEDIR}/${name}"
+}
+
+pre_configure() {
+	# 2.9.2: zlib, xz (liblzma) のチェックで LDFLAGS を置き換えないようにする。
+	(patch --batch --quiet --ignore-whitespace -p 0 <<\EOF; return 0)
+--- configure.orig
++++ configure
+@@ -12563,7 +12563,7 @@
+ #define HAVE_ZLIB_H 1
+ _ACEOF
+  SAVE_LDFLAGS="${LDFLAGS}"
+-	 LDFLAGS="-L${Z_DIR}/lib"
++#	 LDFLAGS="-L${Z_DIR}/lib"
+ 	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for gzread in -lz" >&5
+ $as_echo_n "checking for gzread in -lz... " >&6; }
+ if ${ac_cv_lib_z_gzread+:} false; then :
+@@ -12723,7 +12723,7 @@
+ #define HAVE_LZMA_H 1
+ _ACEOF
+  SAVE_LDFLAGS="${LDFLAGS}"
+-	     LDFLAGS="-L${LZMA_DIR}/lib"
++#	     LDFLAGS="-L${LZMA_DIR}/lib"
+             { $as_echo "$as_me:${as_lineno-$LINENO}: checking for lzma_code in -llzma" >&5
+ $as_echo_n "checking for lzma_code in -llzma... " >&6; }
+ if ${ac_cv_lib_lzma_lzma_code+:} false; then :
+EOF
 }
 
 run_configure() {
