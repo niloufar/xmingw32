@@ -47,7 +47,15 @@ do
 done
 
 # ビルド スクリプトをカレント コンテキストに読み込む。
-buildscript=${package}.sh
+buildscript=${package}
+case "${package}" in
+*.sh)
+	;;
+*)
+	buildscript="${buildscript}.sh"
+	;;
+esac
+
 buildscript_path=
 for d in . "${XLIBRARY_PACKAGING}"
 do
