@@ -43,6 +43,7 @@ run_expand_archive() {
 }
 
 run_make() {
+	# prefix を設定しないと zlib.pc の exec_prefix の値がおかしくなる。
 	mkdir -p ${INSTALL_TARGET}/bin &&
 	${XMINGW}/cross make all install \
 	CC="gcc `${XMINGW}/cross --archcflags`" \
@@ -50,6 +51,7 @@ run_make() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
+	prefix="${INSTALL_TARGET}" \
 	-f win32/Makefile.gcc SHARED_MODE=1 "BINARY_PATH=${INSTALL_TARGET}/bin" "INCLUDE_PATH=${INSTALL_TARGET}/include" "LIBRARY_PATH=${INSTALL_TARGET}/lib"
 }
 

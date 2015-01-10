@@ -76,7 +76,7 @@ run_make() {
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
 	pack_archive "${__BINZIP}" bin/*.dll &&
-	pack_archive "${__DEVZIP}" include lib/*.a share/doc &&
+	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig share/doc &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} bin/zx{diff,grep,less,more} share/man/man1 share/locale &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&

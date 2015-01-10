@@ -52,42 +52,6 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
-# 2.5.0.1 の問題に対処する。
-pre_configure() {
-	(patch --batch --quiet --ignore-whitespace -p 0 <<\EOF; return 0)
---- builds/unix/unix-def.in.orig
-+++ builds/unix/unix-def.in
-@@ -103,10 +103,10 @@
- 	    -e 's|%LIBBZ2%|$(LIBBZ2)|' \
- 	    -e 's|%LIBZ%|$(LIBZ)|' \
- 	    -e 's|%build_libtool_libs%|$(build_libtool_libs)|' \
--	    -e 's|%exec_prefix%|$(exec_prefix)|' \
-+	    -e 's|%exec_prefix%|$${prefix}|' \
- 	    -e 's|%ft_version%|$(ft_version)|' \
--	    -e 's|%includedir%|$(includedir)|' \
--	    -e 's|%libdir%|$(libdir)|' \
-+	    -e 's|%includedir%|$${prefix}/include|' \
-+	    -e 's|%libdir%|$${exec_prefix}/lib|' \
- 	    -e 's|%prefix%|$(prefix)|' \
- 	    $< \
- 	    > $@.tmp
-@@ -120,10 +120,10 @@
- 	    -e 's|%LIBBZ2%|$(LIBBZ2)|' \
- 	    -e 's|%LIBZ%|$(LIBZ)|' \
- 	    -e 's|%build_libtool_libs%|$(build_libtool_libs)|' \
--	    -e 's|%exec_prefix%|$(exec_prefix)|' \
-+	    -e 's|%exec_prefix%|$${prefix}|' \
- 	    -e 's|%ft_version%|$(ft_version)|' \
--	    -e 's|%includedir%|$(includedir)|' \
--	    -e 's|%libdir%|$(libdir)|' \
-+	    -e 's|%includedir%|$${prefix}/include|' \
-+	    -e 's|%libdir%|$${exec_prefix}/lib|' \
- 	    -e 's|%prefix%|$(prefix)|' \
- 	    $< \
- 	    > $@.tmp
-EOF
-}
-
 run_configure() {
 	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CC_BUILD=build-cc \
