@@ -5,7 +5,7 @@
 __SCRIPT_NAME=`basename "$0"`
 
 __version() {
-	echo "0.1.2"
+	echo "0.2.0"
 }
 __usage() {
 	echo "usage: ${__SCRIPT_NAME} [option] package-version"

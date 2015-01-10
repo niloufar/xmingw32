@@ -3,6 +3,20 @@
 # license: Apatche v2.0
 
 
+__script_work() {
+	for work in $@
+	do
+		pre=${working}
+
+		__prerunpost ${work}
+		if [ ! 0 -eq $? ]
+		then
+			__fail_exit "ビルド プロセスでエラーが発生しました。"
+		fi
+	done
+}
+
+
 # --range のための変数。
 working=
 
@@ -28,16 +42,22 @@ then
 	__fail_exit "ソース ディレクトリーに移動できません。ソース アーカイブの解凍に失敗した、もしくはビルド スクリプトの設定が間違っています。"
 fi
 
-for work in patch configure make make_test make_example pack
-do
-	pre=${working}
+# ビルドスクリプトの処理を呼び出す。
+__script_work patch configure make make_test make_example
 
-	__prerunpost ${work}
+# pkgconfig ファイルを調べる。
+__work_range "qualitycheck"
+if [ "yes" = "${working}" ]
+then
+	"${PREFIX}/scripts/qualitycheck.pkgconfig" fix "${INSTALL_TARGET}"
 	if [ ! 0 -eq $? ]
 	then
-		__fail_exit "ビルド プロセスでエラーが発生しました。"
+		__fail_exit "pkgconfig ファイルの修正処理においてエラーが発生しました。"
 	fi
-done
+fi
+
+# ビルドスクリプトの処理を呼び出す。
+__script_work pack
 
 if [ "" = "${working}" ]
 then

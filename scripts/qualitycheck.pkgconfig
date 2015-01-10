@@ -1,0 +1,269 @@
+#!/bin/bash
+# vim: tabstop=4 fileformat=unix fileencoding=utf-8 filetype=sh
+
+# license: Apatche v2.0
+
+# pkgconfig ファイルに仮インストール先のアドレスが埋め込まれているか調べる。
+# ディレクトリ単位で調べる。
+qualitycheck_pkgconfig_file() {
+local TARGET_DIR=$1
+local INSTALL_TARGET=$2
+local oldpwd
+local IFS
+local f
+local files=""
+local result=0
+	if [ "" = "${INSTALL_TARGET}" ]
+	then
+		INSTALL_TARGET="${TARGET_DIR}"
+	fi
+
+	if [ -d "${TARGET_DIR}/lib/pkgconfig" ]
+	then
+		oldpwd=`pwd`
+		cd "${TARGET_DIR}/lib/pkgconfig"
+		IFS=""
+		while read f
+		do
+			if __qualitycheck_pkgconfig_file "${f}" "${INSTALL_TARGET}"
+			then
+				# ignore
+				:
+			else
+				if [ "" = "${files}" ]
+				then
+					files="${f}"
+				else
+					files="${files}					
+${f}"
+				fi
+				result=1
+			fi
+		done << EOS
+`ls -1 *.pc 2>/dev/null`
+EOS
+		cd "${oldpwd}"
+	fi
+
+	if [ ! "" = "${files}" ]
+	then
+		echo "${files}"
+	fi
+	return ${result}
+}
+
+# pkgconfig ファイルに仮インストール先のアドレスが埋め込まれているか調べる。
+# ファイルが対象。
+__qualitycheck_pkgconfig_file() {
+local TARGET=$1
+local INSTALL_TARGET=$2
+local warning=""
+local line
+local focus=""
+local irregular=""
+local unfocus=""
+local k
+	while read line
+	do
+		k=`__qualitycheck_pkgconfig_file_key "${line}"`
+		case `echo "${line}" | tr [:upper:] [:lower:]` in
+		prefix=*)
+			# ignore
+			;;
+		exec_prefix=* | libdir=* | includedir=*)
+			case "${line}" in
+			*"${INSTALL_TARGET}"*)
+				focus="${focus} ${k}"
+				;;
+			*)
+				case "${line}" in
+				'exec_prefix=${prefix}')
+					;;
+				'libdir=${exec_prefix}/'*)
+					;;
+				'includedir=${prefix}/'*)
+					;;
+				'includedir=${libdir}/'*)
+					;;
+				*)
+					irregular="${irregular} ${k}"
+				esac
+				;;
+			esac
+			;;
+		"cflags: "*)
+			case "${line}" in
+			*"-I${INSTALL_TARGET}"*)
+				focus="${focus} ${k}"
+				;;
+			esac
+			;;
+		"libs: "* | "libs.private: "*)
+			case "${line}" in
+			*"-L${INSTALL_TARGET}"*)
+				focus="${focus} ${k}"
+				;;
+			esac
+			;;
+		*)
+			case "${line}" in
+			*${INSTALL_TARGET}*)
+				unfocus="${unfocus} ${k}"
+				;;
+			esac
+			;;
+		esac
+	done < "${TARGET}"
+
+	if [ ! "" = "${focus}" ]
+	then
+		focus=`echo "${focus}" | sed -e 's/^ //' -e 's/ /, /g'`
+		warning="${warning} ${focus} に仮インストール先のアドレスが埋め込まれています( fix コマンドで正規化できます)。"
+	fi
+
+	if [ ! "" = "${irregular}" ]
+	then
+		irregular=`echo "${irregular}" | sed -e 's/^ //' -e 's/ /, /g'`
+		warning="${warning} ${irregular} が標準ではない形式で記述されています(望ましくない記述です)。"
+	fi
+
+	if [ ! "" = "${unfocus}" ]
+	then
+		unfocus=`echo "${unfocus}" | sed -e 's/^ //' -e 's/ /, /g'`
+		warning="${warning} ${unfocus} に仮インストール先のアドレスが埋め込まれています(影響はないと思われます)。"
+	fi
+
+	if [ ! "" = "${warning}" ]
+	then
+		echo "WARNING(qualitycheck.pkgconfig): pkgconfig ファイル ${TARGET} に不具合があります。${warning}" >/dev/stderr
+		return 1
+	else
+		return 0
+	fi
+}
+
+__qualitycheck_pkgconfig_file_key() {
+	echo "$1" | awk 'BEGIN{FS="[:=]"};{print $1}'
+}
+
+
+# pkgconfig ファイルの記述を正規化する。
+# 埋め込まれた仮インストール先パスを標準的な記述に置き換える。
+# ディレクトリが対象。
+qualitycheck_pkgconfig_file_fix() {
+local TARGET_DIR=$1
+local INSTALL_TARGET=$2
+local files
+local fixed
+local d
+local f
+local result=0
+	if [ "" = "${INSTALL_TARGET}" ]
+	then
+		INSTALL_TARGET="${TARGET_DIR}"
+	fi
+
+	files=`qualitycheck_pkgconfig_file "${TARGET_DIR}" "${INSTALL_TARGET}"`
+	if [ ! "" = "${files}" ]
+	then
+		d="${TARGET_DIR}/lib/pkgconfig"
+		# IFS=""; while read f; do; done << EOS するべき。
+		for f in ${files}
+		do
+			echo "INFO(qualitycheck.pkgconfig): pkgconfig ファイル ${f} を修正しています。" > /dev/stderr
+			fixed="${f}.tmp"
+			__qualitycheck_pkgconfig_file_fix "${d}/${f}" "${INSTALL_TARGET}" > "${d}/${fixed}"
+			if [ ! 0 -eq $? ]
+			then
+				rm "${d}/${fixed}"
+				echo "FATAL(qualitycheck.pkgconfig): pkgconfig ファイルの修正作業中にエラーが発生しました。" > /dev/stderr
+				result=1
+				break
+			else
+				mv "${d}/${fixed}" "${d}/${f}"
+			fi
+		done
+	fi
+	return ${result}
+}
+
+# pkgconfig ファイルの記述を正規化する。
+# 埋め込まれた仮インストール先パスを標準的な記述に置き換える。
+# ファイルが対象。
+__qualitycheck_pkgconfig_file_fix() {
+local TARGET=$1
+local INSTALL_TARGET=$2
+local line
+	if [ "-" = "${TARGET}" ]
+	then
+		TARGET="/dev/stdin"
+	fi
+
+	while read line
+	do
+		case `echo "${line}" | tr [:upper:] [:lower:]` in
+		prefix=*)
+			# ignore
+			;;
+		exec_prefix=*)
+			line=`__qualitycheck_pkgconfig_file_replace "${line}" "${INSTALL_TARGET}" '${prefix}'`
+			;;
+		libdir=*)
+			line=`__qualitycheck_pkgconfig_file_replace "${line}" "${INSTALL_TARGET}" '${exec_prefix}'`
+			;;
+		includedir=*)
+			line=`__qualitycheck_pkgconfig_file_replace "${line}" "${INSTALL_TARGET}" '${prefix}'`
+			;;
+		libs:* | libs.private:*)
+			line=`__qualitycheck_pkgconfig_file_replace "${line}" "-L${INSTALL_TARGET}/lib" '-L${libdir}'`
+			;;
+		cflags:*)
+			line=`__qualitycheck_pkgconfig_file_replace "${line}" "-I${INSTALL_TARGET}/include" '-I${includedir}'`
+			;;
+		esac
+		echo "${line}"
+	done < "${TARGET}"
+}
+
+# 文字列置換。 awk を使用している。
+# string, pattern, replace
+__qualitycheck_pkgconfig_file_replace() {
+	echo `echo "$1" | awk "{ gsub( r, s ); print \\$0 }" r="$2" s="$3"`
+}
+
+
+if [ "" = "${IN_PACKAGE_SCRIPT}" ]
+then
+	result=0
+	case "$1" in
+	c | check)
+		shift
+		if [ -d "$1" ]
+		then
+			qualitycheck_pkgconfig_file "$@"
+		elif [ -e "$1" ]
+		then
+			__qualitycheck_pkgconfig_file "$@"
+		fi
+		result=$?
+		;;
+	f | fix)
+		shift
+		if [ -d "$1" ]
+		then
+			qualitycheck_pkgconfig_file_fix "$@"
+		elif [ -e "$1" ]
+		then
+			__qualitycheck_pkgconfig_file_fix "$@"
+		fi
+		result=$?
+		;;
+	*)
+		echo "command list: (c)heck, (f)ix"
+		;;
+	esac
+	exit ${result}
+fi
+
+
+

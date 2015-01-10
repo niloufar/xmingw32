@@ -1,0 +1,16 @@
+prefix=/usr/xmingw/xmingw32/local/src/build/8165a865c322c507b4e76db65aee213a
+exec_prefix=/usr/local
+libdir=/usr/xmingw/xmingw32/local/src/build/8165a865c322c507b4e76db65aee213a/lib
+includedir=/usr/xmingw/xmingw32/local/src/build/8165a865c322c507b4e76db65aee213a/include/foo
+sharedlibdir=/usr/xmingw/xmingw32/local/src/build/8165a865c322c507b4e76db65aee213a
+
+Name: foo
+URL: http://foo.org
+Description: A foo.
+Version: 17.4.11
+Requires:
+Requires.private: zlib, harfbuzz >= 0.9.19
+Libs: -L/usr/xmingw/xmingw32/local/src/build/8165a865c322c507b4e76db65aee213a/lib -lfoo
+Libs.private: -lbz2 -L/usr/xmingw/xmingw32/local/libs64/lib/lib -lpng16
+Cflags: -I/usr/xmingw/xmingw32/local/src/build/8165a865c322c507b4e76db65aee213a/include
+
