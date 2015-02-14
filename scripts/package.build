@@ -31,7 +31,7 @@ if [ -d "${DIRECTORY}" ]
 then
 	echo "WARRING: 古い、展開されたディレクトリー '${DIRECTORY}' が存在します。ビルドに不具合が紛れ込む可能性があります。ビルドを中止し、ディレクトリーを削除してから、再度ビルドを試みることをおすすめします。"
 fi
-__prerunpost expand_archive
+__script_work expand_archive
 if [ ! 0 -eq $? ]
 then
 	__fail_exit "ソース アーカイブを発見できませんでした。"
@@ -43,7 +43,20 @@ then
 fi
 
 # ビルドスクリプトの処理を呼び出す。
-__script_work patch configure make make_test make_example
+__script_work patch configure
+
+# configure が nm を発見できなかった場合、 libtool の global_symbol_pipe が空になる。
+if grep libtool -e '^global_symbol_pipe=""' >/dev/null 2>&1
+then
+	echo "WARNING(package): configure が nm コマンドを発見できなかった可能性があります。 libtool の global_symbol_pipe が空になっています。 shared でリンクする場合にエラーになると予想されます。"
+	if [ ! -e "${XMINGW_BIN}/${TARGET}-nm" ]
+	then
+		echo "WARNING(package): おそらく env.sh で定義した TARGET 変数と bin フォルダの *-nm が一致していないことが原因です。"
+	fi
+fi
+
+# ビルドスクリプトの処理を呼び出す。
+__script_work make make_test make_example
 
 # pkgconfig ファイルを調べる。
 __work_range "qualitycheck"
