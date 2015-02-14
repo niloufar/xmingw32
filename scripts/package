@@ -156,7 +156,14 @@ archives)
 	set | grep -e "^__[A-Z]\+ZIP" | while read var
 	do
 		arch=`echo "${var}" | sed -e "s/^.\+=//"`
-		echo "${arch}.7z"
+		case "${arch}" in
+		*.tar)
+			echo "${arch}.xz"
+			;;
+		*)
+			echo "${arch}.7z"
+			;;
+		esac
 	done
 	exit 0
 	;;

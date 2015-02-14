@@ -29,25 +29,28 @@ local name
 }
 
 expand_archive() {
+local SEVENZIPCMD="7z"
+local TARCMD="tar"
+local UNZIPCMD="unzip"
 	local NAME=$1
 	case "${NAME}" in
 	*.7z)
-		7z -y x "${NAME}"
+		${SEVENZIPCMD} -y x "${NAME}"
 		;;
 	*.tar.xz)
-		tar -Jxf "${NAME}"
+		${TARCMD} -Jxf "${NAME}"
 		;;
 	*.tar.lzma)
-		tar --lzma -xf "${NAME}"
+		${TARCMD} --lzma -xf "${NAME}"
 		;;
 	*.tar.bz2)
-		tar -jxf "${NAME}"
+		${TARCMD} -jxf "${NAME}"
 		;;
 	*.tar.gz)
-		tar -zxf "${NAME}"
+		${TARCMD} -zxf "${NAME}"
 		;;
 	*.zip)
-		unzip "${NAME}"
+		${UNZIPCMD} "${NAME}"
 		;;
 	*) 
 		echo "error: unsupported archive '${NAME}'"
@@ -58,9 +61,14 @@ expand_archive() {
 }
 
 pack_archive() {
-	local NAME=$1
-	local DIR="manifest"
-	local MFT="${DIR}/${NAME}.mft"
+local NAME=$1
+local DIR="manifest"
+local MFT="${DIR}/${NAME}.mft"
+local SEVENZIPCMD="7z"
+local TARCMD="tar"
+local XZCMD="xz"
+local ARCSUFFIX_7ZIP=".7z"
+local ARCSUFFIX_TARXZ=".xz"
 	shift &&
 	mkdir -p "${DIR}" &&
 #	find "$@" > "${MFT}" &&
@@ -70,13 +78,29 @@ pack_archive() {
 	done)
 	if [ ! \( -s "${MFT}" \) ]; then return 1; fi
 	echo "${MFT}" >> "${MFT}" &&
-	7z a "${NAME}.7z" -mmt -mx9 "$@" "${MFT}"
+	case "${NAME}" in
+	*.tar)
+		${TARCMD} -c "$@" "${MFT}" | ${XZCMD} -z -9 > "${NAME}${ARCSUFFIX_TARXZ}"
+		;;
+	*)
+		${SEVENZIPCMD} a "${NAME}${ARCSUFFIX_7ZIP}" -mmt -mx9 "$@" "${MFT}"
+		;;
+	esac
 	return $?
 }
 
 store_packed_archive() {
-	local NAME=$1
-	mv "${NAME}.7z" "${XLIBRARY_ARCHIVES}/."
+local NAME=$1
+local ARCSUFFIX_7ZIP=".7z"
+local ARCSUFFIX_TARXZ=".xz"
+	case "${NAME}" in
+	*.tar)
+		mv "${NAME}${ARCSUFFIX_TARXZ}" "${XLIBRARY_ARCHIVES}/."
+		;;
+	*)
+		mv "${NAME}${ARCSUFFIX_7ZIP}" "${XLIBRARY_ARCHIVES}/."
+		;;
+	esac
 	return $?
 }
 
