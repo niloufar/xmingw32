@@ -113,7 +113,7 @@ do
 		esac
 		;;
 	--feature)
-		opt_feature=`echo "${2}" | sed -e's/^\([a-z0-9]*\).*/\1/'`
+		opt_feature=`echo "${2}" | sed -e's/^\([a-zA-Z0-9]*\).*/\1/'`
 		shift
 		;;
 	--os)
