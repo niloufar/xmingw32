@@ -84,6 +84,13 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
+pre_configure() {
+	if [ ! -e "./configure" ]
+	then
+		NOCONFIGURE=1 $XMINGW/cross-host ./autogen.sh --disable-gtk-doc --disable-dependency-tracking
+	fi
+}
+
 run_configure() {
 	# _WIN32_WINNT=0x0503 は XP SP3 （推測）
 	# little cms の問題で -Dcdecl=LCMSAPI している。
@@ -136,8 +143,27 @@ run_make() {
 #	echo skip > /dev/null
 }
 
+run_make_test() {
+	(
+	(cd app/tests && ${XMINGW}/cross make test-core.exe test-gimpidtable.exe test-save-and-export.exe test-session-2-6-compatibility.exe test-session-2-8-compatibility-multi-window.exe test-session-2-8-compatibility-single-window.exe test-single-window-mode.exe test-tools.exe test-ui.exe test-xcf.exe) &&
+
+	TESTSZIP=${MOD}-${VER}-${REV}-tests_${ARCHSUFFIX} &&
+	pack_archive "${TESTSZIP}" app/tests/*.exe app/tests/{.libs,files,gimpdir,gimpdir-empty,gimpdir-output} tools/test-clipboard.exe tools/.libs/\*test-clipboard\*
+	)
+	return 0
+}
+
 pre_pack() {
-	cp {AUTHORS,COPYING,ChangeLog,LICENSE,NEWS,README} "${INSTALL_TARGET}/." &&
+local files=""
+	# head には ChangeLog がない。
+	for f in AUTHORS COPYING ChangeLog LICENSE NEWS README
+	do
+		if [ -e "${f}" ]
+		then
+			files="${files} ${f}"
+		fi
+	done
+	cp ${files} "${INSTALL_TARGET}/." &&
 	(cd "${INSTALL_TARGET}" &&
 	# 外観を windows 標準にする。
 	mkdir -p etc/gtk-2.0 &&
@@ -154,14 +180,7 @@ run_pack() {
 	pack_archive "${__BINZIP}" bin/*.{exe,dll,local} etc `find lib/gimp -xtype f -not -iname \*.a -and -not -iname \*.la` share/{gimp,icons,locale} [ACLNR]* &&
 	pack_archive "${__DEVZIP}" bin/gimptool-2.0* include `find lib -xtype f -iname \*.a -or -iname \*.def` lib/pkgconfig share/{aclocal,icons} &&
 	store_packed_archive "${__BINZIP}" &&
-	store_packed_archive "${__DEVZIP}") &&
-
-	(
-	(cd app/tests && ${XMINGW}/cross make test-core.exe test-gimpidtable.exe test-save-and-export.exe test-session-2-6-compatibility.exe test-session-2-8-compatibility-multi-window.exe test-session-2-8-compatibility-single-window.exe test-single-window-mode.exe test-tools.exe test-ui.exe test-xcf.exe) &&
-
-	TESTSZIP=${MOD}-${VER}-${REV}-tests_${ARCHSUFFIX} &&
-	pack_archive "${TESTSZIP}" app/tests/*.exe app/tests/{.libs,files,gimpdir,gimpdir-empty,gimpdir-output} tools/test-clipboard.exe tools/.libs/\*test-clipboard\*
-	)
+	store_packed_archive "${__DEVZIP}")
 }
 
 

@@ -13,6 +13,8 @@ fi
 # ARCH は package が設定している。
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
+	XLIBRARY_SET=${XLIBRARY}/gimp_build_set
+
 	# package に返す変数。
 	MOD=poppler
 	if [ "" = "${VER}" ]
