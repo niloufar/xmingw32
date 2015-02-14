@@ -69,10 +69,12 @@ pre_configure() {
 
 run_configure() {
 	CC="gcc `${XMINGW}/cross --archcflags`" \
+	CXX="g++ `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
-	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math  -static-libgcc" \
+	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math " \
+	CXXFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math " \
 	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}"
 }
 
@@ -111,7 +113,7 @@ pre_pack() {
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
 	pack_archive "${__BINZIP}" bin/*.dll &&
-	pack_archive "${__DEVZIP}" include lib/*.a share/doc share/man/man3 &&
+	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig share/doc share/man/man3 &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 share/locale &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
