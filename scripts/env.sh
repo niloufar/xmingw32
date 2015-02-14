@@ -48,7 +48,7 @@ fi
 
 case "${XMINGW_PLATFORM}" in
 win32)
-	TARGET=i686-pc-mingw32
+	TARGET=i686-w64-mingw32
 	;;
 win64)
 	TARGET=x86_64-w64-mingw32
@@ -110,5 +110,10 @@ win64)
 esac
 export XLIBRARY
 export XLIBRARY_SET=${XLIBRARY}/default_set
+
+if [ ! -e "${XMINGW_BIN}/${TARGET}-nm" ]
+then
+    echo "${LINENO}: WARNING: ターゲット名(${TARGET})と bin ディレクトリーのコマンド名の不一致があります。 configure がコマンドを見つけられない可能性があります。"
+fi
 
 
