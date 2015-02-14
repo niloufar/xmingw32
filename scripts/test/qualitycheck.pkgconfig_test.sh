@@ -10,19 +10,36 @@ local s
 local e
 local a
 	s="libdir=${path}/lib"
-	e="libdir=\${exec_prefix}/lib"
-	a=`__qualitycheck_pkgconfig_file_replace "${s}" "${path}" "\\${exec_prefix}"`
+	e='libdir=${exec_prefix}/lib'
+	a=`__qualitycheck_pkgconfig_file_replace "${s}" "${path}" '${exec_prefix}'`
     assertEquals "${e}" "${a}"
 
 	s="Cflags=-I${path}/include -I${path}/include/freetype2"
-    e="Cflags=-I\${includedir} -I\${includedir}/freetype2"
-	a=`__qualitycheck_pkgconfig_file_replace "${s}" "${path}/include" "\\${includedir}"`
+    e='Cflags=-I${includedir} -I${includedir}/freetype2'
+	a=`__qualitycheck_pkgconfig_file_replace "${s}" "${path}/include" '${includedir}'`
     assertEquals "${e}" "${a}"
 
 	s=`dirname ${path}`
     e=${s}
 	a=`__qualitycheck_pkgconfig_file_replace "${s}" "${path}" "***"`
     assertEquals "${e}" "${a}"
+
+	# 正規表現が使える場合、望ましくない実装であり、脆弱性につながる。
+	s="Cflags=-I${path}/include -I${path}/include/freetype2"
+    e="=-//////// -/////////"
+	a=`__qualitycheck_pkgconfig_file_replace "${s}" '[a-zA-Z0-9]' ""`
+    assertNotEquals "regexp 1-1." "${e}" "${a}"
+    assertEquals "regexp 1-2." "${s}" "${a}"
+
+	s="Cflags=-I${path}/include -I${path}/include/freetype2"
+    e=${s}
+	a=`__qualitycheck_pkgconfig_file_replace "${s}" '/[a-zA-Z0-9]/' ""`
+    assertEquals "regexp 2." "${e}" "${a}"
+
+	s="Cflags=-I${path}/include -I${path}/include/freetype2"
+    e=${s}
+	a=`__qualitycheck_pkgconfig_file_replace "${s}" '" "{print \"***\"}"' ""`
+    assertEquals "shell." "${e}" "${a}"
 }
 
 test_check() {
