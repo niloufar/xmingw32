@@ -5,7 +5,7 @@
 
 if [ "" = "${IN_PACKAGE_SCRIPT}" ]
 then
-	echo FAIL: \${XMINGW}/package から実行してください。
+	echo "FAIL: \${XMINGW}/package から実行してください。"
 	exit 1
 fi
 
@@ -49,6 +49,7 @@ license() {
 	cat <<EOS
 EOS
 }
+
 
 run_expand_archive() {
 local name
