@@ -86,7 +86,9 @@ fi
 if [ "yes" = "${e_static_libgcc}" -o "yes" = "${e_all}" ]
 then
   sed -i -e'/^postdeps=/{s/-lstdc[+][+]//}' \
+		-e'/^postdeps=/{s/-lgcc_s -lgcc /-lgcc -lgcc_eh /g}' \
 		-e'/^archive_cmds=/{s/-nostdlib/-static-libgcc -static-libstdc++/}' \
+		-e'/^\s\+\\$CC\s\+-shared/{s/-nostdlib/-static-libgcc -static-libstdc++/}' \
 		-e's/^predep_objects=".\+"/predep_objects=""/' \
 		-e's/^postdep_objects=".\+"/postdep_objects=""/' \
 		"${lt}"
