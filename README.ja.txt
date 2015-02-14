@@ -1,7 +1,7 @@
-Ubuntu 13.10 で MinGW-w64 をクロスビルドするためのスクリプト集です。
+Ubuntu 14.10 で MinGW-w64 をクロスビルドするためのスクリプト集です。
 公開を考えて作成していないスクリプトですので、ひどい内容となっています。
 
-スクリプトを /usr/xmingw/xmingw32 に配置してください。異なる場所に配置したい
+ファイルを /usr/xmingw/xmingw32 に配置してください。異なる場所に配置したい
 場合は scripts ディレクトリーのスクリプトに記述された当該箇所を書き換えてくださ
 い。
 
@@ -12,6 +12,7 @@ Ubuntu の開発環境を整えます。つぎのツール、ライブラリー�
 
 sudo apt-get install gcc-mingw-w64 g++-mingw-w64 mingw-w64-tools
 sudo apt-get install automake autoconf libtool
+sudo apt-get install docbook-xml docbook-xsl
 sudo apt-get install intltool
 #sudo apt-get install flex bison
 #sudo apt-get install gobject-introspection
@@ -93,9 +94,16 @@ $XMINGW/package bzip2-1.0.6
 
 ビルドした実行ファイルが gcc の dll とリンクしている場合があります。 dll は次の
 場所に保存されています。 i686-w64-* が win32 、 x86_64-w64-* が win64 用です。
+ Ubuntu 14.10 の MinGW-w64 は win32 と win64 で Exception Handling が
+ 異なります。 win32 が sjlj、 win64 が seh になっています。 win64 は以前は
+  sjlj でした。 Exception Handling の違いによる影響があるかもしれません。
 
-> /usr/lib/gcc/i686-w64-mingw32/4.6
-> /usr/lib/gcc/x86_64-w64-mingw32/4.6
+> /usr/lib/gcc/i686-w64-mingw32/4.9-posix
+> /usr/lib/gcc/i686-w64-mingw32/4.9-win32
+> /usr/i686-w64-mingw32/lib
+> /usr/lib/gcc/x86_64-w64-mingw32/4.9-posix
+> /usr/lib/gcc/x86_64-w64-mingw32/4.9-win32
+> /usr/x86_64-w64-mingw32/lib
 
 
 
