@@ -47,11 +47,11 @@ local name
 }
 
 # XP のための特別な処理。
-pre_configure_xp() {
+run_patch_xp() {
 	# XP の %windir%\system32\msvcrt.dll に _mktemp_s が定義されていない。
 	# Win7 には定義されている。
 	# configure で LDFLAGS に -lmsvcr100 を渡す方がよいのかもしれない。
-	patch --batch -p 0 <<EOF
+	patch_adhoc -p 0 <<EOF
 --- src/fccompat.c.orig
 +++ src/fccompat.c
 @@ -96,7 +96,7 @@

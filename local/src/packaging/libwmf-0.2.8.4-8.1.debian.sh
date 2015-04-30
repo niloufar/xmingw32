@@ -68,11 +68,7 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}" &&
 	cd "${DIRECTORY}" &&
 	name=`find_archive "${__ARCHIVEDIR}" ${__PATCH_ARCHIVE}` &&
-	expand_archive "${__ARCHIVEDIR}/${name}" &&
-	for fl in `cat debian/patches/series`
-	do
-		patch --batch -p 1 -i debian/patches/${fl}
-	done &&
+	patch_debian "${__ARCHIVEDIR}/${name}" &&
 	cd ..
 }
 
@@ -82,7 +78,7 @@ pre_configure() {
 	ln -f -s ${XLIBRARY}/lib/include/libpng16 libpng/include &&
 	mkdir -p libpng/lib &&
 	ln -f -s ${XLIBRARY}/lib/lib/libpng16.dll.a libpng/lib/libpng.dll.a &&
-	patch -p 1 <<\EOF
+	patch_adhoc -p 1 <<\EOF
 --- libwmf-0.2.8.4.orig/src/ipa/ipa/bmp.h
 +++ libwmf-0.2.8.4/src/ipa/ipa/bmp.h
 @@ -66,7 +66,7 @@

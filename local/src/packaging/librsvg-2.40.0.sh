@@ -58,7 +58,7 @@ local name
 
 run_patch() {
 	# 2.40.3 の不備。
-	patch --batch -p 1 <<EOS
+	patch_adhoc -p 1 <<EOS
 --- librsvg-2.40.3.orig/rsvg-convert.c
 +++ librsvg-2.40.3/rsvg-convert.c
 @@ -36,7 +36,11 @@
@@ -88,7 +88,7 @@ run_patch() {
 EOS
 
 	# windows に realpath, canonicalize_file_name はない。
-	patch --batch -p 1 <<EOS
+	patch_adhoc -p 1 <<EOS
 --- librsvg-2.40.0.orig/rsvg-base.c
 +++ librsvg-2.40.0/rsvg-base.c
 @@ -57,6 +57,56 @@

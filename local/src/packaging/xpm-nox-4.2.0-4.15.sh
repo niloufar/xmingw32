@@ -61,10 +61,10 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
-pre_configure() {
-	patch -p 1 -i "${__ARCHIVEDIR}/${__PATCH_ARCHIVE}" &&
+run_patch() {
+	patch_adhoc -p 1 -i "${__ARCHIVEDIR}/${__PATCH_ARCHIVE}" &&
 	# openSUSE Build Service のパッチを使用する場合は下記パッチは必要ない。
-	patch -p 1 <<\EOF
+	patch_adhoc -p 1 <<\EOF
 --- xpm-nox-4.2.0.orig/lib/misc.c
 +++ xpm-nox-4.2.0/lib/misc.c
 @@ -79,8 +79,7 @@

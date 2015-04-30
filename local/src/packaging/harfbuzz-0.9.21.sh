@@ -63,7 +63,7 @@ local name
 
 run_patch() {
 	# harfbuzz.pc で prefix 変数を参照するべきところを埋め込みにしている。
-	(patch --batch --quiet -p 0 <<\EOF; return 0)
+	(patch_adhoc -p 0 <<\EOF; return 0)
 --- src/Makefile.in.orig
 +++ src/Makefile.in
 @@ -1782,9 +1782,9 @@

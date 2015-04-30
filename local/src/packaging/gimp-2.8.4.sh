@@ -118,7 +118,7 @@ post_configure() {
 	ln -f -s ${XLIBRARY}/lib/lib/libpng16.dll.a libpng/lib/libpng.dll.a &&
 	mkdir -p "${INSTALL_TARGET}" &&
 	# ファイル パスに GIMP_APP_VERSION が含まれていた場合に発生する不具合への対処。
-	patch -p 1 <<EOS
+	patch_adhoc -p 1 <<EOS
 --- gimp-2.8.4.orig/app/core/gimp-user-install.c
 +++ gimp-2.8.4/app/core/gimp-user-install.c
 @@ -226,7 +226,11 @@

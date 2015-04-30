@@ -58,7 +58,7 @@ run_patch() {
 	# bzip2.c の sys\stat.h を sys/stat.h に置き換える。
 	sed -i.orig -e 's!sys\\stat!sys/stat!' bzip2.c &&
 #	# bzlib.h の WINAPI を DECLSPEC_EXPORT に置き換える。
-	patch -p 0 <<\EOS &&
+	patch_adhoc -p 0 <<\EOS &&
 --- bzlib.h.orig
 +++ bzlib.h
 @@ -81,12 +81,15 @@
@@ -81,7 +81,7 @@ run_patch() {
  #else
 EOS
 	# Makefile
-	patch -p 0 <<\EOS &&
+	patch_adhoc -p 0 <<\EOS &&
 --- Makefile.orig
 +++ Makefile
 @@ -35,13 +35,15 @@
@@ -155,7 +155,7 @@ EOS
  
 EOS
 	# Makefile-libbz2_so
-	patch -p 0 <<\EOS
+	patch_adhoc -p 0 <<\EOS
 --- Makefile-libbz2_so.orig
 +++ Makefile-libbz2_so
 @@ -35,8 +35,8 @@

@@ -53,7 +53,7 @@ local name
 
 pre_configure() {
 	# 2.9.2: zlib, xz (liblzma) のチェックで LDFLAGS を置き換えないようにする。
-	(patch --batch --quiet --ignore-whitespace -p 0 <<\EOF; return 0)
+	(patch_adhoc -p 0 <<\EOF; return 0)
 --- configure.orig
 +++ configure
 @@ -12563,7 +12563,7 @@

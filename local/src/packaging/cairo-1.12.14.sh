@@ -57,9 +57,9 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
-pre_configure() {
+run_patch() {
 	# 1.14.0: configure のつまらないバグ。
-	(patch --batch --quiet --ignore-whitespace -p 0 <<\EOF; return 0)
+	(patch_adhoc -p 0 <<\EOF; return 0)
 --- configure.orig
 +++ configure
 @@ -18930,10 +18930,10 @@
