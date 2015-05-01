@@ -92,11 +92,14 @@ post_configure() {
 }
 
 pre_make() {
-	# 3.14.4: util/extract-strings をネイティブでビルドできない問題への対処。
-	(cd util &&
-	touch extract_strings-extract-strings.o &&
-	gcc extract-strings.c -o extract-strings.exe `$XMINGW/cross-host pkg-config --cflags --libs glib-2.0`
-	)
+	if [ -d "util" ]
+	then
+		# 3.14.4: util/extract-strings をネイティブでビルドできない問題への対処。
+		(cd util &&
+		touch extract_strings-extract-strings.o &&
+		gcc extract-strings.c -o extract-strings.exe `$XMINGW/cross-host pkg-config --cflags --libs glib-2.0`
+		)
+	fi
 }
 
 run_make() {

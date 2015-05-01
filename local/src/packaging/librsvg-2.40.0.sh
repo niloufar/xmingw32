@@ -57,6 +57,11 @@ local name
 }
 
 run_patch() {
+	# 2.40.9 で以下のパッチは必要なくなった。
+	if grep rsvg-base.c -e rsvg_realpath_utf8 > /dev/null
+	then
+		return 0
+	fi
 	# 2.40.3 の不備。
 	patch_adhoc -p 1 <<EOS
 --- librsvg-2.40.3.orig/rsvg-convert.c
