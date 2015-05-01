@@ -96,7 +96,7 @@ pre_configure() {
 local gen=1
 	[ -e configure ] || gen=0
 	[ 1 -eq ${gen} ] && find configure.ac -newer configure && gen=0
-	[ 0 -eq ${gen} ] && sh autogen.sh
+	[ 0 -eq ${gen} ] && NOCONFIGURE=1 $XMINGW/cross-host sh autogen.sh
 	return 0
 }
 

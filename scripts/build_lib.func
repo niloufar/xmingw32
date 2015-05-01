@@ -115,7 +115,7 @@ local patches_dir="debian/patches"
 }
 
 patch_adhoc() {
-	patch --batch --quiet --ignore-whitespace --forward "$@"
+	patch --batch --ignore-whitespace --forward "$@"
 }
 
 

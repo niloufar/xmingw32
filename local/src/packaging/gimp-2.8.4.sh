@@ -87,7 +87,7 @@ local name
 pre_configure() {
 	if [ ! -e "./configure" ]
 	then
-		NOCONFIGURE=1 $XMINGW/cross-host ./autogen.sh --disable-gtk-doc --disable-dependency-tracking
+		NOCONFIGURE=1 $XMINGW/cross-host sh ./autogen.sh --disable-gtk-doc --disable-dependency-tracking
 	fi
 }
 
