@@ -169,6 +169,15 @@ local files=""
 	mkdir -p etc/gtk-2.0 &&
 	cat <<EOF > etc/gtk-2.0/gtkrc &&
 gtk-theme-name = "MS-Windows"
+style "win-font"
+{
+#  font_name = "System 9"
+#  font_name = "MS UI Gothic 9"
+#  font_name = "MS Gothic 9"
+#  font_name = "Meiryo UI 9"
+  font_name = "Meiryo 9"
+}
+widget "*" style "win-font"
 EOF
 	# side-by-side
 	echo > bin/gimp-2.8.exe.local &&
