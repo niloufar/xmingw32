@@ -48,6 +48,37 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
+run_patch() {
+	# 2.45.4
+	# -Werror=format= に引っかかっていた。
+	# また、 g_once_init_enter 関数の使い方がおかしい。実装も変だがまあいい。
+	# Threads: GLib Reference Manual <https://developer.gnome.org/glib/stable/glib-Threads.html#g-once-init-enter>
+	sed -i.orig \
+		-e 's/\(g_debug ("%u undefhandled [^"]\+", \)\(unhandled_\)/\1(unsigned int)\2/' \
+		-e 's/static gboolean initialized = FALSE/static gsize initialized = 0/' \
+		gio/gwin32appinfo.c
+	# 2.45.2
+	# msvcrt.dll 未定義の関数を定義済み関数に置き換える。
+	# _wstat32i64 関数は msvcr{8,9,10,11}0.dll で実装されている。 msvcrt.dll にはない。
+	# _wstati64 関数は msvcrt.dll にある。両関数は時刻型/ファイル長の種類が同じ。
+	# _wstati64 関数は _USE_32BIT_TIME_T を定義する。
+	# https://msdn.microsoft.com/ja-jp/library/14h5k7ff.aspx
+	sed -i.orig -e 's/_wstat32i64/_wstati64/' gio/glocalfile.c
+	# 2.45.7
+	# GStatBuf の定義の問題で (void*) でキャストしている。
+	sed -i.orig -e 's/retval = _wstat (wfilename, buf);/retval = _wstat (wfilename, (void*)buf);/' glib/gstdio.c
+	# strerror_r 関数は windows には存在しない。かわりに strerror_s 関数を使用する。
+	# strerror_s 関数と strerror_r 関数は引数の並び順が異なることに注意する。
+	# strerror_s、_strerror_s、_wcserror_s、__wcserror_s <https://msdn.microsoft.com/ja-jp/library/51sah927.aspx>
+	sed -i.orig -e '/#ifdef G_OS_WIN32/,/#endif/ {' \
+		-e 's/#endif/\0\n#if !defined(strerror_r) \&\& (defined(_MSC_VER) || defined(_WIN64) || defined(__MINGW32__))\n#ifndef strerror_s\n_CRTIMP errno_t __cdecl strerror_s(char *_Buf,size_t _SizeInBytes,int _ErrNum);\n#endif\n#define strerror_r(e, b, s) strerror_s(b, s, e)\n#endif/' \
+		-e '}' glib/gstrfuncs.c
+##ifndef strerror_s
+#_CRTIMP errno_t __cdecl strerror_s(char *_Buf,size_t _SizeInBytes,int _ErrNum);
+##endif
+	return 0
+}
+
 pre_configure() {
 	make clean 2>&1 > /dev/null
 	# glib 2.37.7 のバグ？

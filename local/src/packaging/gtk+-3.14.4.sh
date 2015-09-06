@@ -88,7 +88,13 @@ run_configure() {
 post_configure() {
 	# 使用する場合は bash ${XMINGW}/replibtool.sh にオプションを並べる。
 	# shared ファイルを作ってくれない場合の対処。
-	bash ${XMINGW}/replibtool.sh shared
+	bash ${XMINGW}/replibtool.sh shared &&
+	# 3.16.4
+	# ビルドした gtk-update-icon-cache を実行しようとする。 demos であり、ごまかす。
+	if grep demos/gtk-demo/Makefile -ie "update_icon_cache = .\+" >/dev/null 2>&1
+	then
+		ln -s "`which gtk-update-icon-cache`" gtk/gtk-update-icon-cache
+	fi
 }
 
 pre_make() {

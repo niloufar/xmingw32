@@ -85,7 +85,7 @@ post_configure() {
 	# 追加で libtool を書き換える場合は replibtool.sh の実行後に行う。
 	bash ${XMINGW}/replibtool.sh shared mix static-libgcc &&
 	# .exe まわりで不備があった。
-	sed -i -e's|EXIV2BIN = ../bin/$(EXIV2MAIN:.cpp=)|EXIV2BIN = ../bin/$(EXIV2MAIN:.cpp=$(EXEEXT))|' src/Makefile
+	sed -i -e's!EXIV2BIN\s*=\s*\(../bin/\|\)$(EXIV2MAIN:.cpp=)!EXIV2BIN = \1$(EXIV2MAIN:.cpp=$(EXEEXT))!' src/Makefile
 }
 
 run_make() {

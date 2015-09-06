@@ -103,7 +103,7 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base \
 	-L${PWD}/libpng/lib \
-	-lwsock32 -lole32 -Wl,-s" \
+	-lgdi32 -lwsock32 -lole32 -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
 	${XMINGW}/cross-configure --enable-shared --disable-static --enable-mmx --enable-sse --disable-python --without-x --prefix="${INSTALL_TARGET}"
 }
@@ -166,12 +166,12 @@ local files=""
 	cp ${files} "${INSTALL_TARGET}/." &&
 	(cd "${INSTALL_TARGET}" &&
 	# 外観を windows 標準にする。
+	# pango により代替フォントとして使用される arial unicode ms は品質が悪い。
 	mkdir -p etc/gtk-2.0 &&
 	cat <<EOF > etc/gtk-2.0/gtkrc &&
 gtk-theme-name = "MS-Windows"
 style "win-font"
 {
-#  font_name = "System 9"
 #  font_name = "MS UI Gothic 9"
 #  font_name = "MS Gothic 9"
 #  font_name = "Meiryo UI 9"

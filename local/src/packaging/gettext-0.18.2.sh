@@ -47,6 +47,48 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
+run_patch() {
+local flag
+	# 0.19.5.1 では cldr-plurals.exe のビルドでエラーになる。
+	if grep gettext-tools/src/Makefile.in -e "cldr-plurals" > /dev/null 2>&1
+	then
+		if grep gettext-tools/src/Makefile.in -e "cldr_plurals_CPPFLAGS" > /dev/null 2>&1
+		then
+			: # ignore
+		else
+			flag="YES"
+		fi
+	fi
+	if [ "${flag}" == "YES" ]
+	then
+		patch_adhoc -p 1 <<\EOS
+--- gettext-0.19.5.1.orig/gettext-tools/src/Makefile.in
++++ gettext-0.19.5.1/gettext-tools/src/Makefile.in
+@@ -2110,6 +2110,7 @@
+ recode_sr_latin_CPPFLAGS = $(AM_CPPFLAGS) -DINSTALLDIR=\"$(bindir)\"
+ hostname_CPPFLAGS = $(AM_CPPFLAGS) -DINSTALLDIR=\"$(pkglibdir)\"
+ urlget_CPPFLAGS = $(AM_CPPFLAGS) -DINSTALLDIR=\"$(pkglibdir)\"
++cldr_plurals_CPPFLAGS = $(AM_CPPFLAGS) -DINSTALLDIR=\"$(pkglibdir)\"
+ @RELOCATABLE_VIA_LD_TRUE@msgcmp_LDFLAGS = `$(RELOCATABLE_LDFLAGS) $(bindir)`
+ @RELOCATABLE_VIA_LD_TRUE@msgfmt_LDFLAGS = `$(RELOCATABLE_LDFLAGS) $(bindir)`
+ @RELOCATABLE_VIA_LD_TRUE@msgmerge_LDFLAGS = `$(RELOCATABLE_LDFLAGS) $(bindir)`
+@@ -2967,6 +2968,12 @@
+ urlget-urlget.obj: urlget.c
+ 	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(urlget_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o urlget-urlget.obj `if test -f 'urlget.c'; then $(CYGPATH_W) 'urlget.c'; else $(CYGPATH_W) '$(srcdir)/urlget.c'; fi`
+ 
++cldr-plurals.o: cldr-plurals.c
++	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cldr_plurals_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cldr-plurals.o `test -f 'cldr-plurals.c' || echo '$(srcdir)/'`cldr-plurals.c
++
++cldr-plurals.obj: cldr-plurals.c
++	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cldr_plurals_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cldr-plurals.obj `if test -f 'cldr-plurals.c'; then $(CYGPATH_W) 'cldr-plurals.c'; else $(CYGPATH_W) '$(srcdir)/cldr-plurals.c'; fi`
++
+ xgettext-xgettext.o: xgettext.c
+ 	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(xgettext_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o xgettext-xgettext.o `test -f 'xgettext.c' || echo '$(srcdir)/'`xgettext.c
+ 
+EOS
+	fi
+}
+
 run_configure() {
 	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
