@@ -1,4 +1,4 @@
-Ubuntu 14.10 で MinGW-w64 をクロスビルドするためのスクリプト集です。
+Ubuntu 15.04 で MinGW-w64 をクロスビルドするためのスクリプト集です。
 公開を考えて作成していないスクリプトですので、ひどい内容となっています。
 
 ファイルを /usr/xmingw/xmingw32 に配置してください。異なる場所に配置したい
@@ -12,7 +12,7 @@ Ubuntu の開発環境を整えます。つぎのツール、ライブラリー�
 
 sudo apt-get install gcc-mingw-w64 g++-mingw-w64 mingw-w64-tools
 sudo apt-get install automake autoconf libtool
-sudo apt-get install docbook-xml docbook-xsl
+sudo apt-get install docbook-xml docbook-xsl xsltproc
 sudo apt-get install intltool
 #sudo apt-get install flex bison
 #sudo apt-get install gobject-introspection
@@ -21,6 +21,8 @@ sudo apt-get install libgtk2.0-dev
 sudo apt-get install libffi-dev
 sudo apt-get install bsdtar p7zip
 sudo apt-get install dos2unix
+# sudo apt-get install git
+# sudo apt-get install xutils-dev
 
 配置したディレクトリーに移動し、 bash make_link.sh を実行します。
 
