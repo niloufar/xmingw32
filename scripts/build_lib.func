@@ -83,7 +83,7 @@ local ARCSUFFIX_TARXZ=".xz"
 		${TARCMD} -c "$@" "${MFT}" | ${XZCMD} -z -9 > "${NAME}${ARCSUFFIX_TARXZ}"
 		;;
 	*)
-		${SEVENZIPCMD} a "${NAME}${ARCSUFFIX_7ZIP}" -mmt -mx9 "$@" "${MFT}"
+		${SEVENZIPCMD} a "${NAME}${ARCSUFFIX_7ZIP}" -mmt -mx9 -l "$@" "${MFT}"
 		;;
 	esac
 	return $?
