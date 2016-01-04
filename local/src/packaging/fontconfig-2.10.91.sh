@@ -86,7 +86,7 @@ run_make() {
 
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll etc &&
+	pack_archive "${__BINZIP}" bin/*.dll etc share/fontconfig &&
 	pack_archive "${__DEVZIP}" include lib/*.{a,def} lib/pkgconfig share/doc share/man/man{3,5} &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 &&
 	store_packed_archive "${__BINZIP}" &&

@@ -78,6 +78,13 @@ run_patch() {
 EOF
 }
 
+pre_configure() {
+	if [ ! -e "./configure" ]
+	then
+		NOCONFIGURE=1 $XMINGW/cross-host sh ./autogen.sh
+	fi
+}
+
 run_configure() {
 	png_REQUIRES=libpng16 \
 	CC="gcc `${XMINGW}/cross --archcflags`" \
@@ -106,9 +113,9 @@ pre_pack() {
 run_pack() {
 	(cd "${INSTALL_TARGET}" &&
 	pack_archive "${__BINZIP}" bin/*.dll "share/doc/${THIS}" &&
-	pack_archive "${__DEVZIP}" include lib/*.{def,a} lib/pkgconfig share/gtk-doc/ &&
+	pack_archive "${__DEVZIP}" include lib/*.{def,a} lib/pkgconfig share/*doc &&
 	store_packed_archive "${__BINZIP}" &&
-	store_packed_archive "${__DEVZIP}")
+	store_packed_archive "${__DEVZIP}") &&
 
 	(
 	__PERFZIP=${MOD}-${VER}-${REV}-perf_${ARCHSUFFIX} &&

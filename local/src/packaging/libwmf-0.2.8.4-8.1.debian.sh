@@ -72,7 +72,7 @@ local name
 	cd ..
 }
 
-pre_configure() {
+run_patch() {
 	# configure が -lpng 決め打ちで依存チェックしているのでごまかす。
 	mkdir -p libpng &&
 	ln -f -s ${XLIBRARY}/lib/include/libpng16 libpng/include &&
@@ -95,7 +95,7 @@ EOF
 
 run_configure() {
 	CC="gcc `${XMINGW}/cross --archcflags`" \
-	CPPFLAGS="`${XMINGW}/cross --cflags`" \
+	CPPFLAGS="`${XMINGW}/cross --cflags` `${XMINGW}/cross pkg-config --cflags freetype2`" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \

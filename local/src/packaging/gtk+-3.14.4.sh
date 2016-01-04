@@ -72,8 +72,11 @@ run_configure() {
 	#  CFLAGS, CPPFLAGS, LDFLAGS, EXEEXT が _FOR_BUILD ではなく、
 	#  xcompile のものを使用する。
 	# libtool を使用するのもよろしくない。
+	# 3.18.6: WM_CLIPBOARDUPDATE, WM_DWMCOMPOSITIONCHANGED は Vista 以降で使用できる。
 	CC="gcc `${XMINGW}/cross --archcflags`" \
-	CPPFLAGS="`${XMINGW}/cross --cflags`" \
+	CPPFLAGS="`${XMINGW}/cross --cflags` \
+		-DWM_CLIPBOARDUPDATE=0x031D \
+		-DWM_DWMCOMPOSITIONCHANGED=0x031E" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math  -static-libgcc" \
@@ -93,7 +96,7 @@ post_configure() {
 	# ビルドした gtk-update-icon-cache を実行しようとする。 demos であり、ごまかす。
 	if grep demos/gtk-demo/Makefile -ie "update_icon_cache = .\+" >/dev/null 2>&1
 	then
-		ln -s "`which gtk-update-icon-cache`" gtk/gtk-update-icon-cache
+		ln --force --symbolic "`which gtk-update-icon-cache`" gtk/gtk-update-icon-cache
 	fi
 }
 
@@ -106,6 +109,9 @@ pre_make() {
 		gcc extract-strings.c -o extract-strings.exe `$XMINGW/cross-host pkg-config --cflags --libs glib-2.0`
 		)
 	fi
+	# 3.18.6: update_icon_cache.exe を実行しようとする。
+	sed -i.orig -e 's/^\(update_icon_cache = \).*$/\1:/' demos/gtk-demo/Makefile
+	sed -i.orig -e 's/^\(update_icon_cache = \).*$/\1:/' demos/widget-factory/Makefile
 }
 
 run_make() {
