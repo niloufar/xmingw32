@@ -105,6 +105,7 @@ pre_configure() {
 }
 
 run_configure() {
+	# [2.47.5] pcre.h が見つからずエラーになる。 --with-pcre=internal するようにした。
 	GLIB_GENMARSHAL="${PWD}/gobject/_glib-genmarshal" \
 	GLIB_COMPILE_SCHEMAS="${PWD}/gio/_glib-compile-schemas" \
 	GLIB_COMPILE_RESOURCES="${PWD}/gio/_glib-compile-resources" \
@@ -113,7 +114,7 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --enable-silent-rules --disable-gtk-doc --prefix="${INSTALL_TARGET}"
+	${XMINGW}/cross-configure --enable-silent-rules --disable-gtk-doc --with-pcre=internal --prefix="${INSTALL_TARGET}"
 }
 
 post_configure() {
