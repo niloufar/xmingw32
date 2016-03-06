@@ -15,11 +15,8 @@ fi
 init_var() {
 	# package に返す変数。
 	MOD=openjpeg
-	if [ "" = "${VER}" ]
-	then
-	VER=1.5.1
-	REV=1
-	fi
+	[ "" = "${VER}" ] && VER=1.5.1
+	[ "" = "${REV}" ] && REV=1
 	DIRECTORY="${MOD}-${VER}"
 
 	# 内部で使用する変数。

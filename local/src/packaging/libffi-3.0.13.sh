@@ -15,11 +15,8 @@ fi
 init_var() {
 	# package に返す変数。
 	MOD=libffi
-	if [ "" = "${VER}" ]
-	then
-	VER=3.0.13
-	REV=1
-	fi
+	[ "" = "${VER}" ] && VER=3.0.13
+	[ "" = "${REV}" ] && REV=1
 	DIRECTORY="${MOD}-${VER}"
 
 	# 内部で使用する変数。

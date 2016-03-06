@@ -17,12 +17,8 @@ init_var() {
 
 	# package に返す変数。
 	MOD=jasper
-	if [ "" = "${VER}" ]
-	then
-	VER=1.900.1
-	REV=1
-#	PATCH=2.debian
-	fi
+	[ "" = "${VER}" ] && VER=1.900.1
+	[ "" = "${REV}" ] && REV=1
 	DIRECTORY="${MOD}-${VER}"
 
 	# 内部で使用する変数。

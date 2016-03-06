@@ -17,12 +17,9 @@ init_var() {
 
 	# package に返す変数。
 	MOD=<MODULE NAME>
-	if [ "" = "${VER}" ]
-	then
-	VER=<VERSION>
-	REV=1
-#	PATCH=2.debian
-	fi
+	[ "" = "${VER}" ] && VER=<VERSION>
+	[ "" = "${REV}" ] && REV=1
+#	[ "" = "${PATCH}" ] && PATCH=2.debian
 	DIRECTORY="${MOD}-${VER}"
 
 	# 内部で使用する変数。

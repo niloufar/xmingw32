@@ -15,12 +15,9 @@ fi
 init_var() {
 	# package に返す変数。
 	MOD=libwmf
-	if [ "" = "${VER}" ]
-	then
-	VER=0.2.8.4
-	REV=1
-	PATCH=8.1.debian
-	fi
+	[ "" = "${VER}" ]   && VER=0.2.8.4
+	[ "" = "${REV}" ]   && REV=1
+	[ "" = "${PATCH}" ] && PATCH=8.1.debian
 	DIRECTORY="${MOD}-${VER}"
 
 	# 内部で使用する変数。

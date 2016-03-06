@@ -20,11 +20,8 @@ fi
 init_var() {
 	# package に返す変数。
 	MOD=xpm-nox
-	if [ "" = "${VER}" ]
-	then
-	VER=4.2.0
-	REV=1
-	fi
+	[ "" = "${VER}" ] && VER=4.2.0
+	[ "" = "${REV}" ] && REV=1
 	DIRECTORY="${MOD}-${VER}"
 
 	# 内部で使用する変数。

@@ -17,12 +17,8 @@ init_var() {
 
 	# package に返す変数。
 	MOD=libepoxy
-	if [ "" = "${VER}" ]
-	then
-	VER="git-20062c2"
-	REV=1
-#	PATCH=2.debian
-	fi
+	[ "" = "${VER}" ] && VER="git-20062c2"
+	[ "" = "${REV}" ] && REV=1
 	DIRECTORY="${MOD}-${VER}"
 
 	# 内部で使用する変数。

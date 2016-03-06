@@ -17,12 +17,8 @@ init_var() {
 
 	# package に返す変数。
 	MOD=gtk+
-	if [ "" = "${VER}" ]
-	then
-	VER=3.14.4
-	REV=1
-#	PATCH=2.debian
-	fi
+	[ "" = "${VER}" ] && VER=3.14.4
+	[ "" = "${REV}" ] && REV=1
 	DIRECTORY="${MOD}-${VER}"
 
 	# 内部で使用する変数。

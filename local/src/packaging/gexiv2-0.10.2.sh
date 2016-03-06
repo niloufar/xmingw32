@@ -17,12 +17,8 @@ init_var() {
 
 	# package に返す変数。
 	MOD=gexiv2
-	if [ "" = "${VER}" ]
-	then
-	VER=0.10.2
-	REV=1
-#	PATCH=2.debian
-	fi
+	[ "" = "${VER}" ] && VER=0.10.2
+	[ "" = "${REV}" ] && REV=1
 	DIRECTORY="${MOD}-${VER}"
 
 	# 内部で使用する変数。

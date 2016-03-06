@@ -15,11 +15,8 @@ fi
 init_var() {
 	# package に返す変数。
 	MOD=lcms2
-	if [ "" = "${VER}" ]
-	then
-	VER=2.4
-	REV=1
-	fi
+	[ "" = "${VER}" ] && VER=2.4
+	[ "" = "${REV}" ] && REV=1
 	DIRECTORY="${MOD}-${VER}"
 
 	# 内部で使用する変数。

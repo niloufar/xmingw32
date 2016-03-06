@@ -18,11 +18,8 @@ init_var() {
 
 	# package に返す変数。
 	MOD=gegl
-	if [ "" = "${VER}" ]
-	then
-	VER=0.2.0
-	REV=1
-	fi
+	[ "" = "${VER}" ] && VER=0.2.0
+	[ "" = "${REV}" ] && REV=1
 	DIRECTORY="${MOD}-${VER}"
 
 	# 内部で使用する変数。

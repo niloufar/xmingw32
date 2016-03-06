@@ -16,11 +16,8 @@ fi
 init_var() {
 	# package に返す変数。
 	MOD=zlib
-	if [ "" = "${VER}" ]
-	then
-	VER=1.2.7
-	REV=1
-	fi
+	[ "" = "${VER}" ] && VER=1.2.7
+	[ "" = "${REV}" ] && REV=1
 	DIRECTORY="${MOD}-${VER}"
 
 	# 内部で使用する変数。

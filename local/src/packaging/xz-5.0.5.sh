@@ -15,11 +15,8 @@ fi
 init_var() {
 	# package に返す変数。
 	MOD=xz
-	if [ "" = "${VER}" ]
-	then
-	VER=5.0.5
-	REV=1
-	fi
+	[ "" = "${VER}" ] && VER=5.0.5
+	[ "" = "${REV}" ] && REV=1
 	DIRECTORY="${MOD}-${VER}"
 
 	# 内部で使用する変数。

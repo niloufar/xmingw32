@@ -18,11 +18,8 @@ local typ=
 
 	# package に返す変数。
 	MOD=fftw
-	if [ "" = "${VER}" ]
-	then
-	VER=3.3.3
-	REV=1
-	fi
+	[ "" = "${VER}" ] && VER=3.3.3
+	[ "" = "${REV}" ] && REV=1
 	DIRECTORY="${MOD}-${VER}"
 
 	# 内部で使用する変数。

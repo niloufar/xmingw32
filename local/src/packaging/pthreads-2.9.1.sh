@@ -15,11 +15,8 @@ fi
 init_var() {
 	# package に返す変数。
 	MOD=pthreads
-	if [ "" = "${VER}" ]
-	then
-	VER=2.9.1
-	REV=1
-	fi
+	[ "" = "${VER}" ] && VER=2.9.1
+	[ "" = "${REV}" ] && REV=1
 	DIRECTORY="${MOD}-w32-`echo "${VER}" | sed -e"s/\./-/g"`-release"
 
 	# 内部で使用する変数。
