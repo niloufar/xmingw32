@@ -56,8 +56,6 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	LIBPNG_CFLAGS="`${XMINGW}/cross libpng-config --cflags`" \
-	LIBPNG_LDFLAGS="`${XMINGW}/cross libpng-config --ldflags`" \
 	${XMINGW}/cross-configure --disable-static --prefix="${INSTALL_TARGET}"
 }
 

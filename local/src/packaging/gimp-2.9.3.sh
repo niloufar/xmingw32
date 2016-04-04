@@ -180,8 +180,8 @@ style "win-font"
 widget "*" style "win-font"
 EOF
 	# side-by-side
-	echo > bin/gimp-2.8.exe.local &&
-	echo > bin/gimp-console-2.8.exe.local)	
+	echo > bin/gimp-2.9.exe.local &&
+	echo > bin/gimp-console-2.9.exe.local)	
 }
 
 run_pack() {

@@ -117,8 +117,8 @@ run_make() {
 pre_pack() {
 local UNISCRIBE_LIBS="-lusp10 -lgdi32 -lrpcrt4"
 	(cd "${INSTALL_TARGET}/lib/pkgconfig" &&
-	sed -i -e"s/^Libs:.\+\$/\0 -lfreetype ${UNISCRIBE_LIBS}/" harfbuzz.pc &&
-	echo "Requires: glib-2.0 freetype2" >> harfbuzz.pc
+	sed -i -e"s/^Libs:.\+\$/\0 ${UNISCRIBE_LIBS}/" harfbuzz.pc &&
+	echo "Requires: glib-2.0" >> harfbuzz.pc
 	)
 #	echo skip > /dev/null
 }

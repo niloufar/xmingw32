@@ -33,6 +33,13 @@ dependencies() {
 EOS
 }
 
+license() {
+	cat <<EOS
+Independent JPEG Group's
+
+EOS
+}
+
 
 run_expand_archive() {
 local name
@@ -42,6 +49,7 @@ local name
 
 run_configure() {
 	CC="gcc `${XMINGW}/cross --archcflags`" \
+	CPPFLAGS="`${XMINGW}/cross --cflags`" \
 	LDFLAGS="-Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
 	${XMINGW}/cross-configure --prefix="${INSTALL_TARGET}"
