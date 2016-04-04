@@ -64,7 +64,7 @@ run_configure() {
 
 post_configure() {
 	# dll 名を iconv.dll, charset.dll にするために libtool を書き換える。
-	sed -i.orig -e 's#^soname_spec=.*#soname_spec="\\\`echo \\\${libname} | \\\$SED -e s/^lib//\\\`\\\${shared_ext}"#' libtool libcharset/libtool
+:	sed -i.orig -e 's#^soname_spec=.*#soname_spec="\\\`echo \\\${libname} | \\\$SED -e s/^lib//\\\`\\\${shared_ext}"#' libtool libcharset/libtool
 }
 
 run_make() {
