@@ -45,6 +45,7 @@ local name
 
 # XP のための特別な処理。
 run_patch_xp() {
+	run_patch &&
 	# XP の %windir%\system32\msvcrt.dll に _mktemp_s が定義されていない。
 	# Win7 には定義されている。
 	# configure で LDFLAGS に -lmsvcr100 を渡す方がよいのかもしれない。
@@ -61,6 +62,10 @@ run_patch_xp() {
     fd = FcOpen(template, O_RDWR | O_EXCL | O_CREAT, 0600);
  #else
 EOF
+}
+
+run_patch() {
+	sed -i.orig -e 's/\(^\s*MemoryBarrier\) ();/\1;/' src/fcatomic.h
 }
 
 run_configure() {

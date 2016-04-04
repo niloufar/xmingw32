@@ -117,6 +117,11 @@ run_configure() {
 post_configure() {
 	# tests は作らない。
 #	sed -i -e 's/^\(SUBDIRS = .\+\) tests /\1 /' Makefile
+	# [2.47.6] ソースの変更が充分でないようで、コンパイルエラーになっていた。
+	if grep config.h -e 'PACKAGE_VERSION "2.47.6"' >/dev/null 2>&1
+	then
+		sed -i.orig -e 's/-Werror=implicit-function-declaration//' gio/Makefile
+	fi
 	echo skip > /dev/null
 }
 
