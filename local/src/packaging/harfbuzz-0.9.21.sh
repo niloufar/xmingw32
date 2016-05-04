@@ -41,7 +41,7 @@ optional_dependencies() {
 	cat <<EOS
 coretext
 graphite2
-icu
+icu4c
 EOS
 }
 
@@ -94,7 +94,7 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --with-uniscribe=auto
+	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --with-icu=no --with-uniscribe=auto
 }
 
 post_configure() {

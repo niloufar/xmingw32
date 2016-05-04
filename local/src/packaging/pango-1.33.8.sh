@@ -51,10 +51,17 @@ local name
 }
 
 pre_configure() {
-	# --without-x が効いていない。
-	# xft は x window 関係なので使わない。
-	sed -i.orig -e's/,basic-x,/,/' \
-				-e's|\(have_xft\)=true|\1=false|' configure
+	[ ! -e configure.orig ] && cp configure configure.orig
+	# --without-x が効いていない。 xft は windows では使わない。
+	sed -i -e's/,basic-x,/,/' \
+				-e's|\(have_xft\)=true|\1=false|' \
+				 configure
+	# libthai がビルド環境に存在する場合にエラーになる。libthai に依存しない。
+	sed -i -e's/,basic-x,/,/' \
+				-e 's|have_libthai=true|have_libthai=false|g' \
+				-e 's|=$pkg_cv_LIBTHAI_CFLAGS|=|' \
+				-e 's|=$pkg_cv_LIBTHAI_LIBS|=|' \
+				 configure
 #	echo skip > /dev/null
 }
 

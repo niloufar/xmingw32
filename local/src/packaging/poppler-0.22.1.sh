@@ -58,13 +58,15 @@ pre_configure() {
 }
 
 run_configure() {
+	# [0.43.0] configure --help と configure.ac は --disable-nss になっているが、
+	# configure は --disable-libnssで処理している。
 	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags` \
 	`${XMINGW}/cross pkg-config libpng --cflags`" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --disable-static --without-x --enable-zlib --prefix="${INSTALL_TARGET}"
+	${XMINGW}/cross-configure --disable-static --disable-gtk-doc --disable-gtk-doc-html --without-x --disable-nss --disable-libnss -disable-poppler-qt4 -disable-poppler-qt5 --enable-zlib --prefix="${INSTALL_TARGET}"
 }
 
 post_configure() {

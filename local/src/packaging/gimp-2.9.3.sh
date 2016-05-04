@@ -53,6 +53,7 @@ optional_dependencies() {
 	cat <<EOS
 bzip2
 lcms
+libaa
 libexif
 libjpeg
 libmng
@@ -60,7 +61,8 @@ libpng
 librsvg
 libwmf
 libxml2
-python
+openexr
+python2
 tiff
 xpm-nox
 zlib
@@ -131,7 +133,7 @@ run_configure() {
 	-L${PWD}/libpng/lib \
 	-lgdi32 -lwsock32 -lole32 -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --enable-shared --disable-static --enable-mmx --enable-sse --with-directx-sdk= --disable-python --without-x --prefix="${INSTALL_TARGET}"
+	${XMINGW}/cross-configure --enable-shared --disable-static --enable-mmx --enable-sse --with-directx-sdk= --disable-python --without-x --without-openexr --without-webkit --prefix="${INSTALL_TARGET}"
 }
 
 post_configure() {

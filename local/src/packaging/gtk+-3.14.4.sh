@@ -81,7 +81,7 @@ run_configure() {
 	CFLAGS_FOR_BUILD= \
 	CPPFLAGS_FOR_BUILD= \
 	LDFLAGS_FOR_BUILD= \
-	${XMINGW}/cross-configure --disable-static  --prefix="${INSTALL_TARGET}" --enable-win32-backend --enable-gtk2-dependency --with-included-immodules
+	${XMINGW}/cross-configure --disable-static  --prefix="${INSTALL_TARGET}" --enable-win32-backend --enable-gtk2-dependency --with-included-immodules --disable-cups
 }
 
 post_configure() {
