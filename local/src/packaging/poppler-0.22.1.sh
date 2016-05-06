@@ -66,6 +66,7 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
+	CXXFLAGS="${OLD_CXX_ABI}" \
 	${XMINGW}/cross-configure --disable-static --disable-gtk-doc --disable-gtk-doc-html --without-x --disable-nss --disable-libnss -disable-poppler-qt4 -disable-poppler-qt5 --enable-zlib --prefix="${INSTALL_TARGET}"
 }
 

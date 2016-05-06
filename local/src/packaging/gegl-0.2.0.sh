@@ -103,6 +103,7 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
+	CXXFLAGS="${OLD_CXX_ABI}" \
 	${XMINGW}/cross-configure --enable-shared --disable-static --disable-docs --without-ruby --without-lua --without-openexr --without-sdl --without-libraw --without-graphviz --without-libavformat --without-libv4l --without-libspiro --without-umfpack --without-webp --prefix="${INSTALL_TARGET}"
 }
 

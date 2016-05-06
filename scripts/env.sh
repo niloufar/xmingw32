@@ -78,6 +78,9 @@ export TARGET
 #export EXEEXT=".exe"
 #export SHREXT=".dll"
 
+# gcc4 との C++ ABI 互換性を維持する。 gcc5 への対応。
+export OLD_CXX_ABI="-D_GLIBCXX_USE_CXX11_ABI=0"
+
 export BUILD_CC="${XMINGW}/bin/build-cc "
 
 export XLOCAL=${XMINGW}/local
