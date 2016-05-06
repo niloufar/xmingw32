@@ -22,8 +22,8 @@ sudo apt-get install libffi-dev
 sudo apt-get install bsdtar p7zip
 sudo apt-get install dos2unix
 # sudo apt-get install git
-# sudo apt-get install scons
-# sudo apt-get install gegl
+sudo apt-get install scons
+sudo apt-get install gegl
 # sudo apt-get install xutils-dev
 
 配置したディレクトリーに移動し、 bash make_link.sh を実行します。
