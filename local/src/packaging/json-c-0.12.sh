@@ -54,6 +54,13 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
+pre_configure() {
+	if [ ! -e "configure" ]
+	then
+		sh ./autogen.sh
+	fi
+}
+
 run_configure() {
 	# ac_cv_func_malloc_0_nonnull などは rpl_malloc を使用しないおまじない。
 	CC="gcc `${XMINGW}/cross --archcflags`" \
