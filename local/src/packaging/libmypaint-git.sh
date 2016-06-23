@@ -57,53 +57,28 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
-run_patch() {
-	# [1.1?git] cross-compile に対応する。
-	# [1.1?git] -Werror を設定しているが、使用していない変数があり、エラーにされてしまう。
-	# [1.1?git] 最適化オプション -O3 を削る。
-	patch_adhoc -p 0 <<\EOS
---- SConstruct.orig
-+++ SConstruct
-@@ -36,10 +36,12 @@
- opts.Add(BoolVariable('use_glib', 'enable glib (forced on by introspection)', False))
- opts.Add('python_binary', 'python executable to build for', default_python_binary)
+pre_configure() {
+	patch_adhoc -p 1 <<\EOS
+--- libmypaint/gegl/Makefile.am.orig
++++ libmypaint/gegl/Makefile.am
+@@ -73,6 +73,7 @@
+ libmypaint_gegl_la_SOURCES = $(libmypaint_gegl_public_HEADERS) $(LIBMYPAINT_GEGL_SOURCES)
  
--tools = ['default', 'textfile']
-+tools = ['default', 'textfile', 'mingw']
- 
- env = Environment(ENV=os.environ, options=opts, tools=tools)
- 
-+env['SHLIBSUFFIX'] = '.dll'
+ libmypaint_gegl_la_CFLAGS = $(JSON_CFLAGS) $(GLIB_CFLAGS) $(GEGL_CFLAGS)
+-libmypaint_gegl_la_LIBS = $(GEGL_LIBS)
 +
- Help(opts.GenerateHelpText(env))
++libmypaint_gegl_la_LDFLAGS = $(GEGL_LIBS) ../libmypaint.la
  
- # Respect some standard build environment stuff
-@@ -58,7 +60,7 @@
- opts.Update(env)
- 
- env.Append(CXXFLAGS=' -Wall -Wno-sign-compare -Wno-write-strings')
--env.Append(CCFLAGS='-Wall -Wstrict-prototypes -Werror')
-+env.Append(CCFLAGS='-Wall -Wstrict-prototypes')
- env.Append(CFLAGS='-std=c99')
- 
- env['GEGL_VERSION'] = 0.3
-@@ -73,9 +75,9 @@
- if env['debug']:
-     env.Append(CPPDEFINES='HEAVY_DEBUG')
-     env.Append(CCFLAGS='-O0', LINKFLAGS='-O0')
--else:
-+#else:
-     # Overridable defaults
--    env.Prepend(CCFLAGS='-O3', LINKFLAGS='-O3')
-+#    env.Prepend(CCFLAGS='-O3', LINKFLAGS='-O3')
- 
- if env['enable_profiling'] or env['debug']:
-     env.Append(CCFLAGS='-g')
+ endif # enable_gegl
 EOS
+
+	if [ ! -e configure ]
+	then
+		./autogen.sh
+	fi
 }
 
-run_make() {
-	# scons に設定できる変数一覧は scons -Q -h で表示される。
+run_configure() {
 	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CXX="g++ `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
@@ -111,22 +86,28 @@ run_make() {
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math " \
 	CXXFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math " \
-	${XMINGW}/cross scons prefix="${INSTALL_TARGET}" "${INSTALL_TARGET}" use_sharedlib=yes use_glib=yes enable_gegl=yes
+	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --enable-gegl --enable-openmp --with-glib --enable-introspection=no
+}
+
+post_configure() {
+	# shared ファイルを作ってくれない場合の対処。
+	# libstdc++ を静的リンクする。
+	bash ${XMINGW}/replibtool.sh shared static-libgcc
+}
+
+run_make() {
+	${XMINGW}/cross make all install
 }
 
 pre_pack() {
 	mkdir -p "${INSTALL_TARGET}/share/doc/libmypaint" &&
-	cp COPYING "${INSTALL_TARGET}/share/doc/libmypaint/." &&
-	(cd "${INSTALL_TARGET}" &&
-	mkdir -p bin &&
-	mv lib/*.dll bin/.
-	)
+	cp COPYING "${INSTALL_TARGET}/share/doc/libmypaint/."
 }
 
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll share/locale &&
-	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig share/{doc,libmypaint} &&
+	pack_archive "${__BINZIP}" bin/*.dll share/{doc,locale} &&
+	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}"
 }
