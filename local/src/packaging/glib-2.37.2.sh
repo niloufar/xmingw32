@@ -85,7 +85,8 @@ pre_configure() {
 	# ./autogen.sh
 	autoreconf --force --install --verbose
 	# ビルドに glib-genmarshal が必要なので先に作成する。
-	LIBFFI_CFLAGS=" " LIBFFI_LIBS=" " \
+	LIBFFI_CFLAGS="`pkg-config --cflags libffi`" \
+	LIBFFI_LIBS="`pkg-config --libs libffi`" \
 	./configure -enable-silent-rules --disable-gtk-doc --enable-static --disable-shared &&
 	(cd glib; make) &&
 	(cd gthread; make) &&
@@ -111,7 +112,7 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --enable-silent-rules --disable-gtk-doc --with-pcre=internal --prefix="${INSTALL_TARGET}"
+	${XMINGW}/cross-configure --enable-silent-rules --disable-gtk-doc --with-pcre=internal --disable-libelf --prefix="${INSTALL_TARGET}"
 }
 
 post_configure() {
