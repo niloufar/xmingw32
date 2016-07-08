@@ -84,6 +84,21 @@ local flag
  
 EOS
 	fi
+	# [0.19.8.1] rpl_printf 関数にリンクできない。 gnulib のバグ。
+	# printf-posix: Fix mingw build · coreutils/gnulib@68b6ade · GitHub <https://github.com/coreutils/gnulib/commit/68b6adebef05670a312fb92b05e7bd089d2ed43a>
+	patch_adhoc -p 1 <<\EOS
+--- gettext-0.19.8.1.orig/gettext-tools/gnulib-m4/asm-underscore.m4
++++ gettext-0.19.8.1/gettext-tools/gnulib-m4/asm-underscore.m4
+@@ -29,7 +29,7 @@
+ EOF
+      # Look for the assembly language name in the .s file.
+      AC_TRY_COMMAND(${CC-cc} $CFLAGS $CPPFLAGS $gl_c_asm_opt conftest.c) >/dev/null 2>&1
+-     if LC_ALL=C grep -E '(^|[^a-zA-Z0-9_])_foo([^a-zA-Z0-9_]|$)' conftest.$gl_asmext >/dev/null; then
++     if LC_ALL=C grep -E '(^|[[^a-zA-Z0-9_]])_foo([[^a-zA-Z0-9_]]|$)' conftest.$gl_asmext >/dev/null; then
+        gl_cv_prog_as_underscore=yes
+      else
+        gl_cv_prog_as_underscore=no
+EOS
 }
 
 run_configure() {
