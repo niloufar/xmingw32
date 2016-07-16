@@ -81,6 +81,28 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
+run_patch() {
+	# ファイル パスに GIMP_APP_VERSION が含まれていた場合に発生する不具合への対処。
+	patch_adhoc -p 1 <<EOS
+--- gimp-2.8.4.orig/app/core/gimp-user-install.c
++++ gimp-2.8.4/app/core/gimp-user-install.c
+@@ -226,7 +226,11 @@
+   gchar    *version;
+   gboolean  migrate = FALSE;
+ 
+-  version = strstr (dir, GIMP_APP_VERSION);
++  version = strstr (dir, ".gimp-" GIMP_APP_VERSION);
++  if (version)
++    {
++      version = strstr (version, GIMP_APP_VERSION);
++    }
+ 
+   if (version)
+     {
+EOS
+	return 0
+}
+
 pre_configure() {
 	if [ ! -e "./configure" ]
 	then
@@ -102,7 +124,7 @@ run_configure() {
 	-L${PWD}/libpng/lib \
 	-lgdi32 -lwsock32 -lole32 -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --enable-shared --disable-static --enable-mmx --enable-sse --disable-python --without-x --prefix="${INSTALL_TARGET}"
+	${XMINGW}/cross-configure --enable-shared --disable-static --enable-mmx --enable-sse --with-directx-sdk= --disable-python --without-x --without-openexr --without-webkit --without-dbus --prefix="${INSTALL_TARGET}"
 }
 
 post_configure() {
@@ -113,25 +135,7 @@ post_configure() {
 	ln -f -s ${XLIBRARY}/lib/include/libpng16 libpng/include &&
 	mkdir -p libpng/lib &&
 	ln -f -s ${XLIBRARY}/lib/lib/libpng16.dll.a libpng/lib/libpng.dll.a &&
-	mkdir -p "${INSTALL_TARGET}" &&
-	# ファイル パスに GIMP_APP_VERSION が含まれていた場合に発生する不具合への対処。
-	patch_adhoc -p 1 <<EOS
---- gimp-2.8.4.orig/app/core/gimp-user-install.c
-+++ gimp-2.8.4/app/core/gimp-user-install.c
-@@ -226,7 +226,11 @@
-   gchar    *version;
-   gboolean  migrate = FALSE;
- 
--  version = strstr (dir, GIMP_APP_VERSION);
-+  version = strstr (dir, ".gimp-" GIMP_APP_VERSION);
-+  if (version)
-+    {
-+      version = strstr (version, GIMP_APP_VERSION);
-+    }
- 
-   if (version)
-     {
-EOS
+	mkdir -p "${INSTALL_TARGET}"
 }
 
 run_make() {
