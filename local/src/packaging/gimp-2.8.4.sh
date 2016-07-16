@@ -100,6 +100,43 @@ run_patch() {
    if (version)
      {
 EOS
+	# [2.8.18] gegl から GEGL_IS_PARAM_SPEC_MULTILINE が削除された。
+	# gimp 2.9.4 の当該箇所を移植した。
+	patch_adhoc -p 1 <<EOS
+--- gimp-2.8.18.orig/app/core/gimpparamspecs-duplicate.c
++++ gimp-2.8.18/app/core/gimpparamspecs-duplicate.c
+@@ -55,25 +55,11 @@
+         }
+       else
+         {
+-          static GQuark  multiline_quark = 0;
+-          GParamSpec    *new;
+-
+-          if (! multiline_quark)
+-            multiline_quark = g_quark_from_static_string ("multiline");
+-
+-          new = g_param_spec_string (pspec->name,
+-                                     g_param_spec_get_nick (pspec),
+-                                     g_param_spec_get_blurb (pspec),
+-                                     spec->default_value,
+-                                     pspec->flags);
+-
+-          if (GEGL_IS_PARAM_SPEC_MULTILINE (pspec))
+-            {
+-              g_param_spec_set_qdata (new, multiline_quark,
+-                                      GINT_TO_POINTER (TRUE));
+-            }
+-
+-          return new;
++          return g_param_spec_string (pspec->name,
++                                      g_param_spec_get_nick (pspec),
++                                      g_param_spec_get_blurb (pspec),
++                                      spec->default_value,
++                                      pspec->flags);
+         }
+     }
+   else if (G_IS_PARAM_SPEC_BOOLEAN (pspec))
+EOS
 	return 0
 }
 
