@@ -80,6 +80,7 @@ local list
 				(eval ${def})
 				if [ ! 0 -eq $? ]
 				then
+					echo "WARR: ${def} がエラーを返しました。"
 					return 1
 				fi
 				break
