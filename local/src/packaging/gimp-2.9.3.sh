@@ -136,8 +136,7 @@ run_configure() {
 	-L${PWD}/libpng/lib \
 	-lgdi32 -lwsock32 -lole32 -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --enable-shared --disable-static --enable-mmx --enable-sse --disable-python  --without-x --with-libjasper --with-libmng --with-librsvg --with-libxpm --without-openexr --without-xmc --with-webp --with-wmf --with-cairo-pdf --with-poppler --without-webkit --with-print 
---with-directx-sdk=  --prefix="${INSTALL_TARGET}"
+	${XMINGW}/cross-configure --enable-shared --disable-static --enable-mmx --enable-sse --disable-python  --without-x --with-libjasper --with-libmng --with-librsvg --with-libxpm --without-openexr --without-xmc --with-webp --with-wmf --with-cairo-pdf --with-poppler --without-webkit --with-print --with-directx-sdk=  --prefix="${INSTALL_TARGET}"
 }
 
 post_configure() {
