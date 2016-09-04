@@ -85,7 +85,8 @@ run_configure_xp() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --with-uniscribe=no
+	CXXFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math ${OLD_CXX_ABI}" \
+	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --with-icu=no --with-uniscribe=no
 }
 
 run_configure() {
@@ -94,6 +95,7 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
+	CXXFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math ${OLD_CXX_ABI}" \
 	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --with-icu=no --with-uniscribe=auto
 }
 
