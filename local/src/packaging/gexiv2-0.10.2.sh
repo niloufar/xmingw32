@@ -96,7 +96,7 @@ run_make() {
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
 	pack_archive "${__BINZIP}" bin/*.dll &&
-	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig share/vala &&
+	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}"
 }

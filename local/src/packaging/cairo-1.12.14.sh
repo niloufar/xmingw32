@@ -45,6 +45,7 @@ gtk+
 librsvg
 opengl
 poppler
+skia
 EOS
 }
 
@@ -89,7 +90,7 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --without-x --disable-xlib --disable-xcb --disable-static --enable-ft=yes --enable-win32 --prefix="${INSTALL_TARGET}"
+	${XMINGW}/cross-configure --without-x --disable-xlib --disable-xcb --disable-static --enable-ft=yes --enable-fc=yes --enable-win32 --enable-ps=no --prefix="${INSTALL_TARGET}"
 }
 
 post_configure() {
