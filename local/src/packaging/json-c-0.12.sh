@@ -19,11 +19,11 @@ init_var() {
 	MOD=json-c
 	[ "" = "${VER}" ] && VER=0.12
 	[ "" = "${REV}" ] && REV=1
-	DIRECTORY="${MOD}-${VER}"
+	DIRECTORY="${MOD}-${MOD}-${VER}"
 
 	# 内部で使用する変数。
 	__ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/lang"
-	__ARCHIVE="${MOD}-${VER}"
+	__ARCHIVE="${MOD}-${MOD}-${VER}"
 #	__PATCH_ARCHIVE="${MOD}_${VER}-${PATCH}"
 
 	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
