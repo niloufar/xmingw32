@@ -63,10 +63,7 @@ post_configure() {
 	# shared ファイルを作ってくれない場合の対処。
 	# static なライブラリーのリンクはこうしないと libtool がいろいろ面倒をみてしまう。
 	# libstdc++ を静的リンクする。
-	(cd builds/unix/  && bash ${XMINGW}/replibtool.sh shared mix static-libgcc) &&
-	# 追加で libtool を書き換える場合は replibtool.sh の実行後に行う。
-	# freetype6.dll の形にするため書き換える。
-	sed -i.orig -e 's#^soname_spec=.*#soname_spec="\\\`echo "\\\${libname}\\\${versuffix}" | \\\$SED -e "s/^lib//" -e "s/-//"\\\`\\\${shared_ext}"#' builds/unix/libtool
+	(cd builds/unix/  && bash ${XMINGW}/replibtool.sh shared mix static-libgcc)
 }
 
 run_make() {

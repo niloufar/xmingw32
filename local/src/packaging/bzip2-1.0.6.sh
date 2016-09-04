@@ -161,7 +161,7 @@ EOS
  all: $(OBJS)
 -	$(CC) -shared -Wl,-soname -Wl,libbz2.so.1.0 -o libbz2.so.1.0.6 $(OBJS)
 -	$(CC) $(CFLAGS) -o bzip2-shared bzip2.c libbz2.so.1.0.6
-+	$(CC) -shared -Wl,--out-implib -Wl,libbz2.dll.a -o bz2-1.dll $(OBJS)
++	$(CC) -shared -Wl,--out-implib -Wl,libbz2.dll.a -o libbz2-1.dll $(OBJS)
 +	$(CC) $(CFLAGS) -o bzip2-shared.exe bzip2.c libbz2.dll.a
  	rm -f libbz2.so.1.0
  	ln -s libbz2.so.1.0.6 libbz2.so.1.0
@@ -176,7 +176,7 @@ run_make() {
 }
 
 pre_pack() {
-	cp bz2-1.dll ${INSTALL_TARGET}/bin/.
+	cp libbz2-1.dll ${INSTALL_TARGET}/bin/.
 	cp libbz2.dll.a ${INSTALL_TARGET}/lib/.
 }
 
