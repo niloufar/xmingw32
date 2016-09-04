@@ -88,6 +88,7 @@ run_patch() {
  		png_destroy_write_struct (&png_ptr,&info_ptr);
  		wmf_free (API,buffer);
 EOF
+	return 0
 }
 
 run_configure() {
@@ -96,13 +97,17 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --disable-static --with-libxml2 --without-expat --with-png=${PWD}/libpng --without-x --without-sys-gd --disable-gd --prefix="${INSTALL_TARGET}"
+	${XMINGW}/cross-configure --enable-shared --disable-static --with-libxml2 --without-expat --with-png=${PWD}/libpng --without-x --without-sys-gd --disable-gd --prefix="${INSTALL_TARGET}"
 }
 
 post_configure() {
-	# win64 のための処理。
-	# libtool が x86 ではない *.dll.a ファイルを static と誤認するため。
-	bash ${XMINGW}/replibtool.sh mix
+	# make で autoconf && automake してしまう。
+	# aclocal.m4, configure.ac が更新されるため。
+	sed -i.orig -e 's/^\(AUTOCONF = \).\+/\1 echo "autoconf"/' \
+				-e 's/^\(AUTOMAKE = \).\+/\1 echo "automake"/' Makefile
+	# shared ファイルを作ってくれない場合の対処。
+	# -lpng に対し libtool が面倒事をおこすため mix を付けている。
+	bash ${XMINGW}/replibtool.sh shared mix
 }
 
 run_make() {
