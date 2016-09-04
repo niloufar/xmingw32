@@ -110,6 +110,9 @@ run_patch() {
    if (version)
      {
 EOS
+
+	# OpenEXR の PixelType 列挙型の列挙子の namespace 問題への対処。
+	sed -i.orig -e 's/ \(UINT\|HALF\|FLOAT\)\(,\|:\|)\)/ Imf::\1\2/' plug-ins/file-exr/openexr-wrapper.cc
 }
 
 pre_configure() {
@@ -133,7 +136,8 @@ run_configure() {
 	-L${PWD}/libpng/lib \
 	-lgdi32 -lwsock32 -lole32 -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --enable-shared --disable-static --enable-mmx --enable-sse --with-directx-sdk= --disable-python --without-x --without-openexr --without-webkit --prefix="${INSTALL_TARGET}"
+	${XMINGW}/cross-configure --enable-shared --disable-static --enable-mmx --enable-sse --disable-python  --without-x --with-libjasper --with-libmng --with-librsvg --with-libxpm --without-openexr --without-xmc --with-webp --with-wmf --with-cairo-pdf --with-poppler --without-webkit --with-print 
+--with-directx-sdk=  --prefix="${INSTALL_TARGET}"
 }
 
 post_configure() {
@@ -142,7 +146,7 @@ post_configure() {
 
 run_make() {
 	# 作成されないプラグイン file_xmc を作成しようとするので抑止している。
-	${XMINGW}/cross make FILE_XMC="" all install
+	${XMINGW}/cross make all install
 }
 
 run_make_test() {
