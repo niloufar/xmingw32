@@ -72,7 +72,7 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math " \
-	CXXFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math " \
+	CXXFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math ${OLD_CXX_ABI} " \
 	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}"
 }
 
