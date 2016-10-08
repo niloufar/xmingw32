@@ -76,7 +76,7 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --without-x --with-gdktarget=win32 --with-included-immodules --enable-debug=yes --enable-explicit-deps=no --disable-schemas-compile --disable-glibtest --disable-gtk-doc --disable-static --prefix="${INSTALL_TARGET}"
+	${XMINGW}/cross-configure --without-x --with-gdktarget=win32 --with-included-immodules --enable-debug=yes --enable-explicit-deps=no --disable-schemas-compile --disable-glibtest --disable-cups --disable-gtk-doc --disable-static --prefix="${INSTALL_TARGET}"
 }
 
 post_configure() {
