@@ -71,8 +71,10 @@ run_configure() {
 }
 
 post_configure() {
+	# shared ファイルを作ってくれない場合の対処。
+	# static なライブラリーのリンクはこうしないと libtool がいろいろ面倒をみてしまう。
 	# libstdc++ を静的リンクする。
-	bash ${XMINGW}/replibtool.sh static-libgcc
+	bash ${XMINGW}/replibtool.sh shared mix static-libgcc
 #	echo skip > /dev/null
 }
 

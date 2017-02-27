@@ -52,6 +52,7 @@ EOS
 optional_dependencies() {
 	cat <<EOS
 bzip2
+jasper
 lcms
 libaa
 libexif
@@ -59,6 +60,7 @@ libjpeg
 libmng
 libpng
 librsvg
+libwebp
 libwmf
 libxml2
 openexr
@@ -112,7 +114,7 @@ run_patch() {
 EOS
 
 	# OpenEXR の PixelType 列挙型の列挙子の namespace 問題への対処。
-	sed -i.orig -e 's/ \(UINT\|HALF\|FLOAT\)\(,\|:\|)\)/ Imf::\1\2/' plug-ins/file-exr/openexr-wrapper.cc
+#	sed -i.orig -e 's/ \(UINT\|HALF\|FLOAT\)\(,\|:\|)\)/ Imf::\1\2/' plug-ins/file-exr/openexr-wrapper.cc
 }
 
 pre_configure() {
@@ -123,20 +125,19 @@ pre_configure() {
 }
 
 run_configure() {
-	# _WIN32_WINNT=0x0503 は XP SP3 （推測）
 	# little cms の問題で -Dcdecl=LCMSAPI している。
 	# ${PWD}/libpng/lib をリンク パスにいれてくれない。
 	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags` \
 	-Dcdecl=LCMSAPI \
-	-DWINVER=0x0503 -D_WIN32_WINNT=0x0503 -DXPM_NO_X \
+	-DWINVER=0x0503 -D_WIN32_WINNT=_WIN32_WINNT_VISTA -DXPM_NO_X \
 	-I${XLIBRARY}/gimp-dep/include/noX" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base \
 	-L${PWD}/libpng/lib \
 	-lgdi32 -lwsock32 -lole32 -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --enable-shared --disable-static --enable-mmx --enable-sse --disable-python  --without-x --with-libjasper --with-libmng --with-librsvg --with-libxpm --without-openexr --without-xmc --with-webp --with-wmf --with-cairo-pdf --with-poppler --without-webkit --with-print --with-directx-sdk=  --prefix="${INSTALL_TARGET}"
+	${XMINGW}/cross-configure --enable-shared --disable-static --enable-mmx --enable-sse --disable-python  --without-x --with-libjasper --with-libmng --with-librsvg --with-libxpm --without-openexr --without-xmc --with-webp --with-wmf --with-cairo-pdf --with-poppler --without-webkit --with-print --with-directx-sdk= --prefix="${INSTALL_TARGET}" #--enable-vector-icons
 }
 
 post_configure() {

@@ -102,17 +102,28 @@ __run_configure() {
 }
 
 post_configure() {
+	# shared ファイルを作ってくれない場合の対処。
+	# static なライブラリーのリンクはこうしないと libtool がいろいろ面倒をみてしまう。
+	# libstdc++ を静的リンクする。
+	bash ${XMINGW}/replibtool.sh shared mix static-libgcc
+	# 追加で libtool を書き換える場合は replibtool.sh の実行後に行う。
+
 	sed -i.orig -e 's!^#define USING_POSIX_THREADS .\+$!/* \0 */!' config.h
-	echo skip > /dev/null
 }
 
 run_make() {
 	${XMINGW}/cross make all install
 }
 
+pre_pack() {
+local doc_dir="${INSTALL_TARGET}/share/doc/fftw"
+	mkdir -p "${doc_dir}" &&
+	cp COPYING COPYRIGHT "${doc_dir}/."
+}
+
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll &&
+	pack_archive "${__BINZIP}" bin/*.dll share/doc &&
 	pack_archive "${__DEVZIP}" include lib/*.a share/info &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} bin/fftw-wisdom-to-conf share/man/man1 &&
 	store_packed_archive "${__BINZIP}" &&

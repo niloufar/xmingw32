@@ -74,10 +74,12 @@ run_make() {
 }
 
 pre_pack() {
-	cd "${INSTALL_TARGET}" &&
-	mkdir -p share &&
-	mv man share/.
-#	echo skip > /dev/null
+	if [ -e "./man" ]
+	then
+		cd "${INSTALL_TARGET}" &&
+		mkdir -p share &&
+		mv man share/.
+	fi
 }
 
 run_pack() {

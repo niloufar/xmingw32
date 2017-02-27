@@ -68,11 +68,9 @@ run_configure() {
 	#  CFLAGS, CPPFLAGS, LDFLAGS, EXEEXT が _FOR_BUILD ではなく、
 	#  xcompile のものを使用する。
 	# libtool を使用するのもよろしくない。
-	# 3.18.6: WM_CLIPBOARDUPDATE, WM_DWMCOMPOSITIONCHANGED は Vista 以降で使用できる。
 	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags` \
-		-DWM_CLIPBOARDUPDATE=0x031D \
-		-DWM_DWMCOMPOSITIONCHANGED=0x031E" \
+		-D_WIN32_WINNT=_WIN32_WINNT_VISTA" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math  -static-libgcc" \
