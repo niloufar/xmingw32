@@ -60,18 +60,35 @@ local UNZIPCMD="unzip"
 	return $?
 }
 
+__MANIFEST_DIR="manifest"
+
+manifest_dir() {
+	echo "${__MANIFEST_DIR}"
+}
+
+make_manifest_dir() {
+local DIR="`manifest_dir`"
+	mkdir -p "${DIR}"
+}
+
+__MANIFEST_FILE_EXT=".mft"
+
+manifest_files() {
+local DIR="`manifest_dir`"
+	find "${DIR}" -maxdepth 1 -name \*${__MANIFEST_FILE_EXT} -a -xtype f
+}
+
 pack_archive() {
 local NAME=$1
-local DIR="manifest"
-local MFT="${DIR}/${NAME}.mft"
+local DIR="`manifest_dir`"
+local MFT="${DIR}/${NAME}${__MANIFEST_FILE_EXT}"
 local SEVENZIPCMD="7z"
 local TARCMD="tar"
 local XZCMD="xz"
 local ARCSUFFIX_7ZIP=".7z"
 local ARCSUFFIX_TARXZ=".xz"
+	make_manifest_dir &&
 	shift &&
-	mkdir -p "${DIR}" &&
-#	find "$@" > "${MFT}" &&
 	rm -f "${MFT}" &&
 	(for f in "$@"; do
 		find ${f} >> "${MFT}"
@@ -81,6 +98,11 @@ local ARCSUFFIX_TARXZ=".xz"
 	case "${NAME}" in
 	*.tar)
 		${TARCMD} -c "$@" "${MFT}" | ${XZCMD} -z -9 > "${NAME}${ARCSUFFIX_TARXZ}"
+		;;
+	*.test)
+		# 拡張子が test の場合はアーカイブを作らない。テスト用。
+		# 望ましくないが、mft の作成と圧縮を一体化したいという意図がある。
+		# ignore
 		;;
 	*)
 		${SEVENZIPCMD} a "${NAME}${ARCSUFFIX_7ZIP}" -mmt -mx9 -l "$@" "${MFT}"
@@ -102,6 +124,25 @@ local ARCSUFFIX_TARXZ=".xz"
 		;;
 	esac
 	return $?
+}
+
+__EXCLUDE_FILE="exclude.files"
+
+exclude_file() {
+local DIR="`manifest_dir`"
+	echo "${DIR}/${__EXCLUDE_FILE}"
+}
+
+# param: exclude file(s)
+# note: *.la ファイルは自動で対象に組み込まれる。
+put_exclude_files() {
+local XCL="`exclude_file`"
+	make_manifest_dir &&
+	rm -f "${XCL}" &&
+	find * -name \*.la -xtype f > "${XCL}" &&
+	(for f in "$@"; do
+		find ${f} >> "${XCL}"
+	done)
 }
 
 patch_debian() {

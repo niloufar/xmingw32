@@ -1,0 +1,157 @@
+#!/bin/bash
+# vim: tabstop=4 fileformat=unix fileencoding=utf-8 filetype=sh
+
+# license: Apache v2.0
+
+__KNOWN_FILE="package.files"
+__DIRECTORIES_FILE="directories.files"
+__NONCAPTURED_FILE="noncaptured.files"
+__ALL_FILE="all.files"
+
+find_noncaptured_files() {
+local DIR="`manifest_dir`"
+local XCL="`exclude_file`"
+local MFS
+local KNOWN_FILE="${DIR}/${__KNOWN_FILE}"
+local DIRECTORIES_FILE="${DIR}/${__DIRECTORIES_FILE}"
+local NONCAPTURED_FILE="${DIR}/${__NONCAPTURED_FILE}"
+local ALL_FILE="${DIR}/${__ALL_FILE}"
+local fail=no
+
+	pushd "$1" > /dev/null
+
+	if [ ! -e "${DIR}" ]
+	then
+		echo "WARR(qualitycheck.packagefiles): ${DIR} フォルダーが存在しません。"
+		fail=yes
+	else
+		MFS="`manifest_files`"
+		if [ "" = "${MFS}" ]
+		then
+			echo "WARR(qualitycheck.packagefiles): ${DIR} に *${__MANIFEST_FILE_EXT} が存在しません。"
+			fail=yes
+		fi
+	fi
+
+	# exclude ファイルは存在しなくてよい。スクリプトの互換性を考慮している。
+	if [ ! -e "${XCL}" ]
+	then
+		# 互換性を考慮し *.la ファイルを除外対象にする。
+		find * -iname \*.la > "${XCL}"
+		if [ ! 0 -eq $? ]
+		then
+			[ -e "${XCL}" ] && rm "${XCL}"
+			echo "FATAL(qualitycheck.packagefiles): 除外対象ファイルの一覧を作成できませんでした。これはビルドスクリプトの互換性のための処理です。"
+			fail=yes
+		fi
+	fi
+
+	# ディレクトリの一覧。
+	[ "no" = "${fail}" ] && find * -xtype d > "${DIRECTORIES_FILE}"
+	if [ ! 0 -eq $? ]
+	then
+		[ -e "${DIRECTORIES_FILE}" ] && rm "${DIRECTORIES_FILE}"
+		echo "FATAL(qualitycheck.packagefiles): ディレクトリーの一覧を作成できませんでした。"
+		fail=yes
+	fi
+
+	# 既知のファイルの一覧。
+	[ "no" = "${fail}" ] && cat ${MFS} ${XCL} ${DIRECTORIES_FILE} | sort | uniq > "${KNOWN_FILE}"
+	if [ ! 0 -eq $? ]
+	then
+		[ -e "${KNOWN_FILE}" ] && rm "${KNOWN_FILE}"
+		echo "FATAL(qualitycheck.packagefiles): 既知のファイルの一覧を作成できませんでした。"
+		fail=yes
+	fi
+
+	# すべてのファイルを検索する。
+	[ "no" = "${fail}" ] && find * -path "${DIR}/*.files" -prune -o -print | sort > "${ALL_FILE}"
+	if [ ! 0 -eq $? ]
+	then
+		[ -e "${ALL_FILE}" ] && rm "${ALL_FILE}"
+		echo "FATAL(qualitycheck.packagefiles): すべてのファイルの一覧を作成できませんでした。"
+		fail=yes
+	fi
+
+	# 未知のファイルの一覧。
+	[ -e "${NONCAPTURED_FILE}" ] && rm "${NONCAPTURED_FILE}"
+	[ "no" = "${fail}" ] && diff --unchanged-line-format="" --old-line-format="" --new-line-format="%L" "${KNOWN_FILE}" "${ALL_FILE}" > "${NONCAPTURED_FILE}"
+	if [ ! -e "${NONCAPTURED_FILE}" ]
+	then
+		echo "FATAL(qualitycheck.packagefiles): 未知のファイルの一覧を作成できませんでした。"
+		fail=yes
+	else
+		if [ -s "${NONCAPTURED_FILE}" ]
+		then
+			echo "INFO(qualitycheck.packagefiles): 補足していないファイルが見つかりました。"
+			echo "INFO(qualitycheck.packagefiles): 下記ファイルは対象、除外ともに補足されていません。"
+			cat "${NONCAPTURED_FILE}"
+		fi
+	fi
+
+	popd > /dev/null
+
+	if [ "yes" = "${fail}" ]
+	then
+		echo "FATAL(qualitycheck.packagefiles): エラーが発生しました。処理を完了することができませんでした。"
+		return 1
+	fi
+	return 0
+}
+
+find_noncaptured_files_postclean() {
+local DIR="$1/`manifest_dir`"
+local fail=no
+
+	if [ -e "${DIR}" ]
+	then
+		pushd "${DIR}" > /dev/null
+		for f in ${__KNOWN_FILE} ${__DIRECTORIES_FILE} ${__NONCAPTURED_FILE} ${__ALL_FILE}
+		do
+			if [ -e "${f}" ]
+			then
+				rm "${f}"
+			fi
+		done
+		popd > /dev/null
+	fi
+
+}
+
+
+if [ "" = "${IN_PACKAGE_SCRIPT}" ]
+then
+	result=0
+
+	case "$1" in
+	-h|--help)
+		cat <<EOS
+usage: `basename $0` <command or option> path
+
+commands:
+	check	補足していないファイルを調査します。
+	clean	調査のために作成したファイルを削除します。
+
+options:
+	-h	--help	使い方を表示し終了します。
+EOS
+		result=1
+		;;
+	clean)
+		shift &&
+		. "`dirname $0`/build_lib.func" &&
+		find_noncaptured_files_postclean "$@"
+		;;
+	check)
+		shift &&
+		. "`dirname $0`/build_lib.func" &&
+		find_noncaptured_files "$@"
+		result=$?
+		;;
+	esac
+
+	exit ${result}
+fi
+
+
+

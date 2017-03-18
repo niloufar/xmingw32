@@ -76,6 +76,15 @@ fi
 # ビルドスクリプトの処理を呼び出す。
 __script_work pack
 
+# 補足していないファイルを調査する。
+"${PREFIX}/scripts/qualitycheck.packagefiles" check "${INSTALL_TARGET}"
+if [ ! 0 -eq $? ]
+then
+	__fail_exit "補足していないファイルの調査においてエラーが発生しました。"
+#	else
+#		"${PREFIX}/scripts/qualitycheck.packagefiles" clean
+fi
+
 if [ "" = "${working}" ]
 then
 	__fail_exit "ビルド プロセスを実行せず終了しました。"
