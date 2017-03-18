@@ -69,6 +69,11 @@ run_patch() {
  set_target_properties(libjasper PROPERTIES LINKER_LANGUAGE C)
  
 EOS
+	# [2.0.12] 構成が変わった。パッチは上記と同じ。
+	if [ ! 0 -eq $? ]
+	then
+		sed -i -e 's/set_target_properties(libjasper PROPERTIES OUTPUT_NAME jasper)/set_target_properties(libjasper PROPERTIES OUTPUT_NAME jasper-${JAS_SO_VERSION})/' src/libjasper/CMakeLists.txt
+	fi
 }
 
 run_configure() {
