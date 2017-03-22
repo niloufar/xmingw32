@@ -161,7 +161,26 @@ run_configure() {
 	-lshlwapi \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure  --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --disable-gtk-doc-html --disable-introspection
+	${XMINGW}/cross-configure  --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --disable-gtk-doc-html --enable-introspection=auto --enable-vala=auto --enable-pixbuf-loader
+}
+
+post_configure() {
+local c
+	# [2.40.16] pixbufloader が pkg-config --variable=prefix gdk-pixbuf-2.0 にインストールされる問題を修正する。
+	c=`${XMINGW}/cross pkg-config --variable=prefix gdk-pixbuf-2.0 | tr --delete "\r\n" | wc --bytes` &&
+	for mf in `find -name Makefile`
+	do
+		sed -i.orig -e '/^gdk_pixbuf_\(binarydir\|cache_file\|moduledir\)/{' -e '/${prefix}/!{' -e "s/^\([^=]\+=\s*\).\{${c}\}/\1\${prefix}/" -e "}"  -e "}" "${mf}"
+	done
+	if grep Makefile -e '^gdk_pixbuf_moduledir\s*=\s*${prefix}/lib/' > /dev/null
+	then
+:		# 置換成功。
+	else
+		# 置換失敗。
+		echo " pixbufloader のインストール パスの置換に失敗しました。"
+		grep Makefile -e '^gdk_pixbuf_\(binarydir\|cache_file\|moduledir\)'
+		return 1
+	fi
 }
 
 run_make() {
@@ -175,7 +194,9 @@ run_pack() {
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
-	store_packed_archive "${__TOOLSZIP}"
+	store_packed_archive "${__TOOLSZIP}" &&
+	# loaders.cache は gdk-pixbuf が管理するものであり、除外する。
+	put_exclude_files `find lib -name loaders.cache`
 }
 
 
