@@ -1,0 +1,70 @@
+#!/bin/sh
+# vim: tabstop=4 fileformat=unix fileencoding=utf-8 filetype=sh
+
+# license: Apache v2.0
+
+trg=
+case "${XMINGW_PLATFORM}" in
+win32)
+	trg="i686-pc-windows-gnu"
+	;;
+win64)
+	trg="x86_64-pc-windows-gnu"
+	;;
+*)
+    echo "cross-rust: FAIL: unsupported type. ${XMINGW_PLATFORM}" > /dev/stderr
+    exit 1
+	;;
+esac
+
+fixes="none"
+case "$@" in
+*" --target "*)
+	fixes="no"
+	;;
+*)
+	fixes="yes"
+	;;
+esac
+
+__CARGO_CMD="/usr/bin/cargo"
+__RUSTC_CMD="/usr/bin/rustc"
+cmd="echo fail"
+#case `basename "$0" | cut --delimiter=- --fields=2` in
+case `basename "$0"` in
+cargo)
+	cmd="${__CARGO_CMD}"
+	if [ "yes" == "${fixes}" ]
+	then
+		cargo_subcmd=$1
+		case "${cargo_subcmd}" in
+		build|clean|doc|run|test|bench)
+			shift
+			cmd="${cmd} ${cargo_subcmd} --target ${trg}"
+			;;
+		esac
+	fi
+	;;
+rustc)
+	cmd="${__RUSTC_CMD}"
+	if [ "yes" == "${fixes}" ]
+	then
+		cmd="${cmd} --target ${trg} "
+	fi
+	;;
+*)
+	echo "cross-rust: FAIL: $0 command is not supprted." > /dev/stderr
+	exit 1
+	;;
+esac
+
+if [ "yes" == "${fixes}" ]
+then
+	echo "INFO: MinGW-w64 のために置き換えられたコマンドを実行しています。" > /dev/stderr
+	echo "EXEC: ${cmd} $@" > /dev/stderr
+fi
+
+${cmd} "$@"
+
+
+

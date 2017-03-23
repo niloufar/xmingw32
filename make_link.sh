@@ -93,6 +93,15 @@ done <<- EOS
 build-cc
 EOS
 
+# ホストのコンパイラを使うためのスクリプト。
+source=${XMINGW}/scripts
+destination=${XMINGW}/bin
+destination64=${XMINGW}/bin64
+make_symlink "${destination}/rustc" "${source}/cross-rust"
+make_symlink "${destination64}/rustc" "${source}/cross-rust"
+make_symlink "${destination}/cargo" "${source}/cross-rust"
+make_symlink "${destination64}/cargo" "${source}/cross-rust"
+
 # ${XMINGW}/* で使えるスクリプトのリンク。
 source=${XMINGW}/scripts
 destination=${XMINGW}
