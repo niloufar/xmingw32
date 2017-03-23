@@ -1,7 +1,7 @@
 #!/bin/bash
 # vim: tabstop=4 fileformat=unix fileencoding=utf-8 filetype=sh
 
-# license: Apatche v2.0
+# license: Apache v2.0
 
 if [ "" = "${XMINGW}" ]
 then
