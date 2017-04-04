@@ -25,6 +25,7 @@ init_var() {
 
 	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
 	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
+	__DOCZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
 	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 }
 
@@ -147,6 +148,11 @@ pre_pack() {
 		sed -i -e 's|^Cflags:$|\0 -I${includedir}/gio-win32-2.0|' "${INSTALL_TARGET}/lib/pkgconfig/gio-2.0.pc"
 	fi
 
+local docdir="${INSTALL_TARGET}/share/doc/${MOD}"
+	mkdir -p "${docdir}" &&
+	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	cp COPYING "${docdir}/." &&
+
 	sed -i -e "s/^\(glib_genmarshal=\)\(glib-genmarshal\)/\1_\2/" "${INSTALL_TARGET}/lib/pkgconfig/glib-2.0.pc" &&
 	cp gobject/_glib-genmarshal "${INSTALL_TARGET}/bin/." &&
 	cp gio/_glib-compile-schemas "${INSTALL_TARGET}/bin/." &&
@@ -155,11 +161,13 @@ pre_pack() {
 
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll lib/charset.alias share/locale &&
-	pack_archive "${__DEVZIP}" bin/_glib-* include lib/*.{def,a} lib/glib-2.0 lib/gio lib/pkgconfig share/aclocal share/glib-2.0/gettext share/bash-completion &&
-	pack_archive "${__TOOLSZIP}" bin/*.exe bin/{gdbus-codegen,glib-gettextize,glib-mkenums} share/gdb share/glib-2.0/{gdb,schemas} &&
+	pack_archive "${__BINZIP}" bin/*.dll lib/charset.alias share/locale share/doc &&
+	pack_archive "${__DEVZIP}" bin/_glib-* include lib/*.{def,a} lib/glib-2.0 lib/gio lib/pkgconfig share/{aclocal,gettext} share/glib-2.0/gettext &&
+	pack_archive "${__DOCZIP}" share/gtk-doc &&
+	pack_archive "${__TOOLSZIP}" bin/*.exe bin/{gdbus-codegen,glib-gettextize,glib-mkenums} share/bash-completion share/gdb share/glib-2.0/{codegen,gdb,schemas,valgrind} share/man/man1 &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
+	store_packed_archive "${__DOCZIP}" &&
 	store_packed_archive "${__TOOLSZIP}"
 }
 

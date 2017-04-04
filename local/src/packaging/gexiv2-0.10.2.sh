@@ -28,7 +28,7 @@ init_var() {
 
 	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
 	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
-#	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
+	__DOCZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
 }
 
 dependencies() {
@@ -93,12 +93,21 @@ run_make() {
 	${XMINGW}/cross make all install
 }
 
+pre_pack() {
+local docdir="${INSTALL_TARGET}/share/doc/${MOD}"
+	mkdir -p "${docdir}" &&
+	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	cp COPYING "${docdir}/."
+}
+
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll &&
-	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig &&
+	pack_archive "${__BINZIP}" bin/*.dll share/doc &&
+	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig share/vala &&
+	pack_archive "${__DOCZIP}" share/gtk-doc &&
 	store_packed_archive "${__BINZIP}" &&
-	store_packed_archive "${__DEVZIP}"
+	store_packed_archive "${__DEVZIP}" &&
+	store_packed_archive "${__DOCZIP}"
 }
 
 

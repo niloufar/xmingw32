@@ -85,9 +85,16 @@ run_make() {
 	${XMINGW}/cross make SHREXT=.dll all install
 }
 
+pre_pack() {
+local docdir="${INSTALL_TARGET}/share/doc/${MOD}"
+	mkdir -p "${docdir}" &&
+	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	cp COPYING "${docdir}/."
+}
+
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll lib/babl-0.1/*.dll &&
+	pack_archive "${__BINZIP}" bin/*.dll lib/babl-0.1/*.dll share/doc &&
 	pack_archive "${__DEVZIP}" include lib/*.a lib/babl-0.1/*.a lib/pkgconfig &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}"

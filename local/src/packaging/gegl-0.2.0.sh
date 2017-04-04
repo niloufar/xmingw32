@@ -117,9 +117,16 @@ run_make() {
 	${XMINGW}/cross make SHREXT=".dll" all install
 }
 
+pre_pack() {
+local docdir="${INSTALL_TARGET}/share/doc/${MOD}"
+	mkdir -p "${docdir}" &&
+	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	cp COPYING "${docdir}/."
+}
+
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll lib/gegl-?.?/*.dll &&
+	pack_archive "${__BINZIP}" bin/*.dll lib/gegl-?.?/*.{dll,json} share/locale share/doc &&
 	pack_archive "${__DEVZIP}" include lib/*.a lib/gegl-?.?/*.a lib/pkgconfig &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} &&
 	store_packed_archive "${__BINZIP}" &&

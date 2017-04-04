@@ -28,7 +28,9 @@ init_var() {
 
 	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
 	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
+	__DOCZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
 	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
+	__DEMOZIP=${MOD}-${VER}-${REV}-demo_${ARCHSUFFIX}
 }
 
 dependencies() {
@@ -112,19 +114,35 @@ run_make() {
 	${XMINGW}/cross make gtk_def= gdk_def= all install
 }
 
-#pre_pack() {
+pre_pack() {
+local docdir="${INSTALL_TARGET}/share/doc/${MOD}"
+	mkdir -p "${docdir}" &&
+	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	cp COPYING "${docdir}/."
+
 #	# 3.14.4: ごまかしビルドの extract-strings をコピーしておく。
 #	cp util/extract-strings.exe "${INSTALL_TARGET}/bin/_extract-strings"
-#}
+}
 
 run_pack() {
+local TESTZIP="${MOD}-${VER}-${REV}-test_${ARCHSUFFIX}"
+	pack_archive "${TESTZIP}" tests/*.{exe,png,xpm,ui,css} tests/.libs/*.exe &&
+	store_packed_archive "${TESTZIP}"
+
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll etc `find lib -name \*.dll` share/{locale,themes} share/glib-2.0/schemas &&
-	pack_archive "${__DEVZIP}" bin/gtk-{encode-symbolic-svg,query-immodules-3.0}.exe include `find lib -name \*.def -or -name \*.a` lib/pkgconfig share/{aclocal,glib-2.0,gtk-3.0,gtk-doc} &&
-	pack_archive "${__TOOLSZIP}" bin/gtk3-*.exe bin/gtk-launch.exe share/man/man1 &&
+	pack_archive "${__BINZIP}" bin/*.dll bin/gtk-query-immodules-3.0.exe etc `find lib -name \*.dll` share/{icons,locale,themes} share/glib-2.0/schemas share/doc &&
+	pack_archive "${__DEVZIP}" include `find lib -name \*.def -or -name \*.a` lib/pkgconfig share/{aclocal,gettext/its,glib-2.0,gtk-3.0} &&
+	pack_archive "${__DOCZIP}" share/gtk-doc &&
+	pack_archive "${__TOOLSZIP}" bin/gtk-{builder-tool,encode-symbolic-svg,launch,query-settings,update-icon-cache}.exe share/man/man1 &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
-	store_packed_archive "${__TOOLSZIP}"
+	store_packed_archive "${__DOCZIP}" &&
+	store_packed_archive "${__TOOLSZIP}" && 
+
+	pack_archive "${__DEMOZIP}" bin/gtk3-{demo,demo-application,icon-browser,widget-factory}.exe &&
+	store_packed_archive "${__DEMOZIP}" &&
+
+	put_exclude_files share/applications/*.desktop
 }
 
 

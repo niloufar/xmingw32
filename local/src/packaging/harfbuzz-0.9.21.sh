@@ -25,6 +25,7 @@ init_var() {
 
 	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
 	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
+	__docZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
 	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 }
 
@@ -79,6 +80,7 @@ EOF
 }
 
 # XP のための特別な処理。
+# [2017/3/18sat] メンテナンスしてない。
 run_configure_xp() {
 	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
@@ -117,21 +119,27 @@ run_make() {
 }
 
 pre_pack() {
+local docdir="${INSTALL_TARGET}/share/doc/${MOD}"
+	mkdir -p "${docdir}" &&
+	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	cp COPYING "${docdir}/." &&
+
 local UNISCRIBE_LIBS="-lusp10 -lgdi32 -lrpcrt4"
 	(cd "${INSTALL_TARGET}/lib/pkgconfig" &&
 	sed -i -e"s/^Libs:.\+\$/\0 ${UNISCRIBE_LIBS}/" harfbuzz.pc &&
 	echo "Requires: glib-2.0" >> harfbuzz.pc
 	)
-#	echo skip > /dev/null
 }
 
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll &&
+	pack_archive "${__BINZIP}" bin/*.dll share/doc &&
 	pack_archive "${__DEVZIP}" include lib/*.{def,a} lib/pkgconfig &&
+	pack_archive "${__DOCZIP}" share/gtk-doc &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
+	store_packed_archive "${__DOCZIP}" &&
 	store_packed_archive "${__TOOLSZIP}"
 }
 

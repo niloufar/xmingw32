@@ -154,9 +154,16 @@ run_make() {
 	${XMINGW}/cross make install
 }
 
+pre_pack() {
+local docdir="${INSTALL_TARGET}/share/doc/${MOD}"
+	mkdir -p "${docdir}" &&
+	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	cp COPYING "${docdir}/."
+}
+
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll bin/gdk-pixbuf-query-loaders.exe `find lib -iname \*.dll` share/locale &&
+	pack_archive "${__BINZIP}" bin/*.dll bin/gdk-pixbuf-query-loaders.exe `find lib -iname \*.dll` share/locale share/doc &&
 	pack_archive "${__DEVZIP}" include `find lib -iname \*.a` lib/pkgconfig &&
 	pack_archive "${__DOCZIP}" share/gtk-doc &&
 	pack_archive "${__TOOLSZIP}" bin/gdk-pixbuf-{csource,pixdata,thumbnailer}.exe share/man share/thumbnailers &&

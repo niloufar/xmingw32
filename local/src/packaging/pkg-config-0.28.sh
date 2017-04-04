@@ -25,6 +25,7 @@ init_var() {
 
 #	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
 #	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
+	__DOCZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
 	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 }
 
@@ -67,7 +68,9 @@ run_make() {
 
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share &&
+	pack_archive "${__DOCZIP}" share/doc &&
+	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/{aclocal,man} &&
+	store_packed_archive "${__DOCZIP}" &&
 	store_packed_archive "${__TOOLSZIP}"
 }
 
