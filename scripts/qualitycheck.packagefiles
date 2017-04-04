@@ -16,13 +16,20 @@ local KNOWN_FILE="${DIR}/${__KNOWN_FILE}"
 local DIRECTORIES_FILE="${DIR}/${__DIRECTORIES_FILE}"
 local NONCAPTURED_FILE="${DIR}/${__NONCAPTURED_FILE}"
 local ALL_FILE="${DIR}/${__ALL_FILE}"
+local target="$1"
+local curr="${PWD}"
 local fail=no
 
-	pushd "$1" > /dev/null
+	cd "${target}"
+	if [ ! 0 -eq $? ]
+	then
+		echo "FATAL(qualitycheck.packagefiles): 検査対象の ${target} フォルダーが存在しません。"
+		fail=yes
+	fi
 
 	if [ ! -e "${DIR}" ]
 	then
-		echo "WARR(qualitycheck.packagefiles): ${DIR} フォルダーが存在しません。"
+		echo "FATAL(qualitycheck.packagefiles): ${DIR} フォルダーが存在しません。"
 		fail=yes
 	else
 		MFS="`manifest_files`"
@@ -89,7 +96,7 @@ local fail=no
 		fi
 	fi
 
-	popd > /dev/null
+	cd "${curr}"
 
 	if [ "yes" = "${fail}" ]
 	then
