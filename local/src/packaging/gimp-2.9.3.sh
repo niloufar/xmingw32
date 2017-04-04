@@ -122,11 +122,19 @@ pre_configure() {
 	then
 		NOCONFIGURE=1 $XMINGW/cross-host sh ./autogen.sh --disable-gtk-doc --disable-dependency-tracking
 	fi
+
+	# 2017/4/3mon: --enable-vector-icons のチェックがクロス コンパイルを考慮していないため強制的に有効にする。
+	# 	 DirectInput も強制的に有効にする。
+	sed -i.orig configure \
+		-e 's/enable_vector_icons=".*"/enable_vector_icons="yes"/' \
+		-e 's/^have_dx_dinput=no/have_dx_dinput=yes/'
 }
 
 run_configure() {
 	# little cms の問題で -Dcdecl=LCMSAPI している。
 	# ${PWD}/libpng/lib をリンク パスにいれてくれない。
+	# 2017/4/1sat NATIVE_GLIB_{CFLAGS,LIBS} は invert-svg のビルドで必要になる。
+	#	--disable-vector-icons では設定されないまま invert-svg をビルドする。
 	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags` \
 	-Dcdecl=LCMSAPI \
@@ -137,7 +145,7 @@ run_configure() {
 	-L${PWD}/libpng/lib \
 	-lgdi32 -lwsock32 -lole32 -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --enable-shared --disable-static --enable-mmx --enable-sse --disable-python  --without-x --with-libjasper --with-libmng --with-librsvg --with-libxpm --without-openexr --without-xmc --with-webp --with-wmf --with-cairo-pdf --with-poppler --without-webkit --with-print --with-directx-sdk= --prefix="${INSTALL_TARGET}" #--enable-vector-icons
+	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --enable-mmx --enable-sse --disable-python  --without-x --with-libjasper --with-libmng --with-librsvg --with-libxpm --without-openexr --without-xmc --with-webp --with-wmf --with-cairo-pdf --with-poppler --without-webkit --with-print --with-directx-sdk="" CC_FOR_BUILD="$XMINGW/cross-host gcc"  NATIVE_GLIB_CFLAGS="`$XMINGW/cross-host pkg-config g{lib,io}-2.0 --cflags`" NATIVE_GLIB_LIBS="`$XMINGW/cross-host pkg-config g{lib,io}-2.0 --libs`" --enable-vector-icons
 }
 
 post_configure() {
@@ -191,11 +199,13 @@ EOF
 }
 
 run_pack() {
-	(cd "${INSTALL_TARGET}" &&
+	cd "${INSTALL_TARGET}" &&
 	pack_archive "${__BINZIP}" bin/*.{exe,dll,local} etc `find lib/gimp -xtype f -not -iname \*.a -and -not -iname \*.la` share/{gimp,icons,locale} [ACLNR]* &&
 	pack_archive "${__DEVZIP}" bin/gimptool-2.0* include `find lib -xtype f -iname \*.a -or -iname \*.def` lib/pkgconfig share/{aclocal,icons} &&
 	store_packed_archive "${__BINZIP}" &&
-	store_packed_archive "${__DEVZIP}")
+	store_packed_archive "${__DEVZIP}" &&
+
+	put_exclude_files share/appdata share/applications/*.desktop share/man
 }
 
 
