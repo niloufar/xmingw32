@@ -29,6 +29,7 @@ init_var() {
 
 	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
 	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
+	__DOCZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
 	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 }
 
@@ -112,13 +113,19 @@ local docdir="${INSTALL_TARGET}/share/doc/${MOD}"
 }
 
 run_pack() {
+	# *-bin はランタイムなどアプリに必要なものをまとめる。
+	# dev-* はビルドに必要なものをまとめる。ツールはビルド環境のものを使用し、含めない。
+	# *-tools はその他の実行ファイル等をまとめる。
 	cd "${INSTALL_TARGET}" &&
 	pack_archive "${__BINZIP}" bin/*.dll share/doc &&
-	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig share/doc share/man/man3 &&
+	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig share/man/man3 &&
+	pack_archive "${__DOCZIP}" share/gtk-doc &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 share/locale &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
-	store_packed_archive "${__TOOLSZIP}"
+	store_packed_archive "${__DOCZIP}" &&
+	store_packed_archive "${__TOOLSZIP}" 
+#	put_exclude_files 
 }
 
 
