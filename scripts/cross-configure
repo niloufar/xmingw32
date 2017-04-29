@@ -21,8 +21,8 @@ echo -n "args: "
 echo "$@"
 
 dir=""
-case "`basename \"$0\" | sed -e 's/\(^\|.\+-\)\([a-z]\+\)$/\2/'`" in
-ppconfigure)
+case "$0" in
+*-ppconfigure)
     dir="../"
     ;;
 esac

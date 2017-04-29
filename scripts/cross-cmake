@@ -51,8 +51,8 @@ set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 EOS
 
 dir=""
-case "`basename \"$0\" | sed -e 's/\(^\|.\+-\)\([a-z]\+\)$/\2/'`" in
-ppcmake)
+case "$0" in
+*-ppcmake)
     dir=".."
     ;;
 esac
