@@ -3,13 +3,23 @@
 
 # license: Apache v2.0
 
+__SCRIPT_NAME="`basename "$0"`"
+
+if [ "" = "${XMINGW}" ]
+then
+	echo ". env.sh した環境から実行してください。"
+	exit 1
+fi
+
+trg_win32="i686-pc-windows-gnu"
+trg_win64="x86_64-pc-windows-gnu"
 trg=
 case "${XMINGW_PLATFORM}" in
 win32)
-	trg="i686-pc-windows-gnu"
+	trg="${trg_win32}"
 	;;
 win64)
-	trg="x86_64-pc-windows-gnu"
+	trg="${trg_win64}"
 	;;
 *)
     echo "cross-rust: FAIL: unsupported type. ${XMINGW_PLATFORM}" > /dev/stderr
@@ -17,40 +27,111 @@ win64)
 	;;
 esac
 
-fixes="none"
+
+__usage() {
+	cat <<EOS
+usage: ${__SCRIPT_NAME} [option]
+
+  --target-name		show target-name.
+
+  -h  --help		show this message.
+EOS
+}
+
+__create_cargo_config() {
+local dir=$1
+	if [ "" = "${dir}" ]
+	then
+		dir="."
+	fi
+
+	mkdir -p "${dir}/.cargo"
+	cat <<EOS > "${dir}/.cargo/config"
+#[profile.release]
+
+[target.${trg_win32}]
+# exception handling が sjlj では panic=unwind できない。
+# win64 は seh であり問題なく使用できる。 win32 と挙動が変わるが…
+rustflags = "-C panic=abort"
+
+#[target.${trg_win64}]
+#linker = "gcc"
+#ar = ""
+#rustflags = ["", ""]
+EOS
+# 下記を指定するとエラーになる。
+#dll_prefix = "lib"
+#staticlib_prefix = "lib"
+#staticlib_suffix = ".a"
+}
+
+__cross_rust() {
+	while [ ! 0 -eq $# ]
+	do
+		case "$1" in
+		--target-name)
+			echo "${trg}"
+			;;
+		--create-cargo-config)
+			__create_cargo_config $2
+			shift
+			;;
+		-h|--help)
+			__usage
+			return 1
+			;;
+		*)
+		    echo "cross-rust: FAIL: unsupported option. $1" > /dev/stderr
+			return 1
+			;;
+		esac
+		shift
+	done
+}
+
+
+native="none"
 case "$@" in
 *" --target "*)
-	fixes="no"
+	native="no"
 	;;
 *)
-	fixes="yes"
+	native="yes"
 	;;
 esac
 
 __CARGO_CMD="/usr/bin/cargo"
 __RUSTC_CMD="/usr/bin/rustc"
 cmd="echo fail"
-#case `basename "$0" | cut --delimiter=- --fields=2` in
-case `basename "$0"` in
+fixes="no"
+case "${__SCRIPT_NAME}" in
 cargo)
 	cmd="${__CARGO_CMD}"
-	if [ "yes" == "${fixes}" ]
+	if [ "yes" == "${native}" ]
 	then
 		cargo_subcmd=$1
 		case "${cargo_subcmd}" in
 		build|clean|doc|run|test|bench)
 			shift
+			# glib-sys のネイティブ実行で PKG_CONFIG_ALLOW_CROSS=1 しろと言われる。
+			export PKG_CONFIG_ALLOW_CROSS=1
 			cmd="${cmd} ${cargo_subcmd} --target ${trg}"
+			fixes="yes"
 			;;
 		esac
 	fi
 	;;
 rustc)
 	cmd="${__RUSTC_CMD}"
-	if [ "yes" == "${fixes}" ]
+	if [ "yes" = "${native}" ]
 	then
-		cmd="${cmd} --target ${trg} "
+		cmd="${XMINGW}/cross-host ${cmd} "
+		fixes="yes"
 	fi
+	;;
+cross-rust)
+	__cross_rust "$@"
+	exit $?
 	;;
 *)
 	echo "cross-rust: FAIL: $0 command is not supprted." > /dev/stderr
@@ -58,10 +139,18 @@ rustc)
 	;;
 esac
 
-if [ "yes" == "${fixes}" ]
+# 以下、 rustc/cargo コマンドを置き換えて実行する。
+
+if [ "yes" = "${fixes}" ]
 then
-	echo "INFO: MinGW-w64 のために置き換えられたコマンドを実行しています。" > /dev/stderr
-	echo "EXEC: ${cmd} $@" > /dev/stderr
+	echo "cross-rust(${__SCRIPT_NAME}): INFO: Mingw-w64 のために置き換えられたコマンドを実行しています。" > /dev/stderr
+#	echo "EXEC: ${cmd} $@" > /dev/stderr
+fi
+
+if [ "" = "${IN_CROSS_SCRIPT}" ]
+then
+	echo "\${XMINGW}/cross から実行してください。"
+	exit 1
 fi
 
 ${cmd} "$@"
