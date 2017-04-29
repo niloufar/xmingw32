@@ -82,7 +82,8 @@ local fail=no
 
 	# 未知のファイルの一覧。
 	[ -e "${NONCAPTURED_FILE}" ] && rm "${NONCAPTURED_FILE}"
-	[ "no" = "${fail}" ] && diff --unchanged-line-format="" --old-line-format="" --new-line-format="%L" "${KNOWN_FILE}" "${ALL_FILE}" > "${NONCAPTURED_FILE}"
+#	[ "no" = "${fail}" ] && diff --unchanged-line-format="" --old-line-format="" --new-line-format="%L" "${KNOWN_FILE}" "${ALL_FILE}" > "${NONCAPTURED_FILE}"
+	[ "no" = "${fail}" ] && comm -13 "${KNOWN_FILE}" "${ALL_FILE}" > "${NONCAPTURED_FILE}"
 	if [ ! -e "${NONCAPTURED_FILE}" ]
 	then
 		echo "FATAL(qualitycheck.packagefiles): 未知のファイルの一覧を作成できませんでした。"
@@ -112,15 +113,17 @@ local fail=no
 
 	if [ -e "${DIR}" ]
 	then
-		pushd "${DIR}" > /dev/null
-		for f in ${__KNOWN_FILE} ${__DIRECTORIES_FILE} ${__NONCAPTURED_FILE} ${__ALL_FILE}
-		do
-			if [ -e "${f}" ]
-			then
-				rm "${f}"
-			fi
-		done
-		popd > /dev/null
+		if pushd "${DIR}" > /dev/null
+		then
+			for f in ${__KNOWN_FILE} ${__DIRECTORIES_FILE} ${__NONCAPTURED_FILE} ${__ALL_FILE}
+			do
+				if [ -e "${f}" ]
+				then
+					rm "${f}"
+				fi
+			done
+			popd > /dev/null
+		fi
 	fi
 
 }
