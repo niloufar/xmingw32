@@ -17,7 +17,7 @@ export CPLUS_INCLUDE_PATH=${XMINGW_ORIG_CPLUS_INCLUDE_PATH}
 export LIBRARY_PATH=${XMINGW_ORIG_LIBRARY_PATH}
 else
 	# これが実行されることはないはず。
-	echo "WARRNING: XMINGW 環境のそとで実行しています。このスクリプトは、 XMINGW 環境下でホスト環境を再設定しプログラムを実行します。"
+	echo "WARNING: XMINGW 環境のそとで実行しています。このスクリプトは、 XMINGW 環境下でホスト環境を再設定しプログラムを実行します。"
 fi
 
 export IN_CROSS_HOST_SCRIPT="#"

@@ -35,7 +35,7 @@ local fail=no
 		MFS="`manifest_files`"
 		if [ "" = "${MFS}" ]
 		then
-			echo "WARR(qualitycheck.packagefiles): ${DIR} に *${__MANIFEST_FILE_EXT} が存在しません。"
+			echo "WARNING(qualitycheck.packagefiles): ${DIR} に *${__MANIFEST_FILE_EXT} が存在しません。"
 			fail=yes
 		fi
 	fi
