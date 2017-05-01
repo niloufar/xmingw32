@@ -124,7 +124,11 @@ post_configure() {
 	then
 		sed -i.orig -e 's/-Werror=implicit-function-declaration//' gio/Makefile
 	fi
-	echo skip > /dev/null
+	# [2.53.1] ヘッダでは #ifndef _WIN64 しているが C ソースは行っていない関数がプロトタイプ未定義エラーになる。
+	if grep config.h -e 'PACKAGE_VERSION "2.53.1"' > /dev/null 2>&1
+	then
+		sed -i.orig -e 's/-Werror=missing-prototypes//' glib/Makefile
+	fi
 }
 
 pre_make() {
