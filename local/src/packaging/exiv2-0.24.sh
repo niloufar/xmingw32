@@ -19,7 +19,14 @@ init_var() {
 	MOD=exiv2
 	[ "" = "${VER}" ] && VER=0.24
 	[ "" = "${REV}" ] && REV=1
-	DIRECTORY="${MOD}-${VER}"
+	case "${VER}" in
+	*-trunk)
+		DIRECTORY="${MOD}-trunk"
+		;;
+	*)
+		DIRECTORY="${MOD}-${VER}"
+		;;
+	esac
 
 	# 内部で使用する変数。
 	__ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/pic"
@@ -87,7 +94,6 @@ post_configure() {
 run_make() {
 	${XMINGW}/cross make EXEEXT=".exe" EXIV2COBJ="" all install
 }
-
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
 	pack_archive "${__BINZIP}" bin/*.dll &&

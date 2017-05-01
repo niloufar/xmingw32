@@ -81,7 +81,7 @@ run_configure() {
 	CFLAGS_FOR_BUILD= \
 	CPPFLAGS_FOR_BUILD= \
 	LDFLAGS_FOR_BUILD= \
-	${XMINGW}/cross-configure --disable-static  --prefix="${INSTALL_TARGET}" --enable-win32-backend --enable-gtk2-dependency --with-included-immodules --disable-cups
+	${XMINGW}/cross-configure --disable-static  --prefix="${INSTALL_TARGET}" --enable-win32-backend --enable-gtk2-dependency --with-included-immodules --disable-cups --disable-schemas-compile --disable-introspection
 }
 
 post_configure() {
@@ -130,16 +130,16 @@ local TESTZIP="${MOD}-${VER}-${REV}-test_${ARCHSUFFIX}"
 	store_packed_archive "${TESTZIP}"
 
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll bin/gtk-query-immodules-3.0.exe etc `find lib -name \*.dll` share/{icons,locale,themes} share/glib-2.0/schemas share/doc &&
+	pack_archive "${__BINZIP}" bin/*.dll bin/gtk-query-immodules-3.0.exe etc `find lib -name \*.dll` share/{locale,themes} share/doc share/man/man1/ &&
 	pack_archive "${__DEVZIP}" include `find lib -name \*.def -or -name \*.a` lib/pkgconfig share/{aclocal,gettext/its,glib-2.0,gtk-3.0} &&
 	pack_archive "${__DOCZIP}" share/gtk-doc &&
-	pack_archive "${__TOOLSZIP}" bin/gtk-{builder-tool,encode-symbolic-svg,launch,query-settings,update-icon-cache}.exe share/man/man1 &&
+	pack_archive "${__TOOLSZIP}" bin/gtk-{builder-tool,encode-symbolic-svg,launch,query-settings,update-icon-cache}.exe share/man/man1/b* share/man/man1/gtk-* &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
 	store_packed_archive "${__DOCZIP}" &&
 	store_packed_archive "${__TOOLSZIP}" && 
 
-	pack_archive "${__DEMOZIP}" bin/gtk3-{demo,demo-application,icon-browser,widget-factory}.exe &&
+	pack_archive "${__DEMOZIP}" bin/gtk3-{demo,demo-application,icon-browser,widget-factory}.exe share/glib-2.0/schemas share/icons share/man/man1/gtk3-* &&
 	store_packed_archive "${__DEMOZIP}" &&
 
 	put_exclude_files share/applications/*.desktop
