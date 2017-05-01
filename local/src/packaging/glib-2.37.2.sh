@@ -86,21 +86,24 @@ pre_configure() {
 	# ./autogen.sh
 	autoreconf --force --install --verbose
 	# ビルドに glib-genmarshal が必要なので先に作成する。
-	LIBFFI_CFLAGS="`pkg-config --cflags libffi`" \
-	LIBFFI_LIBS="`pkg-config --libs libffi`" \
-	./configure -enable-silent-rules --disable-gtk-doc --enable-static --disable-shared &&
-	(cd glib; make) &&
-	(cd gthread; make) &&
-	(cd gmodule; make) &&
-	(cd gio/inotify; make) &&
-	(cd gio/xdgmime; make) &&
-	(cd gobject; make libgobject-2.0.la) &&
-	(cd gobject; make glib-genmarshal && mv glib-genmarshal _glib-genmarshal) &&
-	# ビルドに glib-compile-schemas が必要なので先に作成する。
-	(cd gio; make glib-compile-schemas && mv glib-compile-schemas _glib-compile-schemas) &&
-	# ビルドに glib-compile-resources が必要なので先に作成する。
-	(cd gio; make glib-compile-resources LIBS=-lffi && cp glib-compile-resources _glib-compile-resources) &&
-	make clean 2>&1 > /dev/null
+	if [ ! -e gobject/_glib-genmarshal -o ! -e gio/_glib-compile-schemas -o ! -e gio/_glib-compile-resources ]
+	then
+		LIBFFI_CFLAGS="`pkg-config --cflags libffi`" \
+		LIBFFI_LIBS="`pkg-config --libs libffi`" \
+		./configure -enable-silent-rules --disable-gtk-doc --enable-static --disable-shared &&
+		(cd glib; make) &&
+		(cd gthread; make) &&
+		(cd gmodule; make) &&
+		(cd gio/inotify; make) &&
+		(cd gio/xdgmime; make) &&
+		(cd gobject; make libgobject-2.0.la) &&
+		(cd gobject; make glib-genmarshal && mv glib-genmarshal _glib-genmarshal) &&
+		# ビルドに glib-compile-schemas が必要なので先に作成する。
+		(cd gio; make glib-compile-schemas && mv glib-compile-schemas _glib-compile-schemas) &&
+		# ビルドに glib-compile-resources が必要なので先に作成する。
+		(cd gio; make glib-compile-resources LIBS=-lffi && cp glib-compile-resources _glib-compile-resources) &&
+		make clean 2>&1 > /dev/null
+	fi
 }
 
 run_configure() {
