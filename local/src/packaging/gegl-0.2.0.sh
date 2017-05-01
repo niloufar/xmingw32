@@ -51,17 +51,20 @@ EOS
 optional_dependencies() {
 	cat <<EOS
 cairo
+exiv2
 gdk-pixbuf
+gexiv2
 jasper
 lcms2
+libpng
+libraw
 librsvg
+libwebp
 openexr
 openraw
 pango
-pangocairo
-libpng
-libwebp
 sdl
+tiff
 EOS
 }
 
@@ -94,7 +97,7 @@ pre_configure() {
 local gen=1
 	[ -e configure ] || gen=0
 	[ 1 -eq ${gen} ] && find configure.ac -newer configure && gen=0
-	[ 0 -eq ${gen} ] && NOCONFIGURE=1 $XMINGW/cross-host sh autogen.sh
+	[ 0 -eq ${gen} ] && NOCONFIGURE=1 sh autogen.sh
 	return 0
 }
 
@@ -105,7 +108,7 @@ run_configure() {
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
 	CXXFLAGS="${OLD_CXX_ABI}" \
-	${XMINGW}/cross-configure --enable-shared --disable-static --disable-docs --without-ruby --without-lua --without-openexr --without-sdl --without-libraw --without-graphviz --without-libavformat --without-libv4l --without-libspiro --without-umfpack --with-webp --prefix="${INSTALL_TARGET}"
+	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --disable-docs --without-ruby --without-lua --without-openexr --without-sdl --without-libraw --without-graphviz --without-libavformat --without-libv4l --without-libspiro --without-umfpack --with-webp  --disable-introspection
 }
 
 post_configure() {
@@ -121,14 +124,14 @@ pre_pack() {
 local docdir="${INSTALL_TARGET}/share/doc/${MOD}"
 	mkdir -p "${docdir}" &&
 	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
-	cp COPYING "${docdir}/."
+	cp COPYING* "${docdir}/."
 }
 
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll lib/gegl-?.?/*.{dll,json} share/locale share/doc &&
+	pack_archive "${__BINZIP}" bin/*.dll lib/gegl-?.?/*.{dll,json} share/doc &&
 	pack_archive "${__DEVZIP}" include lib/*.a lib/gegl-?.?/*.a lib/pkgconfig &&
-	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} &&
+	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/locale &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
 	store_packed_archive "${__TOOLSZIP}"

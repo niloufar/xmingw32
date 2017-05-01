@@ -33,14 +33,28 @@ init_var() {
 
 dependencies() {
 	cat <<EOS
-cairo
 freetype2
+poppler-data
+EOS
+}
+
+optional_dependencies() {
+	cat <<EOS
+cairo
+fontconfig
 lcms2
 libjpeg
 libpng
 openjpeg
 tiff
 zlib
+EOS
+}
+
+license() {
+	cat <<EOS
+GNU GENERAL PUBLIC LICENSE
+Version 2, June 1991
 EOS
 }
 
@@ -67,8 +81,8 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	CXXFLAGS="${OLD_CXX_ABI}" \
-	${XMINGW}/cross-configure --disable-static --disable-gtk-doc --disable-gtk-doc-html --without-x --disable-nss --disable-libnss -disable-poppler-qt4 -disable-poppler-qt5 --enable-zlib --prefix="${INSTALL_TARGET}"
+	CXXFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math ${OLD_CXX_ABI} " \
+	${XMINGW}/cross-configure --disable-static --prefix="${INSTALL_TARGET}" --disable-gtk-doc --without-x --disable-nss --disable-libnss -disable-poppler-qt4 -disable-poppler-qt5 --enable-libopenjpeg --enable-libtiff --enable-zlib --enable-libjpeg --enable-libpng  --disable-introspection
 }
 
 post_configure() {

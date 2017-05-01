@@ -25,6 +25,7 @@ init_var() {
 
 	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
 	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
+	__DOCZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
 	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 }
 
@@ -33,13 +34,21 @@ dependencies() {
 glib
 fontconfig
 freetype2
+harfbuzz
 EOS
 }
 
 optional_dependencies() {
 	cat <<EOS
 cairo
-harfbuzz
+libthai
+EOS
+}
+
+license() {
+	cat <<EOS
+GNU LIBRARY GENERAL PUBLIC LICENSE
+Version 2, June 1991
 EOS
 }
 
@@ -84,13 +93,22 @@ run_make() {
 	${XMINGW}/cross make all install
 }
 
+pre_pack() {
+local docdir="${INSTALL_TARGET}/share/doc/${MOD}"
+	mkdir -p "${docdir}" &&
+	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	cp COPYING "${docdir}/."
+}
+
 run_pack() {
 	(cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll &&
-	pack_archive "${__DEVZIP}" include lib/*.{def,a} lib/pkgconfig share/gtk-doc &&
+	pack_archive "${__BINZIP}" bin/*.dll share/doc &&
+	pack_archive "${__DEVZIP}" include lib/*.{def,a} lib/pkgconfig &&
+	pack_archive "${__DOCZIP}" share/gtk-doc &&
 	pack_archive "${__TOOLSZIP}" bin/*.exe share/man &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
+	store_packed_archive "${__DOCZIP}" &&
 	store_packed_archive "${__TOOLSZIP}") &&
 
 	EXAMPLESZIP=${MOD}-${VER}-${REV}-examples_${ARCHSUFFIX}

@@ -94,9 +94,17 @@ post_configure() {
 run_make() {
 	${XMINGW}/cross make EXEEXT=".exe" EXIV2COBJ="" all install
 }
+
+pre_pack() {
+local docdir="${INSTALL_TARGET}/share/doc/${MOD}"
+	mkdir -p "${docdir}" &&
+	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	cp COPYING "${docdir}/."
+}
+
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll &&
+	pack_archive "${__BINZIP}" bin/*.dll share/doc &&
 	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/locale share/man/man1 &&
 	store_packed_archive "${__BINZIP}" &&

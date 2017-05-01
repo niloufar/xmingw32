@@ -25,6 +25,7 @@ init_var() {
 
 	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
 	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
+	__DOCZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
 	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 }
 
@@ -32,6 +33,20 @@ dependencies() {
 	cat <<EOS
 glib
 libxml2
+EOS
+}
+
+optional_dependencies() {
+	cat <<EOS
+EOS
+}
+
+license() {
+	cat <<EOS
+GNU LIBRARY GENERAL PUBLIC LICENSE
+Version 2, June 1991
+GNU LIBRARY GENERAL PUBLIC LICENSE
+Version 2, June 1991
 EOS
 }
 
@@ -56,17 +71,24 @@ run_make() {
 }
 
 pre_pack() {
-local NAME=`find "${INSTALL_TARGET}/bin/" -name \*-config`
-	sed -i -e "s#^\s*\(prefix=\).*${INSTALL_TARGET}\$#\1\`dirname \$0\`/..#" "${NAME}"
+local docdir="${INSTALL_TARGET}/share/doc/${MOD}"
+	mkdir -p "${docdir}" &&
+	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	cp COPYING* "${docdir}/."
+
+local conffile=`find "${INSTALL_TARGET}/bin/" -name \*-config`
+	sed -i -e "s#^\s*\(prefix=\).*${INSTALL_TARGET}\$#\1\`dirname \$0\`/..#" "${conffile}"
 }
 
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll &&
+	pack_archive "${__BINZIP}" bin/*.dll share/doc &&
 	pack_archive "${__DEVZIP}" bin/*-config include lib/*.a lib/pkgconfig &&
+	pack_archive "${__DOCZIP}" share/gtk-doc &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
+	store_packed_archive "${__DOCZIP}" &&
 	store_packed_archive "${__TOOLSZIP}"
 }
 
