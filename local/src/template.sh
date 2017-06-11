@@ -10,7 +10,7 @@ then
 fi
 
 
-# ARCH は package が設定している。
+# ARCHSUFFIX は package が設定している。
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
 	#XLIBRARY_SET=${XLIBRARY}/gimp_build_set
@@ -27,10 +27,13 @@ init_var() {
 	__ARCHIVE="${MOD}-${VER}"
 #	__PATCH_ARCHIVE="${MOD}_${VER}-${PATCH}"
 
-	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
-	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
-	__DOCZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
-	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
+	__BINZIP="${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}"
+	__DEVZIP="${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}"
+	__DOCZIP="${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}"
+	__TOOLSZIP="${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}"
+
+	# アーキテクチャを指定しない場合は NOARCH=yes する。
+#	NOARCH=yes
 }
 
 dependencies() {
@@ -77,10 +80,23 @@ run_configure() {
 	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}"
 }
 
+# cmake を使用する場合。
+# run_configure を削除し、下記関数定義行頭のコロンを削除する。
+:run_configure() {
+	${XMINGW}/cross-cmake -G "Unix Makefiles" -H. -B. -DALLOW_IN_SOURCE_BUILD:bool=true -DCMAKE_BUILD_TYPE:string=RELEASE -DCMAKE_INSTALL_PREFIX:string="${INSTALL_TARGET}" \
+	"-DCMAKE_C_FLAGS:string=`${XMINGW}/cross --archcflags --cflags` -pipe -O2 -fomit-frame-pointer -ffast-math " \
+	"-DCMAKE_CXX_FLAGS:string=`${XMINGW}/cross --archcflags --cflags` -pipe -O2 -fomit-frame-pointer -ffast-math ${OLD_CXX_ABI} " \
+	"-DCMAKE_C_FLAGS_RELEASE:string=-DNDEBUG " \
+	"-DCMAKE_CXX_FLAGS_RELEASE:string=-DNDEBUG " \
+	"-DCMAKE_SHARED_LINKER_FLAGS:string=`${XMINGW}/cross --ldflags` -Wl,--enable-auto-image-base -Wl,-s -Wl,--export-all-symbols"
+}
+
 post_configure() {
 	# 使用する場合は bash ${XMINGW}/replibtool.sh にオプションを並べる。
 	# shared ファイルを作ってくれない場合の対処。
 #	bash ${XMINGW}/replibtool.sh shared
+	# __stdcall な関数を適切にエクスポートできない場合の対処。
+#	bash ${XMINGW}/replibtool.sh stdcall
 	# static なライブラリーのリンクはこうしないと libtool がいろいろ面倒をみてしまう。
 #	bash ${XMINGW}/replibtool.sh mix
 	# libstdc++ を静的リンクする。
@@ -106,10 +122,8 @@ run_make_example() {
 }
 
 pre_pack() {
-local docdir="${INSTALL_TARGET}/share/doc/${MOD}"
-	mkdir -p "${docdir}" &&
 	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
-	cp COPYING "${docdir}/."
+	install_license_files "${MOD}" COPYING*
 }
 
 run_pack() {
