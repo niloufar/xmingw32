@@ -15,8 +15,9 @@ __help() {
   __usage
   echo "
 command:
-  shared          shared ライブラリのリンク関係の修正を行う.
+  shared          shared ライブラリーのリンク関係の修正を行う.
   static-libgcc   libgcc と libstdc++ を静的リンクする.
+  stdcall         __stdcall な関数を適切にエクスポートできない問題を修正する.
   mix             shared と static ライブラリーを混合リンクする.
 
 option:
@@ -36,6 +37,7 @@ fi
 e_default=yes
 e_shared=no
 e_static_libgcc=no
+e_stdcall=no
 e_mix=no
 e_all=no
 
@@ -51,6 +53,9 @@ do
     ;;
   static-libgcc)
     e_static_libgcc=yes
+    ;;
+  stdcall)
+    e_stdcall=yes
     ;;
   mix)
     e_mix=yes
@@ -91,6 +96,14 @@ then
 		-e'/^\s\+\\$CC\s\+-shared/{s/-nostdlib/-static-libgcc -static-libstdc++/}' \
 		-e's/^predep_objects=".\+"/predep_objects=""/' \
 		-e's/^postdep_objects=".\+"/postdep_objects=""/' \
+		"${lt}"
+fi
+
+if [ "yes" = "${e_stdcall}" -o "yes" = "${e_all}" ]
+then
+  sed -i \
+		-e '/^global_symbol_pipe=/{' -e 's/0-9\]/0-9@]/' -e '}' \
+		-e '/^archive_expsym_cmds=/,/^$/{' -e 's!"$! -Wl,--kill-at;\n	\\$DLLTOOL --kill-at --compat-implib --input-def \\$output_objdir/\\$soname.def --dllname \\$output_objdir/\\$soname --output-lib \\$output_objdir/\\$library_names_spec"!' -e '}' \
 		"${lt}"
 fi
 

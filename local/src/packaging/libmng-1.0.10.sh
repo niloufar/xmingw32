@@ -78,8 +78,14 @@ run_configure() {
 }
 
 post_configure() {
-	bash ${XMINGW}/replibtool.sh
-#	echo skip > /dev/null
+	# 使用する場合は bash ${XMINGW}/replibtool.sh にオプションを並べる。
+	# shared ファイルを作ってくれない場合の対処。
+	# __stdcall な関数を適切にエクスポートできない場合の対処。
+	bash ${XMINGW}/replibtool.sh shared stdcall
+	# 追加で libtool を書き換える場合は replibtool.sh の実行後に行う。
+
+	# __stdcall のための修正。
+	sed config.h -i.orig -e 's/MNG_BUILD_SO/MNG_BUILD_DLL/'
 }
 
 run_make() {
@@ -87,9 +93,14 @@ run_make() {
 }
 
 run_pack() {
+local pc
 	cd "${INSTALL_TARGET}" &&
+	if [ -e "lib/pkgconfig" ]
+	then
+		pc="lib/pkgconfig"
+	fi &&
 	pack_archive "${__BINZIP}" bin/*.dll &&
-	pack_archive "${__DEVZIP}" include lib/*.{def,a} share/man/man{3,5} &&
+	pack_archive "${__DEVZIP}" include lib/*.{def,a} ${pc} share/man/man{3,5} &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}"
 }
