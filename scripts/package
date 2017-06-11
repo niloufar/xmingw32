@@ -115,9 +115,16 @@ fi
 # ユニーク名。仮インストール先のディレクトリ名と log ファイル名に使用している。
 if [ "" = "${PATCH}" ]
 then
-	THIS=${MOD}-${VER}-${REV}_${ARCHSUFFIX}
+	THIS="${MOD}-${VER}-${REV}"
 else
-	THIS=${MOD}-${VER}-${PATCH}-${REV}_${ARCHSUFFIX}
+	THIS="${MOD}-${VER}-${PATCH}-${REV}"
+fi
+# アーキテクチャを指定しない。
+if [ "yes" = "${NOARCH}" ]
+then
+:	# ignore
+else
+	THIS="${THIS}_${ARCHSUFFIX}"
 fi
 
 LOG_PATH="${PWD}/${THIS}.log"
