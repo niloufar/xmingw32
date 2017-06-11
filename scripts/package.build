@@ -3,6 +3,19 @@
 # license: Apache v2.0
 
 
+__license_dir="share/doc"
+
+# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+# module_name=$1 ライブラリー名。
+# INSTALL_TARGET: インストール先。 package コマンドが定義している。
+install_license_files() {
+local module_name=$1
+local docdir="${INSTALL_TARGET}/${__license_dir}/${module_name}"
+	shift
+	mkdir -p "${docdir}" &&
+	cp "$@" "${docdir}/."
+}
+
 __script_work() {
 	for work in $@
 	do

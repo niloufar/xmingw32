@@ -46,12 +46,14 @@ export XMINGW_ORIG_LIBRARY_PATH=${LIBRARY_PATH}
 export XMINGW_ORIG_ACLOCAL_FLAGS=${ACLOCAL_FLAGS}
 fi
 
+TARGET_win32=i686-w64-mingw32
+TARGET_win64=x86_64-w64-mingw32
 case "${XMINGW_PLATFORM}" in
 win32)
-	TARGET=i686-w64-mingw32
+	TARGET=${TARGET_win32}
 	;;
 win64)
-	TARGET=x86_64-w64-mingw32
+	TARGET=${TARGET_win64}
 	;;
 *)
     echo "${LINENO}: INTERNAL ERROR: unsupported."
