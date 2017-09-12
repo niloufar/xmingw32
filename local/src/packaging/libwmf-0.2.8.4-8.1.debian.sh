@@ -29,6 +29,7 @@ init_var() {
 
 	__BINZIP=${MOD}-${VER}-${PATCH}-${REV}-bin_${ARCHSUFFIX}
 	__DEVZIP=${MOD}-dev-${VER}-${PATCH}-${REV}_${ARCHSUFFIX}
+	__DOCZIP=${MOD}-${VER}-${PATCH}-${REV}-doc_${ARCHSUFFIX}
 	__TOOLSZIP=${MOD}-${VER}-${PATCH}-${REV}-tools_${ARCHSUFFIX}
 }
 
@@ -123,9 +124,11 @@ run_pack() {
 	cd "${INSTALL_TARGET}" &&
 	pack_archive "${__BINZIP}" bin/*.dll share/libwmf `find lib -name \*.dll` &&
 	pack_archive "${__DEVZIP}" bin/libwmf-config include `find lib -name \*.a` &&
+	pack_archive "${__DOCZIP}" share/doc/libwmf &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} bin/libwmf-fontmap &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
+	store_packed_archive "${__DOCZIP}" &&
 	store_packed_archive "${__TOOLSZIP}"
 }
 
