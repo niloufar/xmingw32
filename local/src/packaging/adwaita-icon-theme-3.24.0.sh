@@ -19,18 +19,16 @@ init_var() {
 	MOD=adwaita-icon-theme
 	[ "" = "${VER}" ] && VER=3.24.0
 	[ "" = "${REV}" ] && REV=1
-#	[ "" = "${PATCH}" ] && PATCH=2.debian
 	DIRECTORY="${MOD}-${VER}"
 
 	# 内部で使用する変数。
 	__ARCHIVEDIR="${XLIBRARY_SOURCES}/gtk+"
 	__ARCHIVE="${MOD}-${VER}"
-#	__PATCH_ARCHIVE="${MOD}_${VER}-${PATCH}"
 
-	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
-	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
-#	__DOCZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
-#	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
+	__BINZIP="${MOD}-${VER}-${REV}-bin"
+
+	# アーキテクチャを指定しない。
+	NOARCH=yes
 }
 
 dependencies() {
