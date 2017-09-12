@@ -51,11 +51,13 @@ local name
 
 run_configure() {
 	CC="gcc `${XMINGW}/cross --archcflags`" \
+	CXX="g++ `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
-	CFLAGS="-pipe -fpic -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --disable-gtk-doc --disable-static --prefix="${INSTALL_TARGET}"
+	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math " \
+	CXXFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math ${OLD_CXX_ABI} " \
+	${XMINGW}/cross-configure --disable-gtk-doc --disable-static --prefix="${INSTALL_TARGET}" --without-x --enable-zlib --enable-jpeg --enable-lzma --enable-cxx --enable-win32-io
 }
 
 post_configure() {

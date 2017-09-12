@@ -82,7 +82,7 @@ run_configure() {
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
 	CXXFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math ${OLD_CXX_ABI} " \
-	${XMINGW}/cross-configure --disable-static --prefix="${INSTALL_TARGET}" --disable-gtk-doc --without-x --disable-nss --disable-libnss -disable-poppler-qt4 -disable-poppler-qt5 --enable-libopenjpeg --enable-libtiff --enable-zlib --enable-libjpeg --enable-libpng  --disable-introspection
+	${XMINGW}/cross-configure --disable-static --prefix="${INSTALL_TARGET}" --disable-gtk-doc --without-x --disable-nss --disable-libnss -disable-poppler-qt4 -disable-poppler-qt5 --enable-libopenjpeg=auto --enable-libtiff --enable-zlib --enable-libjpeg --enable-libpng  --disable-introspection
 }
 
 post_configure() {

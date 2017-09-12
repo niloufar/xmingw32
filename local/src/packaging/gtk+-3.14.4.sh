@@ -130,7 +130,7 @@ local TESTZIP="${MOD}-${VER}-${REV}-test_${ARCHSUFFIX}"
 	store_packed_archive "${TESTZIP}"
 
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll bin/gtk-query-immodules-3.0.exe etc `find lib -name \*.dll` share/{locale,themes} share/doc share/man/man1/ &&
+	pack_archive "${__BINZIP}" bin/*.dll bin/gtk-query-immodules-3.0.exe etc `find lib -name \*.dll` share/{locale,themes} share/doc &&
 	pack_archive "${__DEVZIP}" include `find lib -name \*.def -or -name \*.a` lib/pkgconfig share/{aclocal,gettext/its,glib-2.0,gtk-3.0} &&
 	pack_archive "${__DOCZIP}" share/gtk-doc &&
 	pack_archive "${__TOOLSZIP}" bin/gtk-{builder-tool,encode-symbolic-svg,launch,query-settings,update-icon-cache}.exe share/man/man1/b* share/man/man1/gtk-* &&

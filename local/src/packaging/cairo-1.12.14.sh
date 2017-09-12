@@ -90,7 +90,7 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --without-x --disable-xlib --disable-xcb --disable-static --enable-ft=yes --enable-fc=yes --enable-win32 --enable-ps=no --prefix="${INSTALL_TARGET}"
+	${XMINGW}/cross-configure --prefix="${INSTALL_TARGET}" --disable-static --without-x --disable-xlib --disable-qt --disable-xcb --enable-win32 --enable-png --enable-script --enable-ft=yes --enable-fc=yes --enable-ps=no --enable-pdf --enable-svg --enable-xml --enable-interpreter
 }
 
 post_configure() {

@@ -78,7 +78,7 @@ pre_pack() {
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
 	pack_archive "${__BINZIP}" bin/*.dll &&
-	pack_archive "${__DEVZIP}" bin/*-config include lib/*.a lib/pkgconfig share/aclocal &&
+	pack_archive "${__DEVZIP}" bin/*-config include lib/*.a lib/pkgconfig share/aclocal share/man/man1 &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}"
 }
