@@ -240,7 +240,7 @@ if [ "" = "${IN_PACKAGE_SCRIPT}" ]
 then
 	result=0
 	case "$1" in
-	c | check)
+	check | c)
 		shift
 		if [ -d "$1" ]
 		then
@@ -251,7 +251,7 @@ then
 		fi
 		result=$?
 		;;
-	f | fix)
+	fix | f)
 		shift
 		if [ -d "$1" ]
 		then
@@ -262,7 +262,7 @@ then
 		fi
 		result=$?
 		;;
-	*)
+	-h | --help | *)
 		echo "command list: (c)heck, (f)ix"
 		;;
 	esac

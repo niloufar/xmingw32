@@ -44,7 +44,7 @@ then
 
 	result=0
 	case "$1" in
-	c | check)
+	check | c)
 		shift
 		libtool_path="$1"
 		if [ "" = "${libtool_path}" ]
@@ -56,7 +56,7 @@ then
 
 		result=$?
 		;;
-	*)
+	-h | --help | *)
 		echo "usage: `basename "$0"` (c)heck <libtool>"
 		;;
 	esac

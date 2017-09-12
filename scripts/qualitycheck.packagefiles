@@ -134,7 +134,18 @@ then
 	result=0
 
 	case "$1" in
-	-h|--help)
+	clean)
+		shift &&
+		. "`dirname $0`/build_lib.func" &&
+		find_noncaptured_files_postclean "$@"
+		;;
+	check | c)
+		shift &&
+		. "`dirname $0`/build_lib.func" &&
+		find_noncaptured_files "$@"
+		result=$?
+		;;
+	-h | --help | *)
 		cat <<EOS
 usage: `basename $0` <command or option> path
 
@@ -146,17 +157,6 @@ options:
 	-h	--help	使い方を表示し終了します。
 EOS
 		result=1
-		;;
-	clean)
-		shift &&
-		. "`dirname $0`/build_lib.func" &&
-		find_noncaptured_files_postclean "$@"
-		;;
-	check)
-		shift &&
-		. "`dirname $0`/build_lib.func" &&
-		find_noncaptured_files "$@"
-		result=$?
 		;;
 	esac
 
