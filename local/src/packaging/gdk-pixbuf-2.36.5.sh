@@ -142,7 +142,7 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --disable-static --enable-shared --prefix="${INSTALL_TARGET}" --enable-relocations --with-libjasper --disable-gtk-doc --without-x11
+	${XMINGW}/cross-configure --disable-static --enable-shared --prefix="${INSTALL_TARGET}" --enable-relocations --with-libjasper --disable-gtk-doc --disable-introspection --without-x11
 }
 
 post_configure() {
