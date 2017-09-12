@@ -53,6 +53,7 @@ Version 2, June 1991
 EOS
 }
 
+
 run_expand_archive() {
 local name
 	name=`find_archive "${__ARCHIVEDIR}" ${__ARCHIVE}` &&
@@ -64,6 +65,10 @@ local name
 	# name=`find_archive "${__ARCHIVEDIR}" ${__PATCH_ARCHIVE}` &&
 	# 	patch_debian "${__ARCHIVEDIR}/${name}"
 	sed -i -e 's/^\(REQUIRED_CXXFLAGS = \)-Wl,-lstdc++/\1/' Makefile.in
+
+	# [0.10.5] exiv2-0.26 でビルドできなくなった。
+	sed -i.orig -e 's/virtual long size /virtual size_t size /' gexiv2/gexiv2-stream-io.h
+	sed -i.orig -e 's/^long StreamIo::size /size_t StreamIo::size /' gexiv2/gexiv2-stream-io.cpp
 }
 
 run_configure() {
@@ -74,7 +79,7 @@ run_configure() {
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math  -static-libgcc" \
 	CXXFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math  -static-libgcc ${OLD_CXX_ABI}" \
-	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}"
+	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --disable-introspection #--enable-vala
 }
 
 post_configure() {

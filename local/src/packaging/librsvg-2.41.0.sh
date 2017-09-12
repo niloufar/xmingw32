@@ -126,8 +126,12 @@ local c
 
 pre_make() {
 	# rust まわりが不完全でリンクできない。
+	# [2.41.0]
 	mkdir -p "target/release"
 	ln --symbolic --force "${PWD}/target/`$XMINGW/scripts/cross-rust --target-name`/release/rsvg_internals.lib" "target/release/librsvg_internals.a"
+	# [2.41.1] rust 1.20.0
+	mkdir -p "rust/target/release"
+	ln --symbolic --force "${PWD}/rust/target/`$XMINGW/scripts/cross-rust --target-name`/release/rsvg_internals.lib" "rust/target/release/librsvg_internals.a"
 	return 0
 }
 
@@ -135,6 +139,7 @@ run_make() {
 	# [2.41.0] librsvg-2 のリンクでフラグを渡してくれない。
 	${XMINGW}/cross make all install LIBS="\$(LIBRSVG_LIBS) \$(LDFLAGS)"
 }
+
 pre_pack() {
 local docdir="${INSTALL_TARGET}/share/doc/${MOD}"
 	mkdir -p "${docdir}" &&
@@ -151,7 +156,8 @@ run_pack() {
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
 	store_packed_archive "${__DOCZIP}" &&
-	store_packed_archive "${__TOOLSZIP}"
+	store_packed_archive "${__TOOLSZIP}" &&
+	put_exclude_files `find lib -name loaders.cache` share/thumbnailers
 }
 
 

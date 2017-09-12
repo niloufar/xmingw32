@@ -25,6 +25,7 @@ init_var() {
 
 	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
 	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
+	__DOCZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
 	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 }
 
@@ -36,6 +37,18 @@ libxml2
 EOS
 }
 
+optional_dependencies() {
+	cat <<EOS
+EOS
+}
+
+license() {
+	cat <<EOS
+Fontconfig License
+
+EOS
+}
+
 
 run_expand_archive() {
 local name
@@ -43,7 +56,7 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
-# XP のための特別な処理。
+# XP のための特別な処理。メンテナンスしていない。
 run_patch_xp() {
 	run_patch &&
 	# XP の %windir%\system32\msvcrt.dll に _mktemp_s が定義されていない。
@@ -74,25 +87,34 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --enable-libxml2 --with-arch=mingw32 --prefix="${INSTALL_TARGET}"
+	${XMINGW}/cross-configure --prefix="${INSTALL_TARGET}" --enable-iconv --enable-libxml2 --with-arch=mingw32 
 }
 
 post_configure() {
-	# 2.11.0 の test/test-migration.c が面倒なので test を外す。
+	# [2.11.0] test/test-migration.c が面倒なので test を外す。
 	sed -i.orig -e's/\(^\s\+conf.d \)test /\1/' Makefile
+	# [2.12.3] gperf 3.0.4 で生成したファイル。 3.1 で生成し直す。
+	mv src/fcobjshash.h src/fcobjshash.h.bak
 }
 
 run_make() {
 	${XMINGW}/cross make install
 }
 
+pre_pack() {
+	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	install_license_files "${MOD}" COPYING*
+}
+
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll etc share/fontconfig &&
-	pack_archive "${__DEVZIP}" include lib/*.{a,def} lib/pkgconfig share/doc share/man/man{3,5} &&
+	pack_archive "${__BINZIP}" bin/*.dll etc share/{fontconfig,xml} share/doc/${MOD}/COPYING &&
+	pack_archive "${__DEVZIP}" include lib/*.{a,def} lib/pkgconfig &&
+	pack_archive "${__DOCZIP}" share/doc share/man/man{3,5} &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
+	store_packed_archive "${__DOCZIP}" &&
 	store_packed_archive "${__TOOLSZIP}"
 }
 

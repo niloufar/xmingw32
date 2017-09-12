@@ -28,6 +28,7 @@ init_var() {
 
 	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
 	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
+	__DOCZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
 #	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 }
 
@@ -113,6 +114,21 @@ run_patch() {
      {
 EOS
 
+	# ファイル名の英大文字小文字の問題。
+	patch_adhoc -p 1 <<EOS
+--- gimp-git.orig/plug-ins/file-raw/file-raw-utils.c
++++ gimp-git/plug-ins/file-raw/file-raw-utils.c
+@@ -27,7 +27,7 @@
+ #endif
+ 
+ #ifdef GDK_WINDOWING_WIN32
+-#include <Windows.h>
++#include <windows.h>
+ #endif
+ 
+ #include <libgimp/gimp.h>
+EOS
+
 	# OpenEXR の PixelType 列挙型の列挙子の namespace 問題への対処。
 #	sed -i.orig -e 's/ \(UINT\|HALF\|FLOAT\)\(,\|:\|)\)/ Imf::\1\2/' plug-ins/file-exr/openexr-wrapper.cc
 }
@@ -125,9 +141,11 @@ pre_configure() {
 
 	# 2017/4/3mon: --enable-vector-icons のチェックがクロス コンパイルを考慮していないため強制的に有効にする。
 	# 	 DirectInput も強制的に有効にする。
+	# 2017/6/10sat: libmng の __stdcall 関係が面倒なため強制的に有効にする。
 	sed -i.orig configure \
 		-e 's/enable_vector_icons=".*"/enable_vector_icons="yes"/' \
-		-e 's/^have_dx_dinput=no/have_dx_dinput=yes/'
+		-e 's/^have_dx_dinput=no/have_dx_dinput=yes/' \
+		-e 's/ac_cv_lib_mng_mng_create=no/ac_cv_lib_mng_mng_create=yes/'
 }
 
 run_configure() {
@@ -138,7 +156,8 @@ run_configure() {
 	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags` \
 	-Dcdecl=LCMSAPI \
-	-DWINVER=0x0503 -D_WIN32_WINNT=_WIN32_WINNT_VISTA -DXPM_NO_X \
+	-DMNG_USE_DLL \
+	-DWINVER=_WIN32_WINNT_VISTA -D_WIN32_WINNT=_WIN32_WINNT_VISTA -DXPM_NO_X \
 	-I${XLIBRARY}/gimp-dep/include/noX" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base \
@@ -178,6 +197,10 @@ local files=""
 		fi
 	done
 	cp ${files} "${INSTALL_TARGET}/." &&
+
+	install_license_files "libgimp" libgimp/COPYING
+	install_license_files "tinyscheme" plug-ins/script-fu/tinyscheme/COPYING
+
 	(cd "${INSTALL_TARGET}" &&
 	# 外観を windows 標準にする。
 	# pango により代替フォントとして使用される arial unicode ms は品質が悪い。
@@ -200,10 +223,16 @@ EOF
 
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.{exe,dll,local} etc `find lib/gimp -xtype f -not -iname \*.a -and -not -iname \*.la` share/{gimp,icons,locale} [ACLNR]* &&
+	pack_archive "${__BINZIP}" bin/*.{exe,dll,local} etc `find lib/gimp -xtype f -not -iname \*.a -and -not -iname \*.la` share/{gimp,icons,locale} share/doc [ACLNR]* &&
 	pack_archive "${__DEVZIP}" bin/gimptool-2.0* include `find lib -xtype f -iname \*.a -or -iname \*.def` lib/pkgconfig share/{aclocal,icons} &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
+
+	if [[ -d "share/gtk-doc" ]]
+	then
+		pack_archive "${__DOCZIP}" share/gtk-doc &&
+		store_packed_archive "${__DOCZIP}"
+	fi &&
 
 	put_exclude_files share/appdata share/applications/*.desktop share/man
 }

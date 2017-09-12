@@ -28,6 +28,7 @@ init_var() {
 
 	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
 	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
+	__DOCZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
 #	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 }
 
@@ -145,16 +146,19 @@ pre_configure() {
 	then
 		NOCONFIGURE=1 $XMINGW/cross-host sh ./autogen.sh --disable-gtk-doc --disable-dependency-tracking
 	fi
+
+	# 2017/5/12fri: DirectInput を強制的に有効にする。
+	sed -i.orig configure \
+		-e 's/^have_dx_dinput=no/have_dx_dinput=yes/'
 }
 
 run_configure() {
-	# _WIN32_WINNT=0x0503 は XP SP3 （推測）
 	# little cms の問題で -Dcdecl=LCMSAPI している。
 	# ${PWD}/libpng/lib をリンク パスにいれてくれない。
 	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags` \
 	-Dcdecl=LCMSAPI \
-	-DWINVER=0x0503 -D_WIN32_WINNT=0x0503 -DXPM_NO_X \
+	-DWINVER=_WIN32_WINNT_VISTA -D_WIN32_WINNT=_WIN32_WINNT_VISTA -DXPM_NO_X \
 	-I${XLIBRARY}/gimp-dep/include/noX" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base \
@@ -223,11 +227,15 @@ EOF
 }
 
 run_pack() {
-	(cd "${INSTALL_TARGET}" &&
+	cd "${INSTALL_TARGET}" &&
 	pack_archive "${__BINZIP}" bin/*.{exe,dll,local} etc `find lib/gimp -xtype f -not -iname \*.a -and -not -iname \*.la` share/{gimp,icons,locale} [ACLNR]* &&
 	pack_archive "${__DEVZIP}" bin/gimptool-2.0* include `find lib -xtype f -iname \*.a -or -iname \*.def` lib/pkgconfig share/{aclocal,icons} &&
+	pack_archive "${__DOCZIP}" share/gtk-doc &&
 	store_packed_archive "${__BINZIP}" &&
-	store_packed_archive "${__DEVZIP}")
+	store_packed_archive "${__DEVZIP}" &&
+	store_packed_archive "${__DOCZIP}" &&
+
+	put_exclude_files share/appdata share/applications/*.desktop share/man
 }
 
 

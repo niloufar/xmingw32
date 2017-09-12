@@ -74,6 +74,34 @@ run_patch() {
 ##ifndef strerror_s
 #_CRTIMP errno_t __cdecl strerror_s(char *_Buf,size_t _SizeInBytes,int _ErrNum);
 ##endif
+	# [2.52.1] c90 違反。
+	if grep configure -e "^PACKAGE_VERSION='2.52.1'" >/dev/null 2>&1
+	then
+	patch_adhoc -p 1 <<\EOS
+--- glib-2.51.1.orig/glib/gfileutils.c
++++ glib-2.51.1/glib/gfileutils.c
+@@ -317,6 +317,10 @@
+ g_file_test (const gchar *filename,
+              GFileTest    test)
+ {
++#ifdef G_OS_WIN32
++  int attributes;
++  wchar_t *wfilename = g_utf8_to_utf16 (filename, -1, NULL, NULL, NULL);
++#endif
+   g_return_val_if_fail (filename != NULL, FALSE);
+ 
+ #ifdef G_OS_WIN32
+@@ -327,8 +331,6 @@
+ #  ifndef FILE_ATTRIBUTE_DEVICE
+ #    define FILE_ATTRIBUTE_DEVICE 64
+ #  endif
+-  int attributes;
+-  wchar_t *wfilename = g_utf8_to_utf16 (filename, -1, NULL, NULL, NULL);
+ 
+   if (wfilename == NULL)
+     return FALSE;
+EOS
+	fi
 	return 0
 }
 
