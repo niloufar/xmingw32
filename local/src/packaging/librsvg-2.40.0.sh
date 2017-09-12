@@ -27,6 +27,7 @@ init_var() {
 
 	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
 	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
+	__DOCZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
 	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 }
 
@@ -161,7 +162,7 @@ run_configure() {
 	-lshlwapi \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure  --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --disable-gtk-doc-html --enable-introspection=auto --enable-vala=auto --enable-pixbuf-loader
+	${XMINGW}/cross-configure  --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --enable-pixbuf-loader --enable-gtk-doc-html --disable-vala --disable-introspection
 }
 
 post_configure() {
@@ -187,16 +188,23 @@ run_make() {
 	${XMINGW}/cross make all install
 }
 
+pre_pack() {
+	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	install_license_files "${MOD}" COPYING*
+}
+
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll `find lib -name \*.dll` &&
-	pack_archive "${__DEVZIP}" include `find lib -name \*.a` lib/pkgconfig share/gtk-doc &&
+	pack_archive "${__BINZIP}" bin/*.dll `find lib -name \*.dll` share/doc &&
+	pack_archive "${__DEVZIP}" include `find lib -name \*.a` lib/pkgconfig &&
+	pack_archive "${__DOCZIP}" share/gtk-doc &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
+	store_packed_archive "${__DOCZIP}" &&
 	store_packed_archive "${__TOOLSZIP}" &&
 	# loaders.cache は gdk-pixbuf が管理するものであり、除外する。
-	put_exclude_files `find lib -name loaders.cache`
+	put_exclude_files `find lib -name loaders.cache` share/thumbnailers
 }
 
 
