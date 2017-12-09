@@ -70,7 +70,7 @@ local k
 		prefix=*)
 			# ignore
 			;;
-		exec_prefix=* | libdir=* | includedir=*)
+		exec_prefix=* | libdir=* | includedir=* | sharedlibdir=*)
 			case "${line}" in
 			*"${INSTALL_TARGET}"*)
 				focus="${focus} ${k}"
@@ -78,6 +78,8 @@ local k
 			*)
 				case "${line}" in
 				'exec_prefix=${prefix}')
+					;;
+				'sharedlibdir=${prefix}')
 					;;
 				'libdir=${exec_prefix}/'*)
 					;;
@@ -205,7 +207,7 @@ local line
 		prefix=*)
 			# ignore
 			;;
-		exec_prefix=*)
+		exec_prefix=* | sharedlibdir=*)
 			line=`__qualitycheck_pkgconfig_file_replace "${line}" "${INSTALL_TARGET}" '${prefix}'`
 			;;
 		libdir=*)

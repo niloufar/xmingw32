@@ -11,6 +11,6 @@ Version: 17.4.11
 Requires:
 Requires.private: zlib, harfbuzz >= 0.9.19
 Libs: -L/usr/xmingw/xmingw32/local/src/build/8165a865c322c507b4e76db65aee213a/lib -lfoo
-Libs.private: -lbz2 -L/usr/xmingw/xmingw32/local/libs64/lib/lib -lpng16
+Libs.private: -lbz2 -L/usr/xmingw/xmingw32/local/libs64/lib/lib -lpng16 -L/usr/xmingw/xmingw32/local/src/build/8165a865c322c507b4e76db65aee213a/lib
 Cflags: -I/usr/xmingw/xmingw32/local/src/build/8165a865c322c507b4e76db65aee213a/include
 
