@@ -96,7 +96,7 @@ local NAME="${INSTALL_TARGET}/bin/xml2-config"
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
 	pack_archive "${__BINZIP}" bin/*.dll &&
-	pack_archive "${__DEVZIP}" bin/*-config include lib/*.{def,a} lib/xml2Conf.sh lib/pkgconfig share/man/man1/xml2-config.1 share/man/man3 share/{aclocal,doc,gtk-doc} &&
+	pack_archive "${__DEVZIP}" bin/*-config include lib/*.{def,a} lib/xml2Conf.sh lib/pkgconfig share/man/man1/xml2-config.1 share/man/man3 share/{aclocal,doc,gtk-doc} lib/cmake/libxml2/libxml2-config.cmake &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1/xml{catalog,lint}.1 &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&

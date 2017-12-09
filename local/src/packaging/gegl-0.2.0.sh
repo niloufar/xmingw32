@@ -45,6 +45,7 @@ dependencies() {
 babl
 gettext-runtime
 glib
+json-glib
 EOS
 }
 

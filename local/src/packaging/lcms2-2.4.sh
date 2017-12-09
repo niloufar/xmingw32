@@ -40,6 +40,17 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
+run_patch() {
+local ver
+	# [2.9] cmsplugin.c で HANDLE が未定義になる問題の修正。
+	ver="`sed configure.ac -n -e 's/^AC_INIT([^,]\+,\(.\+\))/\1/p'`"
+	if [[ "2.9" == "${ver}" ]]
+	then
+		sed src/lcms2_internal.h -i.orig \
+			-e 's/^#ifndef CMS_NO_PTHREADS/#ifdef CMS_NO_PTHREADS/'
+	fi
+}
+
 run_configure() {
 	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \

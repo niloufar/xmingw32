@@ -199,7 +199,7 @@ run_pack() {
 	pack_archive "${__BINZIP}" bin/*.dll lib/charset.alias share/locale share/doc &&
 	pack_archive "${__DEVZIP}" bin/_glib-* include lib/*.{def,a} lib/glib-2.0 lib/gio lib/pkgconfig share/{aclocal,gettext} share/glib-2.0/gettext &&
 	pack_archive "${__DOCZIP}" share/gtk-doc &&
-	pack_archive "${__TOOLSZIP}" bin/*.exe bin/{gdbus-codegen,glib-gettextize,glib-mkenums} share/bash-completion share/gdb share/glib-2.0/{codegen,gdb,schemas,valgrind} share/man/man1 &&
+	pack_archive "${__TOOLSZIP}" bin/*.exe bin/{gdbus-codegen,glib-gettextize,glib-genmarshal,glib-mkenums} share/bash-completion share/gdb share/glib-2.0/{codegen,gdb,schemas,valgrind} share/man/man1 &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
 	store_packed_archive "${__DOCZIP}" &&
