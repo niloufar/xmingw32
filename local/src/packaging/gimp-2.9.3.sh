@@ -131,6 +131,8 @@ EOS
 
 	# OpenEXR の PixelType 列挙型の列挙子の namespace 問題への対処。
 #	sed -i.orig -e 's/ \(UINT\|HALF\|FLOAT\)\(,\|:\|)\)/ Imf::\1\2/' plug-ins/file-exr/openexr-wrapper.cc
+
+	return 0
 }
 
 pre_configure() {
@@ -168,6 +170,9 @@ run_configure() {
 }
 
 post_configure() {
+	# [2018/2/6tue] git-version.h へのインクルード パスが設定されていない。
+	ln -s $PWD/git-version.h $PWD/build/windows/git-version.h
+
 	bash ${XMINGW}/replibtool.sh shared static-libgcc
 }
 

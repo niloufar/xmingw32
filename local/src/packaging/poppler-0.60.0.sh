@@ -83,8 +83,8 @@ run_configure() {
 	-DBUILD_SHARED_LIBS=yes \
 	-DENABLE_RELOCATABLE=yes \
 	-DENABLE_ZLIB=yes \
-	-DENABLE_LIBOPENJPEG=auto \
-	-DENABLE_CMS=auto \
+	-DENABLE_LIBOPENJPEG=openjpeg2 \
+	-DENABLE_CMS=lcms2 \
 	"-DPNG_PNG_INCLUDE_DIR=`${XMINGW}/cross pkg-config --variable=includedir libpng16`" \
 	-DENABLE_SPLASH=yes \
 	-DENABLE_QT4=no -DENABLE_QT5=no

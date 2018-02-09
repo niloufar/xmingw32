@@ -120,6 +120,11 @@ local c
 	# win32 では panic=unwind できないため panic=abort する。
 	${XMINGW}/scripts/cross-rust --create-cargo-config rust
 
+	# [2.42.0]
+	# cargo build --target x86_64-w64-mingw32 するが triplet が間違い。
+	# cross-rust に任せる。
+	sed -i.orig Makefile -e 's/^CARGO_TARGET_ARGS = --target=$(host)/#\0/'
+
 	# static なライブラリーのリンクはこうしないと libtool がいろいろ面倒をみてしまう。
 	bash ${XMINGW}/replibtool.sh mix
 }
@@ -129,9 +134,12 @@ pre_make() {
 	# [2.41.0]
 	mkdir -p "target/release"
 	ln --symbolic --force "${PWD}/target/`$XMINGW/scripts/cross-rust --target-name`/release/rsvg_internals.lib" "target/release/librsvg_internals.a"
-	# [2.41.1] rust 1.20.0
+	# [2.41.1] rustc 1.20.0
 	mkdir -p "rust/target/release"
 	ln --symbolic --force "${PWD}/rust/target/`$XMINGW/scripts/cross-rust --target-name`/release/rsvg_internals.lib" "rust/target/release/librsvg_internals.a"
+	# [2.42.0] rustc 1.23.0
+	mkdir -p "rust/target/${TARGET}/release/"
+	ln --symbolic --force "${PWD}/rust/target/`$XMINGW/scripts/cross-rust --target-name`/release/rsvg_internals.lib" "rust/target/${TARGET}/release/librsvg_internals.a"
 	return 0
 }
 

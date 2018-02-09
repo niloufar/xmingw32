@@ -95,13 +95,13 @@ run_make() {
 }
 
 pre_pack() {
-	mkdir -p "${INSTALL_TARGET}/share/doc/json-c" &&
-	cp COPYING "${INSTALL_TARGET}/share/doc/json-c/."
+	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	install_license_files "${MOD}" COPYING*
 }
 
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll &&
+	pack_archive "${__BINZIP}" bin/*.dll share/doc &&
 	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}"

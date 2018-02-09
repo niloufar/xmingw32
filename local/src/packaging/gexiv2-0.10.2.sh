@@ -108,7 +108,7 @@ local docdir="${INSTALL_TARGET}/share/doc/${MOD}"
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
 	pack_archive "${__BINZIP}" bin/*.dll share/doc &&
-	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig share/vala &&
+	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig &&
 	pack_archive "${__DOCZIP}" share/gtk-doc &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
