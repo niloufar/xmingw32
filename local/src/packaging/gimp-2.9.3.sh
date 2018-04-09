@@ -239,7 +239,7 @@ run_pack() {
 		store_packed_archive "${__DOCZIP}"
 	fi &&
 
-	put_exclude_files share/appdata share/applications/*.desktop share/man
+	put_exclude_files share/appdata share/applications/*.desktop share/man share/metainfo
 }
 
 

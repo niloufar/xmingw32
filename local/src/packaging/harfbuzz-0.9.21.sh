@@ -140,7 +140,8 @@ run_pack() {
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
 	store_packed_archive "${__DOCZIP}" &&
-	store_packed_archive "${__TOOLSZIP}"
+	store_packed_archive "${__TOOLSZIP}" &&
+	put_exclude_files lib/cmake/harfbuzz/harfbuzz-config.cmake
 }
 
 

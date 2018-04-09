@@ -82,15 +82,19 @@ run_patch() {
 }
 
 run_configure() {
+	# [2.3.0] fc-cache あたりのリンクで -lintl が漏れている。
 	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
+	-lintl \
 	-Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
 	${XMINGW}/cross-configure --prefix="${INSTALL_TARGET}" --enable-iconv --enable-libxml2 --with-arch=mingw32 
 }
 
 post_configure() {
+	# static なライブラリーのリンクはこうしないと libtool がいろいろ面倒をみてしまう。
+	bash ${XMINGW}/replibtool.sh mix
 	# [2.11.0] test/test-migration.c が面倒なので test を外す。
 	sed -i.orig -e's/\(^\s\+conf.d \)test /\1/' Makefile
 	# [2.12.3] gperf 3.0.4 で生成したファイル。 3.1 で生成し直す。
@@ -111,7 +115,7 @@ run_pack() {
 	pack_archive "${__BINZIP}" bin/*.dll etc share/{fontconfig,xml} share/doc/${MOD}/COPYING &&
 	pack_archive "${__DEVZIP}" include lib/*.{a,def} lib/pkgconfig &&
 	pack_archive "${__DOCZIP}" share/doc share/man/man{3,5} &&
-	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 &&
+	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 share/{gettext,locale} &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
 	store_packed_archive "${__DOCZIP}" &&

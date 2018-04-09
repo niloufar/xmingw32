@@ -102,6 +102,24 @@ run_patch() {
      return FALSE;
 EOS
 	fi
+
+	# [2.56.0] WEEKDAY_FULL_IS_LOCALE の定義漏れ。
+	if grep configure -e "^PACKAGE_VERSION='2.56.0'" >/dev/null 2>&1
+	then
+	patch_adhoc -p 1 <<\EOS
+--- glib-2.56.0.orig/glib/gdatetime.c
++++ glib-2.56.0/glib/gdatetime.c
+@@ -224,6 +224,7 @@
+ #define WEEKDAY_ABBR(d)       (get_weekday_name_abbr (g_date_time_get_day_of_week (d)))
+ #define WEEKDAY_ABBR_IS_LOCALE FALSE
+ #define WEEKDAY_FULL(d)       (get_weekday_name (g_date_time_get_day_of_week (d)))
++#define WEEKDAY_FULL_IS_LOCALE FALSE
+ /* We don't yet know if nl_langinfo (MON_n) returns standalone or complete-date
+  * format forms but if nl_langinfo (ALTMON_n) is not supported then we will
+  * have to use MONTH_FULL as standalone.  The same if nl_langinfo () does not
+EOS
+	fi
+
 	return 0
 }
 

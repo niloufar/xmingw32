@@ -118,7 +118,15 @@ local c
 	fi
 
 	# win32 では panic=unwind できないため panic=abort する。
-	${XMINGW}/scripts/cross-rust --create-cargo-config rust
+	if [[ ! -e './.cargo/config' ]]
+	then
+		${XMINGW}/scripts/cross-rust --create-cargo-config ./rust
+	else
+		# [2.42.3] 
+		# rust フォルダーから他へソースが移動し .cargo/config が作成された。
+		# rsvg_internals, vendor フォルダーに影響を与えるためトップに設定を書き込む。
+		${XMINGW}/scripts/cross-rust --create-cargo-config .
+	fi
 
 	# [2.42.0]
 	# cargo build --target x86_64-w64-mingw32 するが triplet が間違い。
@@ -130,16 +138,43 @@ local c
 }
 
 pre_make() {
+local version="`sed configure -ne "s/^PACKAGE_VERSION='\([0-9.-]\+\).*/\1/p"`"
+local rust_target="`$XMINGW/scripts/cross-rust --target-name`"
 	# rust まわりが不完全でリンクできない。
-	# [2.41.0]
-	mkdir -p "target/release"
-	ln --symbolic --force "${PWD}/target/`$XMINGW/scripts/cross-rust --target-name`/release/rsvg_internals.lib" "target/release/librsvg_internals.a"
-	# [2.41.1] rustc 1.20.0
-	mkdir -p "rust/target/release"
-	ln --symbolic --force "${PWD}/rust/target/`$XMINGW/scripts/cross-rust --target-name`/release/rsvg_internals.lib" "rust/target/release/librsvg_internals.a"
-	# [2.42.0] rustc 1.23.0
-	mkdir -p "rust/target/${TARGET}/release/"
-	ln --symbolic --force "${PWD}/rust/target/`$XMINGW/scripts/cross-rust --target-name`/release/rsvg_internals.lib" "rust/target/${TARGET}/release/librsvg_internals.a"
+	case "${version}" in
+	2.41.0)
+		# [2.41.0]
+		mkdir -p "target/release"
+		ln --symbolic --force \
+			"${PWD}/target/${rust_target}/release/rsvg_internals.lib" \
+			"target/release/librsvg_internals.a"
+		;;
+	2.41.[12])
+		# [2.41.1] rustc 1.20.0
+		mkdir -p "rust/target/release"
+		ln --symbolic --force \
+			"${PWD}/rust/target/${rust_target}/release/rsvg_internals.lib" \
+			"rust/target/release/librsvg_internals.a"
+		;;
+	2.42.[012])
+		# [2.42.0] rustc 1.23.0
+		mkdir -p "rust/target/${TARGET}/release/"
+		ln --symbolic --force \
+			"${PWD}/rust/target/${rust_target}/release/rsvg_internals.lib" \
+			"rust/target/${TARGET}/release/librsvg_internals.a"
+		;;
+	2.42.3)
+		# [2.42.3] rustc 1.25.0
+		mkdir -p "target/${TARGET}/release/"
+		ln --symbolic --force \
+			"${PWD}/target/${rust_target}/release/rsvg_internals.lib" \
+			"target/${TARGET}/release/librsvg_internals.a"
+		;;
+	*)
+		echo "${version} はサポートしていないバージョンです。 rust まわりのパッチを確認してください。"
+		return 1;
+		;;
+	esac
 	return 0
 }
 
