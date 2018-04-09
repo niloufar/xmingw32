@@ -40,13 +40,29 @@ EOS
 
 __create_cargo_config() {
 local dir=$1
+local cargo_config_dir
+local cargo_config_path
+# {begin,end}_cross_rust は sed -e "//,//d" で使用している。
+local begin_cross_rust="### BEGIN cross-rust --create-cargo-config"
+local end_cross_rust="### END cross-rust --create-cargo-config"
 	if [ "" = "${dir}" ]
 	then
 		dir="."
 	fi
 
-	mkdir -p "${dir}/.cargo"
-	cat <<EOS > "${dir}/.cargo/config"
+	cargo_config_dir="${dir}/.cargo"
+	cargo_config_path="${cargo_config_dir}/config"
+
+	mkdir -p "${cargo_config_dir}"
+
+	if [[ -e "${cargo_config_path}" ]]
+	then
+		sed "${cargo_config_path}" --in-place \
+			-e "/${begin_cross_rust}/,/${end_cross_rust}/d"
+	fi
+
+	cat <<EOS >> "${dir}/.cargo/config"
+${begin_cross_rust}
 #[profile.release]
 
 [target.${trg_win32}]
@@ -58,6 +74,7 @@ rustflags = "-C panic=abort"
 #linker = "gcc"
 #ar = ""
 #rustflags = ["", ""]
+${end_cross_rust}
 EOS
 # 下記を指定するとエラーになる。
 #dll_prefix = "lib"
@@ -134,7 +151,7 @@ cross-rust)
 	exit $?
 	;;
 *)
-	echo "cross-rust: FAIL: $0 command is not supprted." > /dev/stderr
+	echo "cross-rust: FAIL: $0 command is not supprted." >> /dev/stderr
 	exit 1
 	;;
 esac
@@ -143,8 +160,8 @@ esac
 
 if [ "yes" = "${fixes}" ]
 then
-	echo "cross-rust(${__SCRIPT_NAME}): INFO: Mingw-w64 のために置き換えられたコマンドを実行しています。" > /dev/stderr
-#	echo "EXEC: ${cmd} $@" > /dev/stderr
+	echo "cross-rust(${__SCRIPT_NAME}): INFO: Mingw-w64 のために置き換えられたコマンドを実行しています。" >> /dev/stderr
+#	echo "EXEC: ${cmd} $@" >> /dev/stderr
 fi
 
 if [ "" = "${IN_CROSS_SCRIPT}" ]
