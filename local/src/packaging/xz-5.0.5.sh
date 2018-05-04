@@ -77,7 +77,8 @@ run_pack() {
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} bin/zx{diff,grep,less,more} share/man/man1 share/locale &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
-	store_packed_archive "${__TOOLSZIP}"
+	store_packed_archive "${__TOOLSZIP}" &&
+	put_exclude_files bin/{lz,xz}{cmp,diff,egrep,fgrep,grep,less,more}
 }
 
 
