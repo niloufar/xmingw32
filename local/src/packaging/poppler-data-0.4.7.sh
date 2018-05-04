@@ -26,9 +26,12 @@ init_var() {
 	__ARCHIVE="${MOD}-${VER}"
 #	__PATCH_ARCHIVE="${MOD}_${VER}-${PATCH}"
 
-	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
-	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
+	__BINZIP=${MOD}-${VER}-${REV}-bin
+	__DEVZIP=${MOD}-dev-${VER}-${REV}
 #	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
+
+	# アーキテクチャを指定しない。
+	NOARCH=yes
 }
 
 dependencies() {
@@ -46,8 +49,6 @@ adobe license
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
-Red Hat
-
 	cat <<EOS
 EOS
 }
@@ -78,6 +79,11 @@ post_make() {
 	fi &&
 	sed -i -e '/^Cflags:/s|\(-DPOPPLER_DATADIR\)=.*|\1=/share/poppler|' lib/pkgconfig/poppler-data.pc
 	)
+}
+
+pre_pack() {
+	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	install_license_files "${MOD}" COPYING*
 }
 
 run_pack() {
