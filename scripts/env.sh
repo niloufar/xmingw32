@@ -81,7 +81,8 @@ export TARGET
 #export SHREXT=".dll"
 
 # gcc4 との C++ ABI 互換性を維持する。 gcc5 への対応。
-export OLD_CXX_ABI="-D_GLIBCXX_USE_CXX11_ABI=0"
+#export OLD_CXX_ABI="-D_GLIBCXX_USE_CXX11_ABI=0"
+export OLD_CXX_ABI=" "
 
 export BUILD_CC="${XMINGW}/bin/build-cc "
 
