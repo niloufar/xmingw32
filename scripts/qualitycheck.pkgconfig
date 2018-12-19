@@ -23,7 +23,7 @@ local result=0
 		oldpwd=`pwd`
 		cd "${TARGET_DIR}/lib/pkgconfig"
 		IFS=""
-		while read f
+		while read -r f
 		do
 			if __qualitycheck_pkgconfig_file "${f}" "${INSTALL_TARGET}"
 			then
@@ -63,10 +63,10 @@ local focus=""
 local irregular=""
 local unfocus=""
 local k
-	while read line
+	while read -r line
 	do
-		k=`__qualitycheck_pkgconfig_file_key "${line}"`
-		case `echo "${line}" | tr [:upper:] [:lower:]` in
+		k="`__qualitycheck_pkgconfig_file_key "${line}"`"
+		case "`echo "${line}" | tr [:upper:] [:lower:]`" in
 		prefix=*)
 			# ignore
 			;;
@@ -119,19 +119,19 @@ local k
 
 	if [ ! "" = "${focus}" ]
 	then
-		focus=`echo "${focus}" | sed -e 's/^ //' -e 's/ /, /g'`
+		focus="`echo "${focus}" | sed -e 's/^ //' -e 's/ /, /g'`"
 		warning="${warning} ${focus} に仮インストール先のアドレスが埋め込まれています( fix コマンドで正規化できます)。"
 	fi
 
 	if [ ! "" = "${irregular}" ]
 	then
-		irregular=`echo "${irregular}" | sed -e 's/^ //' -e 's/ /, /g'`
+		irregular="`echo "${irregular}" | sed -e 's/^ //' -e 's/ /, /g'`"
 		warning="${warning} ${irregular} が標準ではない形式で記述されています(望ましくない記述です)。"
 	fi
 
 	if [ ! "" = "${unfocus}" ]
 	then
-		unfocus=`echo "${unfocus}" | sed -e 's/^ //' -e 's/ /, /g'`
+		unfocus="`echo "${unfocus}" | sed -e 's/^ //' -e 's/ /, /g'`"
 		warning="${warning} ${unfocus} に仮インストール先のアドレスが埋め込まれています(影響はないと思われます)。"
 	fi
 
@@ -165,11 +165,11 @@ local result=0
 		INSTALL_TARGET="${TARGET_DIR}"
 	fi
 
-	files=`qualitycheck_pkgconfig_file "${TARGET_DIR}" "${INSTALL_TARGET}"`
+	files="`qualitycheck_pkgconfig_file "${TARGET_DIR}" "${INSTALL_TARGET}"`"
 	if [ ! "" = "${files}" ]
 	then
 		d="${TARGET_DIR}/lib/pkgconfig"
-		# IFS=""; while read f; do; done << EOS するべき。
+		# IFS=""; while read -r f; do; done << EOS するべき。
 		for f in ${files}
 		do
 			echo "INFO(qualitycheck.pkgconfig): pkgconfig ファイル ${f} を修正しています。" > /dev/stderr
@@ -201,26 +201,26 @@ local line
 		TARGET="/dev/stdin"
 	fi
 
-	while read line
+	while read -r line
 	do
-		case `echo "${line}" | tr [:upper:] [:lower:]` in
+		case "`echo "${line}" | tr [:upper:] [:lower:]`" in
 		prefix=*)
 			# ignore
 			;;
 		exec_prefix=* | sharedlibdir=*)
-			line=`__qualitycheck_pkgconfig_file_replace "${line}" "${INSTALL_TARGET}" '${prefix}'`
+			line="`__qualitycheck_pkgconfig_file_replace "${line}" "${INSTALL_TARGET}" '${prefix}'`"
 			;;
 		libdir=*)
-			line=`__qualitycheck_pkgconfig_file_replace "${line}" "${INSTALL_TARGET}" '${exec_prefix}'`
+			line="`__qualitycheck_pkgconfig_file_replace "${line}" "${INSTALL_TARGET}" '${exec_prefix}'`"
 			;;
 		includedir=*)
-			line=`__qualitycheck_pkgconfig_file_replace "${line}" "${INSTALL_TARGET}" '${prefix}'`
+			line="`__qualitycheck_pkgconfig_file_replace "${line}" "${INSTALL_TARGET}" '${prefix}'`"
 			;;
 		libs:* | libs.private:*)
-			line=`__qualitycheck_pkgconfig_file_replace "${line}" "-L${INSTALL_TARGET}/lib" '-L${libdir}'`
+			line="`__qualitycheck_pkgconfig_file_replace "${line}" "-L${INSTALL_TARGET}/lib" '-L${libdir}'`"
 			;;
 		cflags:*)
-			line=`__qualitycheck_pkgconfig_file_replace "${line}" "-I${INSTALL_TARGET}/include" '-I${includedir}'`
+			line="`__qualitycheck_pkgconfig_file_replace "${line}" "-I${INSTALL_TARGET}/include" '-I${includedir}'`"
 			;;
 		esac
 		echo "${line}"
@@ -234,7 +234,7 @@ __qualitycheck_pkgconfig_file_replace() {
 #	echo `echo "$1" | awk "{ gsub( r, s ); print \\$0 }" r="$2" s="$3"`
 	# gsub より安全な実装。
 	# substr(t,0,i) にすると awk のバージョンや処理系により結果が異なる可能性がある。
-	echo `echo "$1" | awk 'function _(t, s, d, i){i=index(t,s); if (0<i) {_(substr(t,1,i-1) d substr(t,i+length(s)),s,d)} else print t};{print _($0,s,d)}' s="$2" d="$3"`
+	echo "`echo "$1" | awk 'function _(t, s, d, i){i=index(t,s); if (0<i) {_(substr(t,1,i-1) d substr(t,i+length(s)),s,d)} else print t};{print _($0,s,d)}' s="$2" d="$3"`"
 }
 
 
