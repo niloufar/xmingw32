@@ -109,7 +109,7 @@ __cross_rust() {
 
 native="none"
 case "$@" in
-*" --target "*)
+*" --target"[\ =]*)
 	native="no"
 	;;
 *)
