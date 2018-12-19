@@ -40,7 +40,7 @@ set -x
 # ビルド環境の情報をログに残す。
 lsb_release -a
 # apt-cache show mingw-w64
-gcc -v
+$XMINGW/cross gcc -v
 
 # アーカイブを展開する。
 # すでにディレクトリーが存在している場合は警告する。
