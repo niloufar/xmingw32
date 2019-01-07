@@ -114,6 +114,7 @@ done <<- EOS
 env.sh
 cross
 cross-host
+cross-meson
 package
 replibtool.sh
 reppc.sh

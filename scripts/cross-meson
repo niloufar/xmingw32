@@ -1,0 +1,114 @@
+#!/bin/bash
+# vim: tabstop=4 fileformat=unix fileencoding=utf-8 filetype=sh
+
+# license: Apache v2.0
+
+#PREFIX=/usr/xmingw/xmingw32
+PREFIX=`dirname "$0"`
+if [ "" = "${XMINGW}" ]
+then
+  . "${PREFIX}/scripts/env.sh"
+fi
+PREFIX=${XMINGW}
+
+__fail() {
+	echo "cross-meson:FAIL: $1" >> /dev/stderr
+	exit 1
+}
+
+# ビルドで使用するフォルダーを作成する。
+__create_build_dir() {
+local build_dir="$1"
+	# 簡易ガード。
+	case "${build_dir}" in
+	.|./|..|../|/)
+		__fail "ビルドフォルダーに ${build_dir} は指定できません。"
+		;;
+	esac
+
+	[[ -d "${build_dir}" ]] && rm -r "${build_dir}"
+	if [[ -e "${build_dir}" ]]
+	then
+		__fail "${build_dir} フォルダーを削除できませんでした。"
+	fi
+
+	mkdir -p "${build_dir}"
+	if [[ ! -d "${build_dir}" ]]
+	then
+		__fail "${build_dir} フォルダーを作成できませんでした。"
+	fi
+}
+
+# 環境変数をパースし python の配列リテラルに変換する。
+__pyrepr_cmd() {
+	python3 -c 'import os,sys,shlex; print(repr(shlex.split(os.environ.get(sys.argv[1],""))))' "$@"
+}
+
+# cross-file を作成する。
+__create_meson_cross_file() {
+local meson_cross_file="$1"
+
+local cf_cflags="`__pyrepr_cmd CFLAGS`"
+local cf_cxxflags="`__pyrepr_cmd CXXFLAGS`"
+local cf_ldflags="`__pyrepr_cmd LDFLAGS`"
+
+	cat <<EOS > "${meson_cross_file}"
+[host_machine]
+system = 'windows'
+cpu_family = 'any'
+cpu = 'any'
+endian = 'little'
+
+[binaries]
+c = "gcc"
+cpp = "g++"
+ar = "ar"
+strip = "strip"
+pkgconfig = "pkg-config"
+exe_wrapper = 'wine'
+
+[properties]
+c_args = ${cf_cflags}
+c_link_args = ${cf_ldflags}
+cpp_args = ${cf_cxxflags}
+cpp_link_args = ${cf_ldflags}
+needs_exe_wrapper = true
+EOS
+
+	if [[ ! -e "${meson_cross_file}" ]]
+	then
+		__fail "meson に渡す ${meson_cross_file} ファイルを作成できませんでした。"
+	fi
+}
+
+
+meson_cross_file="_meson.cross-file"
+
+__usage() {
+	echo "usage: `basename $0` build-dir <options>"
+	echo
+	echo "任意の作業フォルダー build-dir を作成します。すでに存在する場合は削除し、あらためてフォルダーを作成します。"
+	echo "カレントフォルダーに ${meson_cross_file} ファイルを作成し、meson に渡します。"
+	exit 1
+}
+
+if [[ "0" == "$#" || "--help" == "$1" ]]
+then
+	__usage
+fi
+
+echo -n "args: "
+echo "$@"
+
+
+build_dir=$1
+shift
+
+__create_build_dir "${build_dir}"
+
+__create_meson_cross_file "${meson_cross_file}"
+
+${XMINGW}/cross meson "${build_dir}" --cross-file="${meson_cross_file}" "$@"
+
+#echo "done."
+
