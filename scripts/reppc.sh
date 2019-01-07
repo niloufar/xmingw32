@@ -12,15 +12,23 @@ fi
 
 for dir in `find "${XLIBRARY}" -type d -name pkgconfig`
 do
-  pre=`dirname "${dir}"`
-  pre=`dirname "${pre}"`
+  pre="`dirname "${dir}"`"
+  pre="`dirname "${pre}"`"
   for f in `find "${dir}" -type f -name \*.pc`
   do
-    if grep '^prefix\s*=.*' "${f}" >/dev/null 2>&1; then
-#      echo "try ${f}"
-      cat "${f}" | sed -e "s&^prefix\s*=.*&prefix=${pre}&" > "${f}.rep"
+    case "`sed "${f}" -ne 's/^prefix\s*=\s*//p' 2>&1`" in
+    ${pre})
+      # ignore
+      ;;
+    "")
+:      echo "reppc.sh:INFO: ${f} に prefix 行がありません。"
+      ;;
+    *)
+      echo "reppc.sh:INFO: ${f} の prefix 行を置き換えています。"
+      sed "${f}" -e "s&^prefix\s*=.*&prefix=${pre}&" > "${f}.rep"
       mv "${f}.rep" "${f}"
-    fi
+      ;;
+    esac
   done
 done
 
