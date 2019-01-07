@@ -145,6 +145,7 @@ run_pack() {
 	pack_archive "${__TTOOLSZIP}" bin/*.{exe,manifest,local} bin/libgettext*.dll bin/{autopoint,gettext.sh,gettextize} lib/gettext share/locale share/man/man1 &&
 	store_packed_archive "${__TDEVZIP}" &&
 	store_packed_archive "${__TTOOLSZIP}"
+	put_exclude_files share/**/its
 }
 
 

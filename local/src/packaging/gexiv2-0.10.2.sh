@@ -71,12 +71,17 @@ local name
 	sed -i.orig -e 's/^long StreamIo::size /size_t StreamIo::size /' gexiv2/gexiv2-stream-io.cpp
 }
 
+pre_configure() {
+	[[ ! -e './configure' ]] && NOCONFIGURE=1 ./autogen.sh
+	return 0
+}
+
 run_configure() {
 	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CXX="g++ `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
-	-Wl,--enable-auto-image-base -Wl,-s" \
+	-Wl,--enable-auto-image-base -Wl,-s -Wl,--allow-multiple-definition" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math  -static-libgcc" \
 	CXXFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math  -static-libgcc ${OLD_CXX_ABI}" \
 	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --disable-introspection #--enable-vala
@@ -109,10 +114,14 @@ run_pack() {
 	cd "${INSTALL_TARGET}" &&
 	pack_archive "${__BINZIP}" bin/*.dll share/doc &&
 	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig &&
-	pack_archive "${__DOCZIP}" share/gtk-doc &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
-	store_packed_archive "${__DOCZIP}"
+
+	if [[ -e 'share/gtk-doc' ]]
+	then
+		pack_archive "${__DOCZIP}" share/gtk-doc &&
+		store_packed_archive "${__DOCZIP}"
+	fi
 }
 
 

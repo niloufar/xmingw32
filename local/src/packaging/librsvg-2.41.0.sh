@@ -163,12 +163,14 @@ local rust_target="`$XMINGW/scripts/cross-rust --target-name`"
 			"${PWD}/rust/target/${rust_target}/release/rsvg_internals.lib" \
 			"rust/target/${TARGET}/release/librsvg_internals.a"
 		;;
-	2.42.3)
+	2.42.[3456] | 2.44.1[01])
 		# [2.42.3] rustc 1.25.0
 		mkdir -p "target/${TARGET}/release/"
 		ln --symbolic --force \
 			"${PWD}/target/${rust_target}/release/rsvg_internals.lib" \
 			"target/${TARGET}/release/librsvg_internals.a"
+		# [2.42.6] rustc 1.26.2
+		sed -i.orig Makefile -e "s/^RUST_TARGET = \(x86_64\|i686\)-w64-mingw32/RUST_TARGET = ${rust_target}/"
 		;;
 	*)
 		echo "${version} はサポートしていないバージョンです。 rust まわりのパッチを確認してください。"

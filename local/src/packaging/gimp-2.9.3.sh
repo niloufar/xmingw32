@@ -35,7 +35,9 @@ init_var() {
 # INSTALL と configure.ac を参考にした。
 dependencies() {
 	cat <<EOS
+atk
 babl
+bzip2
 cairo
 fontconfig
 freetype2
@@ -43,32 +45,38 @@ gdk-pixbuf
 gegl
 gettext-runtime
 glib
-gtk+
+gtk2
+harfbuzz
+lcms2
 libiconv
+libjpeg
 libmypaint
+libpng
+libpoppler
+libpoppler-data
+librsvg
+mypaint-brushes
 pango
+tiff
+xz
+zlib
 EOS
 }
 
 optional_dependencies() {
 	cat <<EOS
-bzip2
+glib-networking
 jasper
-lcms
 libaa
 libexif
-libjpeg
+libheif
 libmng
-libpng
-librsvg
 libwebp
 libwmf
 libxml2
 openexr
 python2
-tiff
 xpm-nox
-zlib
 EOS
 }
 
@@ -166,7 +174,7 @@ run_configure() {
 	-L${PWD}/libpng/lib \
 	-lgdi32 -lwsock32 -lole32 -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --enable-mmx --enable-sse --disable-python  --without-x --with-libjasper --with-libmng --with-librsvg --with-libxpm --without-openexr --without-xmc --with-webp --with-wmf --with-cairo-pdf --with-poppler --without-webkit --with-print --with-directx-sdk="" CC_FOR_BUILD="$XMINGW/cross-host gcc"  NATIVE_GLIB_CFLAGS="`$XMINGW/cross-host pkg-config g{lib,io}-2.0 --cflags`" NATIVE_GLIB_LIBS="`$XMINGW/cross-host pkg-config g{lib,io}-2.0 --libs`" --enable-vector-icons
+	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --enable-mmx --enable-sse --disable-python  --without-x --with-libjasper --with-libmng --with-librsvg --with-libxpm --without-openexr --without-xmc --with-webp --with-wmf --with-cairo-pdf --with-poppler --without-libbacktrace --without-libunwind --without-webkit --with-print --with-directx-sdk="" CC_FOR_BUILD="$XMINGW/cross-host gcc"  NATIVE_GLIB_CFLAGS="`$XMINGW/cross-host pkg-config g{lib,io}-2.0 --cflags`" NATIVE_GLIB_LIBS="`$XMINGW/cross-host pkg-config g{lib,io}-2.0 --libs`" --enable-vector-icons
 }
 
 post_configure() {
@@ -177,7 +185,6 @@ post_configure() {
 }
 
 run_make() {
-	# 作成されないプラグイン file_xmc を作成しようとするので抑止している。
 	${XMINGW}/cross make all install
 }
 

@@ -166,17 +166,24 @@ run_configure() {
 }
 
 post_configure() {
+local ver=`sed config.h -ne 's/#define\s\+PACKAGE_VERSION "\([0-9.]\+\)"/\1/p'`
 	# tests は作らない。
 #	sed -i -e 's/^\(SUBDIRS = .\+\) tests /\1 /' Makefile
 	# [2.47.6] ソースの変更が充分でないようで、コンパイルエラーになっていた。
-	if grep config.h -e 'PACKAGE_VERSION "2.47.6"' >/dev/null 2>&1
+	if [[ "${ver}" == "2.47.6" ]]
 	then
 		sed -i.orig -e 's/-Werror=implicit-function-declaration//' gio/Makefile
 	fi
-	# [2.53.1] ヘッダでは #ifndef _WIN64 しているが C ソースは行っていない関数がプロトタイプ未定義エラーになる。
-	if grep config.h -e 'PACKAGE_VERSION "2.53.1"' > /dev/null 2>&1
+	# [2.53.1] ヘッダで #ifndef _WIN64 しているが C ソースでは行っていない関数がプロトタイプ未定義エラーになる。
+	if [[ "${ver}" == "2.53.1" ]]
 	then
 		sed -i.orig -e 's/-Werror=missing-prototypes//' glib/Makefile
+	fi
+	# [2.56.2] android 系の設定が紛れ込んだらしい。
+	# see: https://gitlab.gnome.org/GNOME/glib/issues/1472
+	if [[ "${ver}" == "2.56.2" ]]
+	then
+		sed -i.orig -e 's|^#define BROKEN_IP_MREQ_SOURCE_STRUCT 1|/*\0*/|' config.h
 	fi
 }
 

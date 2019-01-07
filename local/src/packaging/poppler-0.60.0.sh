@@ -90,6 +90,20 @@ run_configure() {
 	-DENABLE_QT4=no -DENABLE_QT5=no
 }
 
+post_configure() {
+local f
+	# [0.72.0] 依存ライブラリーのパスがリンカに渡っていない。
+	if [[ "0.72.0" == "${VER}" ]]
+	then
+		f="glib/demo/CMakeFiles/poppler-glib-demo.dir/linklibs.rsp"
+		[[ -e "${f}" ]] && $XMINGW/cross --ldflags >> "${f}"
+		f="test/CMakeFiles/gtk-test.dir/linklibs.rsp"
+		[[ -e "${f}" ]] && $XMINGW/cross --ldflags >> "${f}"
+		f="test/CMakeFiles/pdf-inspector.dir/linklibs.rsp"
+		[[ -e "${f}" ]] && $XMINGW/cross --ldflags >> "${f}"
+	fi
+}
+
 run_make() {
 	${XMINGW}/cross make install
 }

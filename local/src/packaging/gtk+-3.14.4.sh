@@ -81,6 +81,8 @@ run_configure() {
 	CFLAGS_FOR_BUILD= \
 	CPPFLAGS_FOR_BUILD= \
 	LDFLAGS_FOR_BUILD= \
+	GOBJECT_QUERY=gobject-query \
+	GLIB_COMPILE_RESOURCES=glib-compile-resources \
 	${XMINGW}/cross-configure --disable-static  --prefix="${INSTALL_TARGET}" --enable-win32-backend --enable-gtk2-dependency --with-included-immodules --disable-cups --disable-schemas-compile --disable-introspection
 }
 

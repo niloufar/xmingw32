@@ -78,7 +78,7 @@ run_make() {
 
 pre_pack() {
 	# libopenjp3d.dll がコピーされない。
-	cp bin/*.dll "${INSTALL_TARGET}/bin/."
+	cp --no-clobber bin/*.dll "${INSTALL_TARGET}/bin/."
 }
 
 run_pack() {
@@ -88,7 +88,9 @@ run_pack() {
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
-	store_packed_archive "${__TOOLSZIP}"
+	store_packed_archive "${__TOOLSZIP}" &&
+
+	put_exclude_files lib/libopenjp3d.dll
 }
 
 

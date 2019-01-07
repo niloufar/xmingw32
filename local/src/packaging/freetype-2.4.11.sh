@@ -71,14 +71,28 @@ run_make() {
 }
 
 pre_pack() {
+local freetype_config_path="${INSTALL_TARGET}/bin/freetype-config"
 	# スクリプト内の prefix を置き換える。
-	sed -i -e 's#^\(prefix=\).*#\1\`dirname \$0\`/..#' "${INSTALL_TARGET}/bin/freetype-config"
+	# [2.9.1] freetype-config がインストールされないようだ。
+	if [[ -e "${freetype_config_path}"  ]]
+	then
+		sed -i "${freetype_config_path}" \
+			-e 's#^\(\s*prefix=\).*#\1\"`dirname \$0\`/.."#' \
+			-e "s;${INSTALL_TARGET};\${prefix};" \
+			-e "s;${XMINGW_BIN}/;;"
+	fi
 }
 
 run_pack() {
+local dev_add
 	cd "${INSTALL_TARGET}" &&
+	# [2.9.1] man1 が作成されないようだ。
+	if [[ -d "share/man/man1" ]]
+	then
+		dev_add="${dev_add} share/man/man1"
+	fi &&
 	pack_archive "${__BINZIP}" bin/*.dll &&
-	pack_archive "${__DEVZIP}" bin/*-config include lib/*.a lib/pkgconfig share/aclocal share/man/man1 &&
+	pack_archive "${__DEVZIP}" bin/*-config include lib/*.a lib/pkgconfig share/aclocal ${dev_add} &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}"
 }

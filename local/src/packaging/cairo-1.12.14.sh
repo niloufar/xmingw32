@@ -41,6 +41,7 @@ EOS
 
 optional_dependencies() {
 	cat <<EOS
+gdk-pixbuf
 gtk+
 librsvg
 opengl

@@ -13,6 +13,7 @@ fi
 # ARCH は package が設定している。
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
+	XLIBRARY_SET=${XLIBRARY}/gimp_build_set
 	# package に返す変数。
 	MOD=fontconfig
 	[ "" = "${VER}" ] && VER=2.10.91
@@ -39,6 +40,7 @@ EOS
 
 optional_dependencies() {
 	cat <<EOS
+json-c
 EOS
 }
 
@@ -97,8 +99,19 @@ post_configure() {
 	bash ${XMINGW}/replibtool.sh mix
 	# [2.11.0] test/test-migration.c が面倒なので test を外す。
 	sed -i.orig -e's/\(^\s\+conf.d \)test /\1/' Makefile
+	# [2.13.1] src/fcobjshash.h は make で生成するようになったようだ。
 	# [2.12.3] gperf 3.0.4 で生成したファイル。 3.1 で生成し直す。
-	mv src/fcobjshash.h src/fcobjshash.h.bak
+	if [[ -f "src/fcobjshash.h" ]]
+	then
+		mv src/fcobjshash.h src/fcobjshash.h.bak
+	fi
+
+	# [2.13.1] 一部の test がビルドできない。
+	if grep configure -e "^PACKAGE_VERSION='2.13.1'" >/dev/null 2>&1
+	then
+		sed test/Makefile -i.orig \
+			-e 's/\(\s*\)\(test-hash\|test-bz106632\)$(EXEEXT)/\1/g'
+	fi
 }
 
 run_make() {
