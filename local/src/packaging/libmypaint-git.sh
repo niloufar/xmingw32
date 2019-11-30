@@ -79,6 +79,7 @@ EOS
 }
 
 run_configure() {
+	# [1.4.0] --disable-gegl するのは古い gegl 0.3系に依存しているため。
 	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CXX="g++ `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
@@ -86,7 +87,7 @@ run_configure() {
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math " \
 	CXXFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math " \
-	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --enable-gegl --enable-openmp --with-glib --enable-introspection=no
+	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --disable-gegl --enable-openmp --with-glib --enable-introspection=no
 }
 
 post_configure() {
@@ -100,8 +101,8 @@ run_make() {
 }
 
 pre_pack() {
-	mkdir -p "${INSTALL_TARGET}/share/doc/libmypaint" &&
-	cp COPYING "${INSTALL_TARGET}/share/doc/libmypaint/."
+	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	install_license_files "${MOD}" COPYING*
 }
 
 run_pack() {

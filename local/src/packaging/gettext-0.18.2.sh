@@ -86,7 +86,9 @@ EOS
 	fi
 	# [0.19.8.1] rpl_printf 関数にリンクできない。 gnulib のバグ。
 	# printf-posix: Fix mingw build · coreutils/gnulib@68b6ade · GitHub <https://github.com/coreutils/gnulib/commit/68b6adebef05670a312fb92b05e7bd089d2ed43a>
-	patch_adhoc -p 1 <<\EOS
+	if [[ "0.19.8.1" == "${VER}" ]]
+	then
+		patch_adhoc -p 1 <<\EOS
 --- gettext-0.19.8.1.orig/gettext-tools/gnulib-m4/asm-underscore.m4
 +++ gettext-0.19.8.1/gettext-tools/gnulib-m4/asm-underscore.m4
 @@ -29,7 +29,7 @@
@@ -99,6 +101,7 @@ EOS
       else
         gl_cv_prog_as_underscore=no
 EOS
+	fi
 }
 
 run_configure() {
@@ -126,6 +129,12 @@ post_configure() {
 		)
 	done
 	# 追加で libtool を書き換える場合は replibtool.sh の実行後に行う。
+
+	# [0.20.1] エラーになるため gettext-tools/gnulib-tests をビルドしない。
+	if [[ "0.20.1" = "${VER}" ]]
+	then
+		sed -i.orig 'gettext-tools/Makefile' -e '/^SUBDIRS = /{' -e 's/ gnulib-tests /  /' -e'}'
+	fi
 }
 
 run_make() {
@@ -135,9 +144,9 @@ run_make() {
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
 	# gettext-runtime
-#	pack_archive "${__RBINZIP}" bin/{libasprintf,libintl,intl}*.dll &&
-	pack_archive "${__RBINZIP}" bin/{libasprintf,libintl}*.dll &&
-	pack_archive "${__RDEVZIP}" include/{autosprintf,libintl}.h lib/lib{asprintf,intl}*.a share/{aclocal,doc,gettext,info} share/man/man3 &&
+#	pack_archive "${__RBINZIP}" bin/{libasprintf,libintl,intl,libtextstyle}*.dll &&
+	pack_archive "${__RBINZIP}" bin/{libasprintf,libintl,libtextstyle}*.dll &&
+	pack_archive "${__RDEVZIP}" include/{autosprintf,libintl}.h include/textstyle{,.h} lib/lib{asprintf,intl,textstyle}*.a share/{aclocal,doc,gettext,info} share/man/man3 &&
 	store_packed_archive "${__RBINZIP}" &&
 	store_packed_archive "${__RDEVZIP}" &&
 	# gettext-tools

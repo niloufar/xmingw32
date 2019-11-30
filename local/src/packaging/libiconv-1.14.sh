@@ -72,8 +72,12 @@ run_make() {
 }
 
 run_pack() {
+local charset_alias="lib/charset.alias"
+	# [0.1.16] このバージョンから lib/charset.alias が削除されたようだ。
+	[[ ! -e "${charset_alias}" ]] && charset_alias=""
+
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll lib/charset.alias &&
+	pack_archive "${__BINZIP}" bin/*.dll "${charset_alias}" &&
 	pack_archive "${__DEVZIP}" include lib/*.a share/doc share/man/man3 &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 share/locale &&
 	store_packed_archive "${__BINZIP}" &&

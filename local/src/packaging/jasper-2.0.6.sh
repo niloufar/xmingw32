@@ -19,11 +19,20 @@ init_var() {
 	MOD=jasper
 	[ "" = "${VER}" ] && VER=2.0.6
 	[ "" = "${REV}" ] && REV=1
-	DIRECTORY="${MOD}-${VER}"
+
+	# [2.0.16] アーカイブとフォルダーの名称が変更された。
+local __mod="${MOD}"
+	case "${VER}" in
+	"2.0.16")
+		__mod="${MOD}-version"
+		;;
+	esac
+	DIRECTORY="${__mod}-${VER}"
+
 
 	# 内部で使用する変数。
 	__ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/pic"
-	__ARCHIVE="${MOD}-${VER}"
+	__ARCHIVE="${__mod}-${VER}"
 #	__PATCH_ARCHIVE="${MOD}_${VER}-${PATCH}"
 
 	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}

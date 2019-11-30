@@ -53,6 +53,8 @@ EOS
 
 license() {
 	cat <<EOS
+GNU LESSER GENERAL PUBLIC LICENSE
+Version 3, 29 June 2007
 EOS
 }
 
@@ -66,15 +68,16 @@ local name
 run_configure_win32() {
 local ver="`sed configure.ac -ne '/^AC_INIT(\[libheif\]/ {' -e 's/.*\[\([0-9.]\+\)\].*/\1/p' -e '}'`"
 #local gccver="`$XMINGW/cross gcc --version | head -n 1 | cut '-d ' -f 3`"
-	# [1.3.2] mingw-w64-gcc 8.1.0 のバグか #include <thread> の
+	# [1.3.2] mingw-w64-gcc 8.[13].0 のバグか #include <thread> の
 	#  __x._M_thread == __y._M_thread が no match for ‘operator==’ になる。
-#	if [[ "8.1.0" == "${gccver}" ]]
-	if [[ "1.3.2" == "${ver}" ]]
-	then
+	case "${ver}" in
+	"1.3."*|"1.4."*|"1.5.1")
 		run_configure__ --disable-multithreading
-	else
+		;;
+	*)
 		run_configure__ --enable-multithreading
-	fi
+		;;
+	esac
 }
 
 run_configure_win64() {
@@ -109,20 +112,8 @@ post_configure() {
 	echo skip > /dev/null
 }
 
-pre_make() {
-	echo skip > /dev/null
-}
-
 run_make() {
 	${XMINGW}/cross make all install
-}
-
-run_make_test() {
-	echo skip > /dev/null
-}
-
-run_make_example() {
-	echo skip > /dev/null
 }
 
 pre_pack() {

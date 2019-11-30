@@ -25,7 +25,7 @@ init_var() {
 
 	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
 	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
-	__docZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
+	__DOCZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
 	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 }
 

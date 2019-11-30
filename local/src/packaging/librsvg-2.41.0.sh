@@ -163,7 +163,7 @@ local rust_target="`$XMINGW/scripts/cross-rust --target-name`"
 			"${PWD}/rust/target/${rust_target}/release/rsvg_internals.lib" \
 			"rust/target/${TARGET}/release/librsvg_internals.a"
 		;;
-	2.42.[3456] | 2.44.1[01])
+	2.42.[3456] | 2.44.1[0134])
 		# [2.42.3] rustc 1.25.0
 		mkdir -p "target/${TARGET}/release/"
 		ln --symbolic --force \
@@ -171,6 +171,19 @@ local rust_target="`$XMINGW/scripts/cross-rust --target-name`"
 			"target/${TARGET}/release/librsvg_internals.a"
 		# [2.42.6] rustc 1.26.2
 		sed -i.orig Makefile -e "s/^RUST_TARGET = \(x86_64\|i686\)-w64-mingw32/RUST_TARGET = ${rust_target}/"
+		;;
+	2.46.[3])
+		# [2.46.3] rustc 1.39.0
+		sed -i.orig Makefile -e "s/^RUST_TARGET = \(x86_64\|i686\)-w64-mingw32/RUST_TARGET = ${rust_target}/"
+
+		mkdir -p "target/${TARGET}/release/"
+		ln --symbolic --force \
+			"${PWD}/target/${rust_target}/release/rsvg_c_api.lib" \
+			"target/${TARGET}/release/rsvg_c_api.lib"
+		ln --symbolic --force \
+			"${PWD}/target/${rust_target}/release/rsvg_c_api.lib" \
+			"librsvg_c_api.a"
+		sed -i Makefile -e "/^librsvg_2_la_LIBADD/,/^\s*$/ {" -e "s/librsvg_c_api.la/librsvg_c_api.a/" -e "}"
 		;;
 	*)
 		echo "${version} はサポートしていないバージョンです。 rust まわりのパッチを確認してください。"
@@ -186,15 +199,14 @@ run_make() {
 }
 
 pre_pack() {
-local docdir="${INSTALL_TARGET}/share/doc/${MOD}"
-	mkdir -p "${docdir}" &&
 	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
-	cp COPYING* "${docdir}/."
+	install_license_files "${MOD}" COPYING*
 }
 
 run_pack() {
+local bin_add=""
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll `find lib -name \*.dll` share/doc &&
+	pack_archive "${__BINZIP}" bin/*.dll `find lib -name \*.dll` share/{doc,locale} &&
 	pack_archive "${__DEVZIP}" include `find lib -name \*.a` lib/pkgconfig &&
 	pack_archive "${__DOCZIP}" share/gtk-doc &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 &&

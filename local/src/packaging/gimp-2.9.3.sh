@@ -146,7 +146,7 @@ EOS
 pre_configure() {
 	if [ ! -e "./configure" ]
 	then
-		NOCONFIGURE=1 $XMINGW/cross-host sh ./autogen.sh --disable-gtk-doc --disable-dependency-tracking
+		NOCONFIGURE=1 sh ./autogen.sh --disable-gtk-doc --disable-dependency-tracking
 	fi
 
 	# 2017/4/3mon: --enable-vector-icons のチェックがクロス コンパイルを考慮していないため強制的に有効にする。
@@ -156,6 +156,9 @@ pre_configure() {
 		-e 's/enable_vector_icons=".*"/enable_vector_icons="yes"/' \
 		-e 's/^have_dx_dinput=no/have_dx_dinput=yes/' \
 		-e 's/ac_cv_lib_mng_mng_create=no/ac_cv_lib_mng_mng_create=yes/'
+
+	# [2.10.14] mypaint-brush v2 系への対応。
+#	sed -i.orig configure -e 's/\"mypaint-brushes-1.0\"/\"mypaint-brushes-2.0\"/'
 }
 
 run_configure() {
@@ -167,8 +170,8 @@ run_configure() {
 	CPPFLAGS="`${XMINGW}/cross --cflags` \
 	-Dcdecl=LCMSAPI \
 	-DMNG_USE_DLL \
-	-DWINVER=_WIN32_WINNT_VISTA -D_WIN32_WINNT=_WIN32_WINNT_VISTA -DXPM_NO_X \
-	-I${XLIBRARY}/gimp-dep/include/noX" \
+	-DWINVER=_WIN32_WINNT_VISTA -D_WIN32_WINNT=_WIN32_WINNT_VISTA \
+	-DXPM_NO_X -I${XLIBRARY}/gimp-dep/include/noX" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base \
 	-L${PWD}/libpng/lib \

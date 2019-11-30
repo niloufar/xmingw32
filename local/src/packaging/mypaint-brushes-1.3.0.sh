@@ -29,8 +29,8 @@ init_var() {
 
 	__BINZIP="${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}"
 	__DEVZIP="${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}"
-#	__DOCZIP="${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}"
-#	__TOOLSZIP="${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}"
+#	__DOCZIP="${MOD}-${VER}-${REV}-doc"
+#	__TOOLSZIP="${MOD}-${VER}-${REV}-tools"
 
 	# アーキテクチャを指定しない場合は NOARCH=yes する。
 #	NOARCH=yes

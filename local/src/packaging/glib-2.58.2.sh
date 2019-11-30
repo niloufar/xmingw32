@@ -67,7 +67,7 @@ pre_configure() {
 local build_host_dir="_build_host"
 	[[ -d "${build_host_dir}" ]] && rm -r "${build_host_dir}"
 	mkdir -p "${build_host_dir}" &&
-	meson "${build_host_dir}" --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=static --optimization=2 --strip  -Dselinux=false -Dxattr=false -Dlibmount=false -Dinternal_pcre=true -Dman=false -Ddtrace=false -Dsystemtap=false -Dgtk_doc=false -Dfam=false &&
+	meson "${build_host_dir}" --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=static --optimization=2 --strip  -Dselinux=disabled -Dxattr=false -Dlibmount=false -Dinternal_pcre=true -Dman=false -Ddtrace=false -Dsystemtap=false -Dgtk_doc=false -Dfam=false &&
 	ninja -C "${build_host_dir}" gio/glib-compile-resources &&
 	ninja -C "${build_host_dir}" gio/glib-compile-schemas
 }

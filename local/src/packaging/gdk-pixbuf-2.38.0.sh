@@ -23,10 +23,10 @@ init_var() {
 	__ARCHIVEDIR="${XLIBRARY_SOURCES}/gtk+"
 	__ARCHIVE="${MOD}-${VER}"
 
-	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
-	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
-#	__DOCZIP=${MOD}-doc-${VER}-${REV}_${ARCHSUFFIX}
-	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
+	__BINZIP="${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}"
+	__DEVZIP="${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}"
+#	__DOCZIP="${MOD}-doc-${VER}-${REV}_${ARCHSUFFIX}"
+	__TOOLSZIP="${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}"
 }
 
 dependencies() {
@@ -64,7 +64,7 @@ run_configure() {
 		-pipe -O2 -fomit-frame-pointer -ffast-math" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 		-Wl,--enable-auto-image-base -Wl,-s" \
-	${XMINGW}/cross-meson _build --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=shared  -Ddocs=false -Dman=false -Dgir=false -Drelocatable=true -Djasper=true -D x11=false -Dinstalled_tests=false
+	${XMINGW}/cross-meson _build --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=shared  -Ddocs=false -Dman=false -Dgir=false -Drelocatable=true -Djasper=true -Dx11=false -Dinstalled_tests=false -Dgio_sniffing=false -Dnative_windows_loaders=false
 }
 
 post_configure() {
@@ -85,7 +85,8 @@ local file_loaders_cache="_build/gdk-pixbuf/loaders.cache"
 
 	# [2.38.0] thumbnailer/gdk-pixbuf-thumbnailer.thumbnailer がないと make でこける。
 local file_thumbnailer_thumbnailer="_build/thumbnailer/gdk-pixbuf-thumbnailer.thumbnailer"
-	if [ ! -e "${file_thumbnailer_thumbnailer}" ]
+	if [ "2.38.0" = "${VER}" && \
+		! -e "${file_thumbnailer_thumbnailer}" ]
 	then
 		touch "${file_thumbnailer_thumbnailer}"
 	fi
@@ -103,11 +104,18 @@ pre_pack() {
 }
 
 run_pack() {
+local thumbnailer=""
+	# [2.38.1] thumbnailer は不要だったのだろうか。
+	if [ "2.38.0" = "${VER}" ]
+	then
+		thumbnailer="bin/gdk-pixbuf-thumbnailer.exe share/thumbnailers"
+	fi
+
 	cd "${INSTALL_TARGET}" &&
 	pack_archive "${__BINZIP}" bin/*.dll bin/gdk-pixbuf-query-loaders.exe `find lib -iname \*.dll` share/locale share/doc &&
 	pack_archive "${__DEVZIP}" include `find lib -iname \*.a` lib/pkgconfig &&
 #	pack_archive "${__DOCZIP}" share/gtk-doc &&
-	pack_archive "${__TOOLSZIP}" bin/gdk-pixbuf-{csource,pixdata,thumbnailer}.exe share/thumbnailers &&
+	pack_archive "${__TOOLSZIP}" bin/gdk-pixbuf-{csource,pixdata}.exe ${thumbnailer} &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
 #	store_packed_archive "${__DOCZIP}" &&

@@ -113,7 +113,8 @@ pre_make() {
 }
 
 run_make() {
-	${XMINGW}/cross make gtk_def= gdk_def= all install
+	# [3.24.8] GLIB_COMPILE_RESOURCES が空になっている。
+	${XMINGW}/cross make gtk_def= gdk_def= GLIB_COMPILE_RESOURCES=glib-compile-resources all install
 }
 
 pre_pack() {

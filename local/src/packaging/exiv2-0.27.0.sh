@@ -17,13 +17,13 @@ init_var() {
 
 	# package に返す変数。
 	MOD=exiv2
-	[ "" = "${VER}" ] && VER=0.27.0-Source
+	[ "" = "${VER}" ] && VER=0.27.0
 	[ "" = "${REV}" ] && REV=1
-	DIRECTORY="${MOD}-${VER}"
+	DIRECTORY="${MOD}-${VER}-Source"
 
 	# 内部で使用する変数。
 	__ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/pic"
-	__ARCHIVE="${MOD}-${VER}"
+	__ARCHIVE="${MOD}-${VER}-Source"
 #	__PATCH_ARCHIVE="${MOD}_${VER}-${PATCH}"
 
 	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
@@ -59,7 +59,9 @@ local name
 }
 
 run_patch() {
-	patch_adhoc -p 1 <<\EOS
+	if [[ "0.27.0" = "${VER}" ]]
+	then
+		patch_adhoc -p 1 <<\EOS
 --- exiv2-0.27.0-Source.orig/src/futils.cpp
 +++ exiv2-0.27.0-Source/src/futils.cpp
 @@ -34,8 +34,8 @@
@@ -74,6 +76,7 @@ run_patch() {
      #include <psapi.h>  // For access to GetModuleFileNameEx
  #elif defined(__APPLE__)
 EOS
+	fi
 }
 
 run_configure() {
@@ -113,10 +116,17 @@ pre_pack() {
 }
 
 run_pack() {
+	# [0.27.1] *.cmake ファイルのフォルダーが移動したようだ。
+local __exiv2_cmake="share/exiv2/cmake"
+	[[ ! -e "${__exiv2_cmake}" ]] && __exiv2_cmake="lib/exiv2/cmake"
+	[[ ! -e "${__exiv2_cmake}" ]] && __exiv2_cmake="lib/cmake"
+local __exiv2_locale="share/locale"
+	[[ ! -e "${__exiv2_locale}" ]] && __exiv2_locale=""
+
 	cd "${INSTALL_TARGET}" &&
 	pack_archive "${__BINZIP}" bin/*.dll share/doc &&
-	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig share/exiv2/cmake &&
-	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/locale share/man/man1 &&
+	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig ${__exiv2_cmake} &&
+	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} ${__exiv2_locale} share/man/man1 &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
 	store_packed_archive "${__TOOLSZIP}"
