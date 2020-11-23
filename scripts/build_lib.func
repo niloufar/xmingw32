@@ -166,5 +166,19 @@ patch_adhoc() {
 	patch --batch --ignore-whitespace --forward "$@"
 }
 
+# 0: $1 <= $2
+compare_vernum_ge() {
+local x=$1
+local y=$2
+local result
+	result="$(printf '%s\n' "${x}" "${y}"|sort -V|head -n1)"
+	if [[ "${result}" == "${x}" ]]
+	then
+		return 0
+	else
+		return 1
+	fi
+}
+
 
 
