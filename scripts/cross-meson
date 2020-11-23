@@ -60,11 +60,11 @@ cpu = 'any'
 endian = 'little'
 
 [binaries]
-c = "gcc"
-cpp = "g++"
-ar = "ar"
-strip = "strip"
-pkgconfig = "pkg-config"
+c = 'gcc'
+cpp = 'g++'
+ar = 'ar'
+strip = 'strip'
+pkgconfig = 'pkg-config'
 exe_wrapper = 'wine'
 
 [properties]
