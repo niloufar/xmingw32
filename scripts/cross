@@ -12,8 +12,8 @@ then
 fi
 PREFIX="${XMINGW}"
 . "${PREFIX}/scripts/cross.env"
-. "${PREFIX}/scripts/cross.opt"
 . "${PREFIX}/scripts/cross.exp"
+. "${PREFIX}/scripts/cross.opt"
 
 export IN_CROSS_SCRIPT="#"
 

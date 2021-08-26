@@ -6,7 +6,7 @@
 __SCRIPT_NAME=`basename "$0"`
 
 __version() {
-  echo "0.1.2"
+  echo "0.1.3"
 }
 __usage() {
   echo "usage: ${__SCRIPT_NAME} [option] [--] [command arguments...]"
@@ -18,6 +18,9 @@ __help() {
   --cflags        cflags.
   --ldflags       ldflags.
   --libset        library directories.
+  --binpath       bin-path of library directories.
+  --gccrtpath     bin-path of mingw-w64-gcc runtime directories.
+  --pkgconfigpath       pkgconfig-path of library directories.
 
   -h  --help      show this message.
   --version       print the version.
@@ -43,7 +46,19 @@ do
     RESULT="${RESULT} ${XMINGW_LDFLAGS}"
     ;;
   --libset)
-    RESULT="`echo \"${XMINGW_LIBRARY_ROOT}\" | sed -e 's/:/\n/g'`"
+    RESULT="${XMINGW_LIBRARY_ROOT//:/
+}"
+    ;;
+  --binpath)
+    RESULT="${XMINGW_PATH}"
+    ;;
+  --gccrtpath)
+    MINGW_W64_GCC_VER="$(gcc --version | sed -ne 's/.\+(GCC)\s\+\([^\s]\+\)\s*/\1/p')"
+    MINGW_W64_GCC_RT_PATH="/usr/${XMINGW_TARGET}/bin:/usr/lib/gcc/${XMINGW_TARGET}/${MINGW_W64_GCC_VER}/adalib"
+    RESULT="${MINGW_W64_GCC_RT_PATH}"
+    ;;
+  --pkgconfigpath)
+    RESULT="${PKG_CONFIG_PATH}"
     ;;
 
   -h|--help)
