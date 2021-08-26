@@ -13,7 +13,7 @@ fi
 # ARCHSUFFIX は package が設定している。
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
-	#XLIBRARY_SET=${XLIBRARY}/gimp_build_set
+	#XLIBRARY_SET="set list"
 
 	# package に返す変数。
 	MOD=<MODULE NAME>
@@ -88,7 +88,21 @@ run_configure() {
 	"-DCMAKE_CXX_FLAGS:string=`${XMINGW}/cross --archcflags --cflags` -pipe -O2 -fomit-frame-pointer -ffast-math ${OLD_CXX_ABI} " \
 	"-DCMAKE_C_FLAGS_RELEASE:string=-DNDEBUG " \
 	"-DCMAKE_CXX_FLAGS_RELEASE:string=-DNDEBUG " \
-	"-DCMAKE_SHARED_LINKER_FLAGS:string=`${XMINGW}/cross --ldflags` -Wl,--enable-auto-image-base -Wl,-s -Wl,--export-all-symbols"
+	"-DCMAKE_SHARED_LINKER_FLAGS:string=`${XMINGW}/cross --ldflags` -Wl,--enable-auto-image-base -Wl,-s -Wl,--export-all-symbols" \
+	"-DCMAKE_EXE_LINKER_FLAGS:string=`${XMINGW}/cross --ldflags` -Wl,--enable-auto-image-base -Wl,-s"
+}
+
+# meson を使用する場合。
+# run_configure を削除し、下記関数定義行頭のコロンを削除する。
+:run_configure() {
+	CFLAGS="`${XMINGW}/cross --archcflags --cflags` \
+		-pipe -O2 -fomit-frame-pointer -ffast-math" \
+	CXXFLAGS="`${XMINGW}/cross --archcflags --cflags` \
+		-pipe -O2 -fomit-frame-pointer -ffast-math ${OLD_CXX_ABI}" \
+	LDFLAGS="`${XMINGW}/cross --ldflags` \
+		-Wl,--enable-auto-image-base -Wl,-s" \
+	${XMINGW}/cross-meson _build --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=shared \
+		-Dgtk_doc=true -Dintrospection=enabled
 }
 
 post_configure() {
@@ -113,6 +127,13 @@ run_make() {
 	${XMINGW}/cross make all install
 }
 
+# meson を使用する場合。
+# run_make を削除し、下記関数定義行頭のコロンを削除する。
+:run_make() {
+	${XMINGW}/cross ninja -C _build &&
+	${XMINGW}/cross ninja -C _build install
+}
+
 run_make_test() {
 	echo skip > /dev/null
 }
@@ -122,7 +143,7 @@ run_make_example() {
 }
 
 pre_pack() {
-	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	# ライセンスなどの情報は share/licenses/<MOD>/ に入れる。
 	install_license_files "${MOD}" COPYING*
 }
 
@@ -131,10 +152,10 @@ run_pack() {
 	# dev-* はビルドに必要なものをまとめる。ツールはビルド環境のものを使用し、含めない。
 	# *-tools はその他の実行ファイル等をまとめる。
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll share/doc &&
-	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig share/man/man3 &&
-	pack_archive "${__DOCZIP}" share/gtk-doc &&
-	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 share/locale &&
+	pack_archive "${__BINZIP}" bin/*.dll lib/girepository-* "${LICENSE_DIR}" &&
+	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig share/gir-* share/man/man3 &&
+	pack_archive "${__DOCZIP}" share/doc &&
+	pack_archive "${__TOOLSZIP}" bin/*.{exe,exe.manifest,exe.local} share/man/man1 share/locale &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
 	store_packed_archive "${__DOCZIP}" &&
