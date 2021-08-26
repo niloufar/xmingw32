@@ -130,7 +130,9 @@ run_make() {
 # meson を使用する場合。
 # run_make を削除し、下記関数定義行頭のコロンを削除する。
 :run_make() {
+	WINEPATH="${PWD}/_build/${MOD}" \
 	${XMINGW}/cross ninja -C _build &&
+	WINEPATH="${PWD}/_build/${MOD}" \
 	${XMINGW}/cross ninja -C _build install
 }
 
