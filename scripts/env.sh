@@ -61,6 +61,7 @@ win64)
 	;;
 esac
 export TARGET
+export XMINGW_TARGET="${TARGET}"
 
 #__prefix=/usr/bin/i586-mingw32msvc-
 #__prefix=${XMINGW}/bin/
@@ -84,7 +85,7 @@ export TARGET
 #export OLD_CXX_ABI="-D_GLIBCXX_USE_CXX11_ABI=0"
 export OLD_CXX_ABI=" "
 
-export BUILD_CC="${XMINGW}/bin/build-cc "
+export BUILD_CC="${XMINGW}/bin/cross-host cc "
 
 export XLOCAL=${XMINGW}/local
 
