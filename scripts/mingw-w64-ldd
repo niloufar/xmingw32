@@ -1,0 +1,60 @@
+#!/bin/bash
+# vim: tabstop=4 fileformat=unix fileencoding=utf-8 filetype=sh
+
+# license: Apache v2.0
+
+if [[ "" == "${XMINGW}" ]]
+then
+	echo "XMINGW 環境のそとで実行しています。. env.sh した環境から実行してください。"
+	exit 1
+fi
+
+find_path() {
+local target=$1
+local result=1
+local _path
+local alive=true
+	echo "$($XMINGW/cross --binpath):$(${XMINGW}/cross --gccrtpath)" | sed -e 's/:/\n/g' | while [[ "true" == "${alive}" ]]
+	do
+		read -r _path || alive=false
+		[[ "" == "${_path}" ]] && continue
+
+		_path="${_path}/${target}"
+		if [[ -e "${_path}" ]]
+		then
+			echo "${_path}"
+			result=0
+			break
+		fi
+	done
+	return ${result}
+}
+
+mingw_w64_ldd() {
+local target=$1
+local _WINEDUMP="winedump -j import"
+local dummy_addr shlib
+local _path
+
+local IFS=" "
+local alive=true
+	${_WINEDUMP} "${target}" | sed -n -e 's/\s\+offset\s\+//p' | while [[ "true" == "${alive}" ]]
+	do
+		read -r dummy_addr shlib || alive=false
+		if [[ "" != "${shlib}" ]]
+		then
+			_path="$(find_path "${shlib}")"
+
+			if [[ "" == "${_path}" ]]
+			then
+				_path="not found"
+			fi
+
+			echo "	${shlib} => ${_path}"
+#			echo "	${shlib} => ${_path}" >> /dev/stderr
+		fi
+	done
+}
+
+mingw_w64_ldd "$1"
+

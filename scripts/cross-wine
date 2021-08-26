@@ -1,0 +1,36 @@
+#!/bin/bash
+# vim: tabstop=4 fileformat=unix fileencoding=utf-8 filetype=sh
+
+# license: Apache v2.0
+
+if [[ "" == "${XMINGW}" ]]
+then
+	echo "XMINGW 環境のそとで実行しています。. env.sh した環境から実行してください。"
+	exit 1
+fi
+
+# gcc runtime へパスを通すための設定。
+MINGW_W64_GCC_RT_PATH="$(${XMINGW}/cross --gccrtpath)"
+export MINGW_W64_GCC_RT_PATH="${MINGW_W64_GCC_RT_PATH//:/;}"
+
+binpath="$(${XMINGW}/cross --binpath)"
+#export XMINGW_BIN_PATH="${EXTRA_PATH_FOR_WINE};${binpath//:/;}"
+#echo "XMINGW_BIN_PATH: ${XMINGW_BIN_PATH}" >> /dev/stderr
+export WINEPATH="${EXTRA_PATH_FOR_WINE};${binpath//:/;};${WINEPATH}"
+echo "WINEPATH: ${WINEPATH}" >> /dev/stderr
+
+# exeext のないバイナリーを実行する場合を考慮する。
+# 他の拡張子のファイルは考慮しない。
+cmd="$1"
+shift
+case "${cmd}" in
+*.exe)
+	;;
+*)
+	[[ -e "${cmd}.exe" ]] && cmd="${cmd}.exe"
+	;;
+esac
+
+/usr/bin/wine cmd /c "${XMINGW}/scripts/cross-wine.bat" "${cmd}" "$@"
+
+

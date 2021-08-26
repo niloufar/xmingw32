@@ -1,0 +1,31 @@
+#!/bin/bash
+# vim: tabstop=4 fileformat=unix fileencoding=utf-8 filetype=sh
+
+# license: Apache v2.0
+
+__SCRIPT_NAME="`basename "$0"`"
+
+if [[ "" == "${XMINGW}" ]]
+then
+	echo "XMINGW 環境のそとで実行しています。. env.sh した環境から実行してください。"
+	exit 1
+fi
+
+case "${__SCRIPT_NAME}" in
+g-ir-scanner)
+	echo "cross-gir(${__SCRIPT_NAME}): INFO: Mingw-w64 のために置き換えられたコマンドを実行しています。" >> /dev/stderr
+	# ln -s -f /usr/lib/gobject-introspection/giscanner/_giscanner.cpython-*-linux-gnu.so "$($XMINGW/cross pkg-config gobject-introspection-1.0 --variable libdir)/gobject-introspection/giscanner/."
+	PYTHONPATH="$($XMINGW/cross pkg-config gobject-introspection-1.0 --variable libdir)/gobject-introspection:${PYTHONPATH}" \
+	$($XMINGW/cross pkg-config gobject-introspection-1.0 --variable bindir)/g-ir-scanner --use-binary-wrapper="$XMINGW/scripts/cross-wine" --use-ldd-wrapper=ldd --cflags-begin $(${XMINGW}/cross --cflags) --cflags-end "$@"
+	;;
+gtkdoc-scangobj)
+	echo "cross-gir(${__SCRIPT_NAME}): INFO: Mingw-w64 のために置き換えられたコマンドを実行しています。" >> /dev/stderr
+	GTK_DOC_KEEP_INTERMEDIATE=1 \
+	/usr/bin/gtkdoc-scangobj "$@" --run=$XMINGW/scripts/cross-wine
+	;;
+*)
+	echo "cross-gir: FAIL: $0 command is not supprted." >> /dev/stderr
+	exit 1
+	;;
+esac
+
