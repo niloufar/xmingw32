@@ -7,25 +7,27 @@ cmd=`basename "$0" | sed -e 's/^build-//' | tr '[a-z]' '[A-Z]'`
 val=
 case "${cmd}" in
 CC)
-	val="`which cc`"
+	val="cc"
 	;;
 CXX)
-	val="`which c++`"
+	val="c++"
 	;;
 PKGCONFIG|PKG-CONFIG)
-	val="`which pkg-config`"
+	val="pkg-config"
 	;;
 *)
 	echo unsupported
 	exit 1
 esac
 
+echo "WARNING(${cmd}): build-cc コマンドは廃止予定(deprecated)です。 \$XMINGW/cross-host cc に置き換えてください。"
+
 if [ "" != "${XMINGW}" ]
 then
 	"${XMINGW}/cross-host" ${val} "$@"
 else
 	# これが実行されることはないはず。
-	echo "WARNING: XMINGW 環境のそとで実行しています。このスクリプトは、 XMINGW 環境下でホスト環境を再設定しプログラムを実行します。"
+	echo "WARNING(${cmd}): XMINGW 環境のそとで実行しています。このスクリプトは、 XMINGW 環境下でホスト環境を再設定しプログラムを実行します。"
 	${val} "$@"
 fi
 
