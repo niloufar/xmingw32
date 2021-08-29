@@ -72,12 +72,14 @@ pre_pack() {
 	then
 		mv "${INSTALL_TARGET}/bin/xmlwf" "${INSTALL_TARGET}/bin/xmlwf.exe" 
 	fi
+
+	# ライセンスなどの情報は share/licenses/<MOD>/ に入れる。
 	install_license_files "${MOD}" COPYING*
 }
 
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll share/doc &&
+	pack_archive "${__BINZIP}" bin/*.dll "${LICENSE_DIR}" &&
 	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig lib/cmake &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 &&
 	store_packed_archive "${__BINZIP}" &&

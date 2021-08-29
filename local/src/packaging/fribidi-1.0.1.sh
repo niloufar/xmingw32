@@ -78,7 +78,7 @@ run_make() {
 }
 
 pre_pack() {
-	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	# ライセンスなどの情報は share/licenses/<MOD>/ に入れる。
 	install_license_files "${MOD}" COPYING*
 }
 
@@ -92,7 +92,7 @@ local dev_add
 	then
 		dev_add="${dev_add} share/man/man3"
 	fi &&
-	pack_archive "${__BINZIP}" bin/*.dll share/doc &&
+	pack_archive "${__BINZIP}" bin/*.dll "${LICENSE_DIR}" &&
 	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig ${dev_add} &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} &&
 	store_packed_archive "${__BINZIP}" &&

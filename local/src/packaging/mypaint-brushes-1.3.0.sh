@@ -101,7 +101,7 @@ local lib_pkgconfig_dir="${lib_dir}/pkgconfig"
 		mv --force "${share_pkgconfig_dir}" "${lib_dir}/."
 	fi &&
 
-	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	# ライセンスなどの情報は share/licenses/<MOD>/ に入れる。
 local licenses="$(ls -1 {AUTHORS,Licenses}* 2>/dev/null)"
 	install_license_files "${MOD}" COPYING* ${licenses}
 }
@@ -111,7 +111,7 @@ run_pack() {
 	# dev-* はビルドに必要なものをまとめる。ツールはビルド環境のものを使用し、含めない。
 	# *-tools はその他の実行ファイル等をまとめる。
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" share/doc share/mypaint-data &&
+	pack_archive "${__BINZIP}" share/mypaint-data "${LICENSE_DIR}" &&
 	pack_archive "${__DEVZIP}" lib/pkgconfig &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}"

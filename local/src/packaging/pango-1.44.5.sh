@@ -99,7 +99,7 @@ run_make() {
 }
 
 pre_pack() {
-	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	# ライセンスなどの情報は share/licenses/<MOD>/ に入れる。
 	install_license_files "${MOD}" COPYING* THANKS*
 }
 

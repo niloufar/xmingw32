@@ -73,10 +73,8 @@ run_make() {
 }
 
 pre_pack() {
-local docdir="${INSTALL_TARGET}/share/doc/${MOD}"
-	mkdir -p "${docdir}" &&
-	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
-	cp COPYING* "${docdir}/."
+	# ライセンスなどの情報は share/licenses/<MOD>/ に入れる。
+	install_license_files "${MOD}" COPYING*
 
 local conffile=`find "${INSTALL_TARGET}/bin/" -name \*-config`
 	sed -i -e "s#^\s*\(prefix=\).*${INSTALL_TARGET}\$#\1\`dirname \$0\`/..#" "${conffile}"
@@ -84,7 +82,7 @@ local conffile=`find "${INSTALL_TARGET}/bin/" -name \*-config`
 
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll share/doc &&
+	pack_archive "${__BINZIP}" bin/*.dll "${LICENSE_DIR}" &&
 	pack_archive "${__DEVZIP}" bin/*-config include lib/*.a lib/pkgconfig &&
 	pack_archive "${__DOCZIP}" share/gtk-doc &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} &&

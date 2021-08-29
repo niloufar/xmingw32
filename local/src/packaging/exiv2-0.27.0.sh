@@ -114,7 +114,7 @@ run_make() {
 }
 
 pre_pack() {
-	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	# ライセンスなどの情報は share/licenses/<MOD>/ に入れる。
 	install_license_files "${MOD}" COPYING*
 }
 
@@ -127,7 +127,7 @@ local __exiv2_locale="share/locale"
 	[[ ! -e "${__exiv2_locale}" ]] && __exiv2_locale=""
 
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll share/doc &&
+	pack_archive "${__BINZIP}" bin/*.dll "${LICENSE_DIR}" &&
 	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig ${__exiv2_cmake} &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} ${__exiv2_locale} share/man/man1 &&
 	store_packed_archive "${__BINZIP}" &&

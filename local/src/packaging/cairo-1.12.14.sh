@@ -109,13 +109,13 @@ run_make() {
 pre_pack() {
 	cp -p src/cairo.def "${INSTALL_TARGET}/lib" &&
 
-	mkdir -p "${INSTALL_TARGET}/share/doc/${THIS}" &&
-	cp -p COPYING COPYING-LGPL-2.1 COPYING-MPL-1.1 "${INSTALL_TARGET}/share/doc/${THIS}"
+	# ライセンスなどの情報は share/licenses/<MOD>/ に入れる。
+	install_license_files "${MOD}" COPYING COPYING-LGPL-2.1 COPYING-MPL-1.1
 }
 
 run_pack() {
 	(cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll "share/doc/${THIS}" &&
+	pack_archive "${__BINZIP}" bin/*.dll "${LICENSE_DIR}" &&
 	pack_archive "${__DEVZIP}" include lib/*.{def,a} lib/pkgconfig share/*doc &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}") &&

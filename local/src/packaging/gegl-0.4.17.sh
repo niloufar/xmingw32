@@ -132,13 +132,13 @@ run_make() {
 }
 
 pre_pack() {
-	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	# ライセンスなどの情報は share/licenses/<MOD>/ に入れる。
 	install_license_files "${MOD}" COPYING* AUTHORS*
 }
 
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll lib/gegl-?.?/*.{dll,json} lib/girepository-* share/doc &&
+	pack_archive "${__BINZIP}" bin/*.dll lib/gegl-?.?/*.{dll,json} lib/girepository-* "${LICENSE_DIR}" &&
 	pack_archive "${__DEVZIP}" include lib/*.a lib/gegl-?.?/*.a lib/pkgconfig share/gir-* share/vala/vapi/ &&
 	pack_archive "${__DOCZIP}" share/gtk-doc &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/locale &&

@@ -71,10 +71,8 @@ run_make() {
 }
 
 pre_pack() {
-local docdir="${INSTALL_TARGET}/share/doc/${MOD}"
-	mkdir -p "${docdir}" &&
-	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
-	cp LICENSE "${docdir}/."
+	# ライセンスなどの情報は share/licenses/<MOD>/ に入れる。
+	install_license_files "${MOD}" LICENSE*
 
 local NAME="${INSTALL_TARGET}/bin/${__LIBNAME}-config"
 	cp libpng-config "${NAME}" &&
@@ -83,7 +81,7 @@ local NAME="${INSTALL_TARGET}/bin/${__LIBNAME}-config"
 
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive ${__BINZIP} bin/*.dll share/doc &&
+	pack_archive ${__BINZIP} bin/*.dll "${LICENSE_DIR}" &&
 	pack_archive ${__DEVZIP} bin/${__LIBNAME}-config include/${__LIBNAME} lib/${__LIBNAME}*.a lib/pkgconfig/${__LIBNAME}.pc share/man &&
 	pack_archive ${__TOOLSZIP} bin/png*.exe &&
 	store_packed_archive "${__BINZIP}" &&

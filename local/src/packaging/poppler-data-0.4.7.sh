@@ -82,13 +82,13 @@ post_make() {
 }
 
 pre_pack() {
-	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	# ライセンスなどの情報は share/licenses/<MOD>/ に入れる。
 	install_license_files "${MOD}" COPYING*
 }
 
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" share/poppler &&
+	pack_archive "${__BINZIP}" share/poppler "${LICENSE_DIR}" &&
 	pack_archive "${__DEVZIP}" lib/pkgconfig &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}"

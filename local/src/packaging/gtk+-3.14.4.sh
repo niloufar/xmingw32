@@ -137,6 +137,7 @@ run_make() {
 }
 
 pre_pack() {
+	# ライセンスなどの情報は share/licenses/<MOD>/ に入れる。
 	install_license_files "${MOD}" COPYING*
 
 #	# 3.14.4: ごまかしビルドの extract-strings をコピーしておく。
@@ -149,7 +150,7 @@ local TESTZIP="${MOD}-${VER}-${REV}-test_${ARCHSUFFIX}"
 	store_packed_archive "${TESTZIP}"
 
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll bin/gtk-query-immodules-3.0.exe etc `find lib -name \*.dll` lib/girepository-* share/{locale,themes} share/doc &&
+	pack_archive "${__BINZIP}" bin/*.dll bin/gtk-query-immodules-3.0.exe etc `find lib -name \*.dll` lib/girepository-* share/{locale,themes} "${LICENSE_DIR}" &&
 	pack_archive "${__DEVZIP}" include `find lib -name \*.def -or -name \*.a` lib/pkgconfig share/{aclocal,gettext/its,gir-*,glib-2.0,gtk-3.0} &&
 	pack_archive "${__DOCZIP}" share/gtk-doc &&
 	pack_archive "${__TOOLSZIP}" bin/gtk-{builder-tool,encode-symbolic-svg,launch,query-settings,update-icon-cache}.exe share/man/man1/b* share/man/man1/gtk-* &&

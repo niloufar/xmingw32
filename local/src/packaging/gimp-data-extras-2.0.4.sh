@@ -61,13 +61,6 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
-run_patch() {
-local name
-	# name=`find_archive "${__ARCHIVEDIR}" ${__PATCH_ARCHIVE}` &&
-	# 	patch_debian "${__ARCHIVEDIR}/${name}"
-	echo skip > /dev/null
-}
-
 pre_configure() {
 	sed -i.orig configure \
 		-e "s|^\(GIMP_DATA_DIR=\).*|\1\"${INSTALL_TARGET}/share/gimp/2.0\"|"
@@ -82,7 +75,7 @@ run_make() {
 }
 
 pre_pack() {
-	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	# ライセンスなどの情報は share/licenses/<MOD>/ に入れる。
 	install_license_files "${MOD}" COPYING*
 }
 
@@ -91,9 +84,9 @@ run_pack() {
 	# dev-* はビルドに必要なものをまとめる。ツールはビルド環境のものを使用し、含めない。
 	# *-tools はその他の実行ファイル等をまとめる。
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BRUSHESZIP}" share/doc share/gimp/2.0/brushes &&
-	pack_archive "${__PATTERNSZIP}" share/doc share/gimp/2.0/patterns &&
-	pack_archive "${__SCRIPTSZIP}" share/doc share/gimp/2.0/scripts &&
+	pack_archive "${__BRUSHESZIP}" "${LICENSE_DIR}" share/gimp/2.0/brushes &&
+	pack_archive "${__PATTERNSZIP}" "${LICENSE_DIR}" share/gimp/2.0/patterns &&
+	pack_archive "${__SCRIPTSZIP}" "${LICENSE_DIR}" share/gimp/2.0/scripts &&
 	store_packed_archive "${__BRUSHESZIP}" &&
 	store_packed_archive "${__PATTERNSZIP}" &&
 	store_packed_archive "${__SCRIPTSZIP}"

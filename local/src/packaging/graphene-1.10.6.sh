@@ -67,10 +67,6 @@ local name
 	echo skip > /dev/null
 }
 
-pre_configure() {
-	echo skip > /dev/null
-}
-
 # meson を使用する場合。
 # run_configure を削除し、下記関数定義行頭のコロンを削除する。
 run_configure() {
@@ -96,16 +92,8 @@ run_make() {
 	${XMINGW}/cross ninja -C _build install
 }
 
-run_make_test() {
-	echo skip > /dev/null
-}
-
-run_make_example() {
-	echo skip > /dev/null
-}
-
 pre_pack() {
-	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	# ライセンスなどの情報は share/licenses/<MOD>/ に入れる。
 	install_license_files "${MOD}" LICENSE*
 }
 
@@ -114,7 +102,7 @@ run_pack() {
 	# dev-* はビルドに必要なものをまとめる。ツールはビルド環境のものを使用し、含めない。
 	# *-tools はその他の実行ファイル等をまとめる。
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll lib/girepository-* share/doc &&
+	pack_archive "${__BINZIP}" bin/*.dll lib/girepository-* "${LICENSE_DIR}" &&
 	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig lib/graphene-* share/gir-* &&
 	pack_archive "${__DOCZIP}" share/gtk-doc &&
 	store_packed_archive "${__BINZIP}" &&
