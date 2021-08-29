@@ -136,7 +136,7 @@ run_make() {
 }
 
 pre_pack() {
-	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	# ライセンスなどの情報は share/licenses/<MOD>/ に入れる。
 	install_license_files "${MOD}" COPYING*
 
 	# *.exe ファイルは使わずホストのものを使用する。
@@ -157,7 +157,7 @@ local build_host_dir="_build_host"
 run_pack() {
 	# share/glib-2.0/gettext は glib-gettextize が参照している。
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll bin/gspawn-*.exe share/locale share/doc &&
+	pack_archive "${__BINZIP}" bin/*.dll bin/gspawn-*.exe share/locale "${LICENSE_DIR}" &&
 	pack_archive "${__DEVZIP}" bin/{gdbus-codegen,glib-genmarshal,glib-mkenums,glib-compile-resources,glib-compile-schemas} include lib/*.{def,a} lib/glib-2.0 lib/pkgconfig share/aclocal share/glib-2.0/codegen &&
 	pack_archive "${__TOOLSZIP}" $(ls -1 bin/*.exe | grep -vie "^gspawn-") bin/{glib-gettextize,gtester-report} share/bash-completion share/gettext share/glib-2.0/{gdb,schemas,gettext} &&
 	store_packed_archive "${__BINZIP}" &&
