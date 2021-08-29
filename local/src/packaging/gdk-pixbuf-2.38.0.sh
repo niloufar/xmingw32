@@ -13,6 +13,8 @@ fi
 # ARCH は package が設定している。
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
+	XLIBRARY_SET="gtk"
+
 	# package に返す変数。
 	MOD=gdk-pixbuf
 	[ "" = "${VER}" ] && VER=2.38.0
@@ -25,7 +27,7 @@ init_var() {
 
 	__BINZIP="${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}"
 	__DEVZIP="${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}"
-#	__DOCZIP="${MOD}-doc-${VER}-${REV}_${ARCHSUFFIX}"
+	__DOCZIP="${MOD}-doc-${VER}-${REV}_${ARCHSUFFIX}"
 	__TOOLSZIP="${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}"
 }
 
@@ -59,12 +61,16 @@ run_patch() {
 }
 
 run_configure() {
-	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CFLAGS="`${XMINGW}/cross --archcflags --cflags` \
 		-pipe -O2 -fomit-frame-pointer -ffast-math" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 		-Wl,--enable-auto-image-base -Wl,-s" \
-	${XMINGW}/cross-meson _build --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=shared  -Ddocs=false -Dman=false -Dgir=false -Drelocatable=true -Djasper=true -Dx11=false -Dinstalled_tests=false -Dgio_sniffing=false -Dnative_windows_loaders=false
+	${XMINGW}/cross-meson _build --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=shared \
+		-Ddocs=true -Dman=false \
+		-Drelocatable=true -Dnative_windows_loaders=false \
+		-Djasper=true -Dx11=false -Dinstalled_tests=false \
+		-Dgio_sniffing=false \
+		-Dintrospection=enabled
 }
 
 post_configure() {
@@ -94,12 +100,14 @@ local file_thumbnailer_thumbnailer="_build/thumbnailer/gdk-pixbuf-thumbnailer.th
 }
 
 run_make() {
+	WINEPATH="$PWD/_build/gdk-pixbuf" \
 	${XMINGW}/cross ninja -C _build &&
+	WINEPATH="$PWD/_build/gdk-pixbuf" \
 	${XMINGW}/cross ninja -C _build install
 }
 
 pre_pack() {
-	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	# ライセンスなどの情報は share/licenses/<MOD>/ に入れる。
 	install_license_files "${MOD}" COPYING*
 }
 
@@ -112,14 +120,15 @@ local thumbnailer=""
 	fi
 
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll bin/gdk-pixbuf-query-loaders.exe `find lib -iname \*.dll` share/locale share/doc &&
-	pack_archive "${__DEVZIP}" include `find lib -iname \*.a` lib/pkgconfig &&
-#	pack_archive "${__DOCZIP}" share/gtk-doc &&
+	pack_archive "${__BINZIP}" bin/*.dll bin/gdk-pixbuf-query-loaders.exe $(find lib -iname \*.dll) lib/girepository-* share/locale "${LICENSE_DIR}" &&
+	pack_archive "${__DEVZIP}" include $(find lib -iname \*.a) lib/pkgconfig share/gir-* &&
+	pack_archive "${__DOCZIP}" share/doc &&
 	pack_archive "${__TOOLSZIP}" bin/gdk-pixbuf-{csource,pixdata}.exe ${thumbnailer} &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
-#	store_packed_archive "${__DOCZIP}" &&
-	store_packed_archive "${__TOOLSZIP}"
+	store_packed_archive "${__DOCZIP}" &&
+	store_packed_archive "${__TOOLSZIP}" #&&
+#	put_exclude_files bin/gi-docgen lib/python*
 }
 
 

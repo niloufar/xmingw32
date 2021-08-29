@@ -13,6 +13,8 @@ fi
 # ARCH は package が設定している。
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
+	XLIBRARY_SET="gtk"
+
 	# package に返す変数。
 	MOD=harfbuzz
 	[ "" = "${VER}" ] && VER=0.9.21
@@ -93,12 +95,15 @@ run_configure_xp() {
 
 run_configure() {
 	CC="gcc `${XMINGW}/cross --archcflags`" \
+	CXX="g++ `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
 	CXXFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math ${OLD_CXX_ABI}" \
-	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --with-icu=no --with-uniscribe=auto
+	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" \
+		--with-icu=no --with-uniscribe=auto \
+		--enable-gtk-doc=yes --with-gobject=no
 }
 
 post_configure() {
@@ -115,14 +120,13 @@ post_configure() {
 
 run_make() {
 	# hb-uniscribe.cc のコンパイルでエラーになるため -fpermissive している。
+	WINEPATH="$PWD/src/.libs" \
 	${XMINGW}/cross make "UNISCRIBE_CFLAGS=-fpermissive" all install
 }
 
 pre_pack() {
-local docdir="${INSTALL_TARGET}/share/doc/${MOD}"
-	mkdir -p "${docdir}" &&
 	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
-	cp COPYING "${docdir}/." &&
+	install_license_files "${MOD}" COPYING*
 
 local UNISCRIBE_LIBS="-lusp10 -lgdi32 -lrpcrt4"
 	(cd "${INSTALL_TARGET}/lib/pkgconfig" &&

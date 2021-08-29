@@ -5,7 +5,7 @@
 
 if [ "" = "${IN_PACKAGE_SCRIPT}" ]
 then
-	echo FAIL: \${XMINGW}/package から実行してください。
+	echo "FAIL: \${XMINGW}/package から実行してください。"
 	exit 1
 fi
 
@@ -13,6 +13,8 @@ fi
 # ARCH は package が設定している。
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
+	XLIBRARY_SET="gtk"
+
 	# package に返す変数。
 	MOD=freetype
 	[ "" = "${VER}" ] && VER=2.4.11
@@ -36,6 +38,7 @@ EOS
 
 optional_dependencies() {
 	cat <<EOS
+brotli
 bzip2
 libpng
 harfbuzz
@@ -51,7 +54,7 @@ local name
 
 run_configure() {
 	CC="gcc `${XMINGW}/cross --archcflags`" \
-	CC_BUILD=build-cc \
+	CC_BUILD="${XMINGW}/cross-host cc" \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \

@@ -13,7 +13,7 @@ fi
 # ARCH は package が設定している。
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
-	#XLIBRARY_SET=${XLIBRARY}/gimp_build_set
+	XLIBRARY_SET="gtk"
 
 	# package に返す変数。
 	MOD=json-glib
@@ -28,7 +28,7 @@ init_var() {
 
 	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
 	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
-#	__DOCZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
+	__DOCZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
 	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 }
 
@@ -57,7 +57,7 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
-run_patch() {
+:run_patch() {
 	# [1.4.2] クロス コンパイルを考慮する＋もろもろ。
 	# [1.4.4] mesontest コマンドのチェックを削除する。
 	sed -i.orig configure \
@@ -66,17 +66,22 @@ run_patch() {
 }
 
 run_configure() {
-	CC="gcc `${XMINGW}/cross --archcflags`" \
 	MESONTEST="meson test" \
-	CFLAGS="`${XMINGW}/cross --archcflags --cflags` \
+	CFLAGS="`${XMINGW}/cross --cflags` \
 		-pipe -O2 -fomit-frame-pointer -ffast-math" \
+	CXXFLAGS="`${XMINGW}/cross --cflags` \
+		-pipe -O2 -fomit-frame-pointer -ffast-math ${OLD_CXX_ABI}" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 		-Wl,--enable-auto-image-base -Wl,-s" \
-	${XMINGW}/cross-meson _build --prefix="${INSTALL_TARGET}" --buildtype release --default-library=shared  -Dintrospection=false -Ddocs=false -Dman=false
+	${XMINGW}/cross-meson _build --prefix="${INSTALL_TARGET}" --buildtype release --default-library=shared \
+		-Ddocs=true -Dman=false \
+		-Dintrospection=enabled
 }
 
 run_make() {
+	WINEPATH="$PWD/_build/json-glib" \
 	${XMINGW}/cross ninja -C _build &&
+	WINEPATH="$PWD/_build/json-glib" \
 	${XMINGW}/cross ninja -C _build install
 }
 
@@ -87,11 +92,13 @@ pre_pack() {
 
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll share/locale share/doc &&
-	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig &&
+	pack_archive "${__BINZIP}" bin/*.dll lib/girepository-1.0 share/locale share/doc &&
+	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig share/gir-* &&
+	pack_archive "${__DOCZIP}" share/gtk-doc/ &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
+	store_packed_archive "${__DOCZIP}" &&
 	store_packed_archive "${__TOOLSZIP}" &&
 	put_exclude_files bin/installed-tests libexec share/installed-tests
 }

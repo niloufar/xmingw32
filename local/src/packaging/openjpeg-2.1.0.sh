@@ -13,6 +13,8 @@ fi
 # ARCH は package が設定している。
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
+	XLIBRARY_SET="gtk gimp_build"
+
 	# package に返す変数。
 	MOD=openjpeg
 	[ "" = "${VER}" ] && VER=2.1.0
@@ -58,7 +60,8 @@ run_configure() {
 	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
-	-Wl,--enable-auto-image-base -Wl,-s" \
+	-Wl,--enable-auto-image-base -Wl,-s \
+	-Wl,--export-all-symbols" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math " \
 	${XMINGW}/cross-cmake -DCMAKE_BUILD_TYPE:string="Release" -DCMAKE_C_FLAGS_RELEASE:string="-DNDEBUG" -DCMAKE_INSTALL_PREFIX="${INSTALL_TARGET}" -DBUILD_SHARED_LIBS:bool=ON \
 	-DBUILD_JP3D:bool=ON \
@@ -77,8 +80,18 @@ run_make() {
 }
 
 pre_pack() {
+	# ファイルの配置確認を外す。
+	sed -i "${INSTALL_TARGET}/lib/"openjpeg-*"/OpenJPEGTargets.cmake" \
+		-e'/^\s*if(NOT EXISTS "${file}" )$/,/^\s*endif()$/ {' \
+			-e's/^/#/' \
+		-e'}'
+
 	# libopenjp3d.dll がコピーされない。
 	cp --no-clobber bin/*.dll "${INSTALL_TARGET}/bin/."
+
+	# [2.4.0] lib/openjpeg-2.4/OpenJPEGConfig.cmake にビルド時のパスが含まれる。
+	sed -i "${INSTALL_TARGET}/lib/"openjpeg-*"/OpenJPEGConfig.cmake" \
+		-e 's|^\(\s\+set(INC_DIR "\).*/\(include/openjpeg-[0-9]\+\.[0-9]\+")\)|\1${SELF_DIR}/../../\2|'
 }
 
 run_pack() {

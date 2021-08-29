@@ -13,8 +13,6 @@ fi
 # ARCHSUFFIX は package が設定している。
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
-	#XLIBRARY_SET=${XLIBRARY}/gimp_build_set
-
 	# package に返す変数。
 	MOD=libde265
 	[ "" = "${VER}" ] && VER=1.0.3
@@ -68,12 +66,13 @@ run_configure() {
 	# なるため -Wl,--allow-multiple-definition している。
 	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CXX="g++ `${XMINGW}/cross --archcflags`" \
-	CPPFLAGS="`${XMINGW}/cross --cflags`" \
+	CFLAGS="`${XMINGW}/cross --cflags` \
+		-pipe -O2 -fomit-frame-pointer -ffast-math " \
+	CXXFLAGS="`${XMINGW}/cross --cflags` \
+		-pipe -O2 -fomit-frame-pointer -ffast-math ${OLD_CXX_ABI} " \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s \
 	-Wl,--allow-multiple-definition" \
-	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math " \
-	CXXFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math ${OLD_CXX_ABI} " \
 	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --disable-dec265 --disable-sherlock265
 }
 

@@ -13,6 +13,8 @@ fi
 # ARCH は package が設定している。
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
+	XLIBRARY_SET="gtk"
+
 	# package に返す変数。
 	MOD=gtk+
 	[ "" = "${VER}" ] && VER=2.24.17
@@ -25,6 +27,7 @@ init_var() {
 
 	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
 	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
+#	__DOCZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
 	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 }
 
@@ -74,9 +77,15 @@ run_configure() {
 	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
-	-Wl,--enable-auto-image-base -Wl,-s" \
+		-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --without-x --with-gdktarget=win32 --with-included-immodules --enable-debug=yes --enable-explicit-deps=no --disable-schemas-compile --disable-glibtest --disable-cups --disable-gtk-doc --disable-introspection
+	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" \
+		--without-x --with-gdktarget=win32 \
+		--with-included-immodules \
+		--enable-debug=yes \
+		--enable-explicit-deps=no \
+		--disable-schemas-compile --disable-glibtest --disable-cups \
+		--disable-gtk-doc --enable-introspection
 }
 
 post_configure() {
@@ -86,7 +95,11 @@ post_configure() {
 		do
 			sed -i -e "s!^\(GTK_UPDATE_ICON_CACHE\) =.*!\\1 =\"${PWD}/gtk/_gtk-update-icon-cache\"!" "${mf}"
 		done
-	fi &&
+	fi
+
+	# [2.24.33]
+	sed -i.orig gtk/Makefile \
+		-e '/^Gtk-2.0.gir:/ s/\$(INTROSPECTION_SCANNER)//'
 
 	bash ${XMINGW}/replibtool.sh
 }
@@ -102,6 +115,7 @@ pre_make_win64() {
 }
 
 run_make() {
+	WINEPATH="${PWD}/gdk/.libs;${PWD}/gtk/.libs" \
 	${XMINGW}/cross make all install
 }
 
@@ -112,8 +126,8 @@ run_pack() {
 	fi &&
 
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll etc `find lib -name \*.dll` share/{locale,themes} &&
-	pack_archive "${__DEVZIP}" bin/_* bin/gtk-builder-convert include `find lib -name \*.def -or -name \*.a` lib/gtk-2.0/include lib/pkgconfig share/{aclocal,gtk-2.0,gtk-doc} &&
+	pack_archive "${__BINZIP}" bin/*.dll etc `find lib -name \*.dll` lib/girepository-* share/{locale,themes} &&
+	pack_archive "${__DEVZIP}" bin/_* bin/gtk-builder-convert include `find lib -name \*.def -or -name \*.a` lib/gtk-2.0/include lib/pkgconfig share/{aclocal,gir-*,gtk-2.0,gtk-doc} &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest} &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&

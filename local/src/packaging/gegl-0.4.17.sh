@@ -14,11 +14,11 @@ fi
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
 	# cross に渡す変数。
-	XLIBRARY_SET=${XLIBRARY}/gimp_build_set
+	XLIBRARY_SET="gtk gimp_build"
 
 	# package に返す変数。
 	MOD=gegl
-	[ "" = "${VER}" ] && VER=0.2.0
+	[ "" = "${VER}" ] && VER=git-84ef1f525
 	[ "" = "${REV}" ] && REV=1
 	DIRECTORY="${MOD}-${VER}"
 
@@ -28,6 +28,7 @@ init_var() {
 
 	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
 	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
+	__DOCZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
 	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 
 	if `echo "${PATCH}" | grep -ie debian`
@@ -36,6 +37,7 @@ init_var() {
 
 		__BINZIP=${MOD}-${VER}-${PATCH}-${REV}-bin_${ARCHSUFFIX}
 		__DEVZIP=${MOD}-dev-${VER}-${PATCH}-${REV}_${ARCHSUFFIX}
+		__DOCZIP=${MOD}-${VER}-${PATCH}-${REV}-bin_${ARCHSUFFIX}
 		__TOOLSZIP=${MOD}-${VER}-${PATCH}-${REV}-tools_${ARCHSUFFIX}
 	fi
 }
@@ -85,56 +87,64 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
-run_patch() {
-local name
-	if `echo "${PATCH}" | grep -ie debian`
-	then
-		name=`find_archive "${__ARCHIVEDIR}" ${__PATCH_ARCHIVE}` &&
-		patch_debian "${__ARCHIVEDIR}/${name}"
-	fi
-}
-
 pre_configure() {
-local gen=1
-	[ -e configure ] || gen=0
-	[ 1 -eq ${gen} ] && find configure.ac -newer configure && gen=0
-	[ 0 -eq ${gen} ] && NOCONFIGURE=1 sh autogen.sh
-	return 0
+	# [0.4.17] host_machine.cpu は any のため正しく判定できない。
+	sed -i.orig meson.build \
+		-e "s/host_cpu = host_machine.cpu()/host_cpu = build_machine.cpu()/"
 }
 
 run_configure() {
-	CC="gcc `${XMINGW}/cross --archcflags`" \
-	CPPFLAGS="`${XMINGW}/cross --cflags`" \
+	CFLAGS="`${XMINGW}/cross --archcflags --cflags` \
+		-pipe -O2 -fomit-frame-pointer -ffast-math" \
+	CXXFLAGS="`${XMINGW}/cross --archcflags --cflags` \
+		-pipe -O2 -fomit-frame-pointer -ffast-math ${OLD_CXX_ABI}" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
-	-Wl,--enable-auto-image-base -Wl,-s" \
-	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	CXXFLAGS="${OLD_CXX_ABI}" \
-	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --disable-docs --without-ruby --without-lua --without-openexr --without-sdl --without-libraw --without-graphviz --without-libavformat --without-libv4l --without-libspiro --without-umfpack --with-webp  --disable-introspection
+		-Wl,--enable-auto-image-base -Wl,-s" \
+	${XMINGW}/cross-meson _build --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=shared \
+		-Druby=disabled \
+		-Dlua=disabled \
+		-Dopenexr=disabled \
+		-Dsdl1=disabled -Dsdl2=disabled \
+		-Dlibraw=disabled \
+		-Dgraphviz=disabled \
+		-Dlensfun=disabled \
+		-Dlibav=disabled \
+		-Dmrg=disabled \
+		-Dumfpack=disabled \
+		-Dlibv4l=disabled -Dlibv4l2=disabled \
+		-Dlibspiro=disabled \
+		-Dpygobject=disabled \
+		-Ddocs=true -Dintrospection=true -Dvapigen=enabled
 }
 
 post_configure() {
-	bash ${XMINGW}/replibtool.sh &&
-	sed -i.orig -e "s/#\(libgegl =\)/\1/" `find . -name Makefile `
+	# [0.4.26] tools/introspect.exe をうまく実行できない。
+	#  細工した wine から実行する。
+	sed -i.orig _build/build.ninja \
+		-e '/ COMMAND .*introspect.exe$/ s!/operations /usr/!/operations wine /usr/!'
 }
 
 run_make() {
-	${XMINGW}/cross make SHREXT=".dll" all install
+	WINEPATH="$PWD/_build/gegl" \
+	${XMINGW}/cross ninja -C _build &&
+	WINEPATH="$PWD/_build/gegl" \
+	${XMINGW}/cross ninja -C _build install
 }
 
 pre_pack() {
-local docdir="${INSTALL_TARGET}/share/doc/${MOD}"
-	mkdir -p "${docdir}" &&
 	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
-	cp COPYING* "${docdir}/."
+	install_license_files "${MOD}" COPYING* AUTHORS*
 }
 
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll lib/gegl-?.?/*.{dll,json} share/doc &&
-	pack_archive "${__DEVZIP}" include lib/*.a lib/gegl-?.?/*.a lib/pkgconfig &&
+	pack_archive "${__BINZIP}" bin/*.dll lib/gegl-?.?/*.{dll,json} lib/girepository-* share/doc &&
+	pack_archive "${__DEVZIP}" include lib/*.a lib/gegl-?.?/*.a lib/pkgconfig share/gir-* share/vala/vapi/ &&
+	pack_archive "${__DOCZIP}" share/gtk-doc &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/locale &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
+	store_packed_archive "${__DOCZIP}" &&
 	store_packed_archive "${__TOOLSZIP}"
 }
 

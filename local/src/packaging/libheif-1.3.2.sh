@@ -13,7 +13,7 @@ fi
 # ARCHSUFFIX は package が設定している。
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
-	XLIBRARY_SET=${XLIBRARY}/gimp_build_set
+	XLIBRARY_SET="gtk gimp_build"
 
 	# package に返す変数。
 	MOD=libheif
@@ -65,13 +65,20 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
+run_patch() {
+	[1.7.0] AOM は使わない。
+	sed -i.orig configure \
+		-e 's|^$as_echo "#define HAVE_AOM 1"|#\0|' \
+		-e 's|have_aom="yes"|have_aom="no"|'
+}
+
 run_configure_win32() {
-local ver="`sed configure.ac -ne '/^AC_INIT(\[libheif\]/ {' -e 's/.*\[\([0-9.]\+\)\].*/\1/p' -e '}'`"
+#local ver="`sed configure.ac -ne '/^AC_INIT(\[libheif\]/ {' -e 's/.*\[\([0-9.]\+\)\].*/\1/p' -e '}'`"
 #local gccver="`$XMINGW/cross gcc --version | head -n 1 | cut '-d ' -f 3`"
 	# [1.3.2] mingw-w64-gcc 8.[13].0 のバグか #include <thread> の
 	#  __x._M_thread == __y._M_thread が no match for ‘operator==’ になる。
-	case "${ver}" in
-	"1.3."*|"1.4."*|"1.5.1")
+	case "${VER}" in
+	"1.3."*|"1.4."*|"1.5.1"|"1.6."[12]|"1.7.0")
 		run_configure__ --disable-multithreading
 		;;
 	*)
@@ -89,13 +96,18 @@ run_configure__() {
 	# なるため -Wl,--allow-multiple-definition している。
 	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CXX="g++ `${XMINGW}/cross --archcflags`" \
-	CPPFLAGS="`${XMINGW}/cross --cflags`" \
+	CFLAGS="`${XMINGW}/cross --cflags` \
+		-pipe -O2 -fomit-frame-pointer -ffast-math " \
+	CXXFLAGS="`${XMINGW}/cross --cflags` \
+		-pipe -O2 -fomit-frame-pointer -ffast-math ${OLD_CXX_ABI} " \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s \
 	-Wl,--allow-multiple-definition" \
-	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math " \
-	CXXFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math ${OLD_CXX_ABI} " \
-	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --disable-libfuzzer "$@"
+	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" \
+		--disable-libfuzzer \
+		--disable-aom --disable-rav1e \
+		--enable-libde265 --enable-x265 --enable-gdk-pixbuf \
+		"$@"
 }
 
 post_configure() {
@@ -109,7 +121,6 @@ post_configure() {
 	# libstdc++ を静的リンクする。
 #	bash ${XMINGW}/replibtool.sh static-libgcc
 	# 追加で libtool を書き換える場合は replibtool.sh の実行後に行う。
-	echo skip > /dev/null
 }
 
 run_make() {
@@ -125,14 +136,20 @@ run_pack() {
 	# *-bin はランタイムなどアプリに必要なものをまとめる。
 	# dev-* はビルドに必要なものをまとめる。ツールはビルド環境のものを使用し、含めない。
 	# *-tools はその他の実行ファイル等をまとめる。
+local add_tools
+	if [[ -d "${INSTALL_TARGET}/share/man/man1" ]]
+	then
+		add_tools="share/man/man1"
+	fi
+
 	cd "${INSTALL_TARGET}" &&
 	pack_archive "${__BINZIP}" bin/*.dll share/doc &&
 	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig &&
-	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} &&
+	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} ${add_tools} &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
 	store_packed_archive "${__TOOLSZIP}" 
-	put_exclude_files share/{mime,thumbnailers}
+	put_exclude_files share/{mime,thumbnailers} || return 0
 }
 
 

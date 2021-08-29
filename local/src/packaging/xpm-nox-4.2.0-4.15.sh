@@ -61,20 +61,14 @@ local name
 run_patch() {
 	patch_adhoc -p 1 -i "${__ARCHIVEDIR}/${__PATCH_ARCHIVE}" &&
 	# openSUSE Build Service のパッチを使用する場合は下記パッチは必要ない。
-	patch_adhoc -p 1 <<\EOF
---- xpm-nox-4.2.0.orig/lib/misc.c
-+++ xpm-nox-4.2.0/lib/misc.c
-@@ -79,8 +79,7 @@
-  * Function returning a character string related to an error code.
-  */
- char *
--XpmGetErrorString(errcode)
--    int errcode;
-+XpmGetErrorString(int errcode)
- {
-     switch (errcode) {
-     case XpmColorError:
-EOF
+	sed -i.orig misc.c \
+		-e "s/^XpmGetErrorString(errcode)/XpmGetErrorString(int errcode)/"
+	# GNU Make 4.3 あたりの不具合。
+	for f in . lib cxpm
+	do
+		sed -i.orig ${f}/Makefile \
+			-e 's/^test x$.\+&&\s\+\(\w\+\)\s*=\s*\(.*\)/\1 ?= \2/'
+	done
 }
 
 run_make() {
@@ -87,9 +81,14 @@ run_make() {
 	prefix="${INSTALL_TARGET}"
 }
 
+pre_pack() {
+	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	install_license_files "${MOD}" COPYRIGHT*
+}
+
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll &&
+	pack_archive "${__BINZIP}" bin/*.dll share/doc &&
 	pack_archive "${__DEVZIP}" include lib/*.{def,a} &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 &&
 	store_packed_archive "${__BINZIP}" &&

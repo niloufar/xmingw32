@@ -13,11 +13,11 @@ fi
 # ARCH は package が設定している。
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
-	XLIBRARY_SET="gtk gimp_build"
+	XLIBRARY_SET="gtk"
 
 	# package に返す変数。
-	MOD=tiff
-	[ "" = "${VER}" ] && VER=4.0.3
+	MOD=harfbuzz
+	[ "" = "${VER}" ] && VER=2.8.0
 	[ "" = "${REV}" ] && REV=1
 	DIRECTORY="${MOD}-${VER}"
 
@@ -33,22 +33,24 @@ init_var() {
 
 dependencies() {
 	cat <<EOS
+cairo
+fontconfig
+freetype2
+glib
 EOS
 }
 
 optional_dependencies() {
 	cat <<EOS
-libjpeg
-liblzma
-opengl
-zlib
+coretext
+graphite2
+icu4c
 EOS
 }
 
 license() {
 	cat <<EOS
-LibTIFF Software License
-
+Old MIT license.
 EOS
 }
 
@@ -60,45 +62,40 @@ local name
 }
 
 run_configure() {
-	CC="gcc `${XMINGW}/cross --archcflags`" \
-	CXX="g++ `${XMINGW}/cross --archcflags`" \
-	CPPFLAGS="`${XMINGW}/cross --cflags`" \
+	CFLAGS="`${XMINGW}/cross --archcflags --cflags` \
+		-pipe -O2 -fomit-frame-pointer -ffast-math" \
+	CXXFLAGS="`${XMINGW}/cross --archcflags --cflags` \
+		-pipe -O2 -fomit-frame-pointer -ffast-math ${OLD_CXX_ABI}" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
-	-Wl,--enable-auto-image-base -Wl,-s" \
-	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math " \
-	CXXFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math ${OLD_CXX_ABI} " \
-	${XMINGW}/cross-configure --disable-static --prefix="${INSTALL_TARGET}" \
-		--disable-gtk-doc \
-		--without-x \
-		--enable-zlib --enable-jpeg --enable-lzma \
-		--enable-cxx --enable-win32-io
-}
-
-post_configure() {
-	# libstdc++ を静的リンクする。
-	bash ${XMINGW}/replibtool.sh static-libgcc
-#	echo skip > /dev/null
+		-Wl,--enable-auto-image-base -Wl,-s" \
+	${XMINGW}/cross-meson _build --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=shared \
+		-Ddocs=enabled \
+		-Dicu=enabled \
+		-Dgobject=enabled -Dintrospection=enabled
 }
 
 run_make() {
-	${XMINGW}/cross make all install
+	WINEPATH="$PWD/_build/src" \
+	${XMINGW}/cross ninja -C _build &&
+	${XMINGW}/cross ninja -C _build install
 }
 
 pre_pack() {
 	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
-	install_license_files "${MOD}" COPYRIGHT*
+	install_license_files "${MOD}" COPYING*
 }
 
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll share/doc/"${MOD}" &&
-	pack_archive "${__DEVZIP}" include lib/*.{def,a} lib/pkgconfig share/man/man3 &&
-	pack_archive "${__DOCZIP}" share/doc/"${DIRECTORY}" &&
-	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 &&
+	pack_archive "${__BINZIP}" bin/*.dll lib/girepository-1.0 share/doc &&
+	pack_archive "${__DEVZIP}" include lib/*.{def,a} lib/pkgconfig lib/cmake share/gir-1.0 &&
+	pack_archive "${__DOCZIP}" share/gtk-doc &&
+	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
 	store_packed_archive "${__DOCZIP}" &&
 	store_packed_archive "${__TOOLSZIP}"
+#	put_exclude_files 
 }
 
 

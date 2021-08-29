@@ -13,6 +13,7 @@ fi
 # ARCH は package が設定している。
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
+	XLIBRARY_SET="gtk"
 	# package に返す変数。
 	MOD=libxml2
 	[ "" = "${VER}" ] && VER=2.9.0
@@ -25,6 +26,7 @@ init_var() {
 
 	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
 	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
+	__DOCZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
 	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 }
 
@@ -80,7 +82,7 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --enable-shared --disable-static --without-python --with-threads=native --disable-gtk-doc --prefix="${INSTALL_TARGET}"
+	${XMINGW}/cross-configure --enable-shared --disable-static --without-python --with-threads=native --enable-gtk-doc --prefix="${INSTALL_TARGET}"
 }
 
 run_make() {
@@ -96,10 +98,12 @@ local NAME="${INSTALL_TARGET}/bin/xml2-config"
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
 	pack_archive "${__BINZIP}" bin/*.dll &&
-	pack_archive "${__DEVZIP}" bin/*-config include lib/*.{def,a} lib/xml2Conf.sh lib/pkgconfig share/man/man1/xml2-config.1 share/man/man3 share/{aclocal,doc,gtk-doc} lib/cmake/libxml2/libxml2-config.cmake &&
+	pack_archive "${__DEVZIP}" bin/*-config include lib/*.{def,a} lib/xml2Conf.sh lib/pkgconfig share/man/man1/xml2-config.1 share/man/man3 share/aclocal lib/cmake/libxml2/libxml2-config.cmake &&
+	pack_archive "${__DOCZIP}" share/{doc,gtk-doc} &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1/xml{catalog,lint}.1 &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
+	store_packed_archive "${__DOCZIP}" &&
 	store_packed_archive "${__TOOLSZIP}"
 }
 

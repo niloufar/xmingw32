@@ -16,8 +16,8 @@ init_var() {
 	XLIBRARY_SET="gtk gimp_build"
 
 	# package に返す変数。
-	MOD=libwebp
-	[ "" = "${VER}" ] && VER=0.5.1
+	MOD=giflib
+	[ "" = "${VER}" ] && VER=5.2.1
 	[ "" = "${REV}" ] && REV=1
 #	[ "" = "${PATCH}" ] && PATCH=2.debian
 	DIRECTORY="${MOD}-${VER}"
@@ -39,17 +39,12 @@ EOS
 
 optional_dependencies() {
 	cat <<EOS
-giflib
-jpeg
-libpng
-opengl
-tiff
 EOS
 }
 
 license() {
 	cat <<EOS
-BSD License
+MIT License
 
 EOS
 }
@@ -61,35 +56,48 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
-run_configure() {
-	CC="gcc `${XMINGW}/cross --archcflags`" \
-	CXX="g++ `${XMINGW}/cross --archcflags`" \
-	CPPFLAGS="`${XMINGW}/cross --cflags`" \
-	LDFLAGS="`${XMINGW}/cross --ldflags` \
-	-Wl,--enable-auto-image-base -Wl,-s" \
-	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math " \
-	CXXFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math ${OLD_CXX_ABI} " \
-	${XMINGW}/cross-configure --enable-shared --disable-static --enable-png --enable-jpeg --enable-tiff --enable-gif --enable-wic  --enable-sse2 --enable-sse4.1 --enable-avx2  --enable-libwebpmux --enable-libwebpdemux --enable-libwebpdecoder --enable-libwebpextras --prefix="${INSTALL_TARGET}"
+run_patch() {
+	# soname の削除、 dll の拡張子の変更、実行可能ファイルに拡張子を追加。
+	sed -i.orig Makefile \
+		-e 's/ -Wl,-soname -Wl,\(lib[^.]\+\)\.so\.[^ \t]\+/ -Wl,--out-implib,\1.dll.a/g' \
+		-e 's/\.so\(:\| \|\t\|$\)/-$(LIBMAJOR).dll\1/g' \
+		-e 's|\$(LIBDIR)\(/libgif\)\.so\.\$(LIBVER)\"|$(BINDIR)\1-$(LIBMAJOR).dll\"|' \
+		-e '/^\s\+\$(INSTALL).\+ libgif.a / {' \
+			-e 'a\	$(INSTALL) -m 644 libgif.dll.a "$(DESTDIR)$(LIBDIR)/libgif.dll.a"' \
+		-e '}' \
+		-e 's|^UOBJECTS = .\+)$|\0 ./libgif.dll.a|' \
+		-e '/^\$(UTILS)::/ {' \
+			-e 'c $(UTILS):: libutil.a libgif.dll.a' \
+			-e 'a \	$(CC) $(CFLAGS) $(LDFLAGS) -o $@.exe $@.c $^' \
+		-e '}' \
+		-e '/^install-bin:/,/^.\+:/ {' \
+			-e '/^\s\+\$(INSTALL) \$\^/ s/\$\^/$(addsuffix .exe,$^)/' \
+		-e '}'
 }
 
 run_make() {
-	${XMINGW}/cross make all install
+	${XMINGW}/cross make all install \
+	CC="gcc `${XMINGW}/cross --archcflags`" \
+	CXX="g++ `${XMINGW}/cross --archcflags`" \
+	OFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math " \
+	PREFIX="${INSTALL_TARGET}"
 }
 
 pre_pack() {
 local docdir="${INSTALL_TARGET}/share/doc/${MOD}"
 	mkdir -p "${docdir}" &&
-	cp COPYING PATENTS "${docdir}/."
+	cp COPYING "${docdir}/."
 }
 
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
 	pack_archive "${__BINZIP}" bin/*.dll share/doc &&
-	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig &&
+	pack_archive "${__DEVZIP}" include lib/*.a &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
-	store_packed_archive "${__TOOLSZIP}"
+	store_packed_archive "${__TOOLSZIP}" &&
+	put_exclude_files lib/*.so lib/*.so.*
 }
 
 

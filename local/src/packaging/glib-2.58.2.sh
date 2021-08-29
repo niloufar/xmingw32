@@ -13,6 +13,8 @@ fi
 # ARCH は package が設定している。
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
+	XLIBRARY_SET="gtk"
+
 	# package に返す変数。
 	MOD=glib
 	[ "" = "${VER}" ] && VER=2.58.2
@@ -25,7 +27,7 @@ init_var() {
 
 	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
 	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
-#	__DOCZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
+	__DOCZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
 	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 }
 
@@ -58,6 +60,27 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
+run_patch() {
+	# [2.68.0]
+	# see: docs: Fix configuration with gtk_doc=true and installed_tests=false (!1424) ・ Merge Requests ・ GNOME / GLib ・ GitLab <https://gitlab.gnome.org/GNOME/glib/-/merge_requests/1424>
+	case "${VER}" in
+	"2.68."[023])
+		sed -i.orig docs/reference/gio/meson.build \
+			-e "s/^  subdir('gdbus-object-manager-example')/#\0/" \
+			-e "/^  content_files += \[/,/^  \]/ {" \
+				-e "s/^/#\0/" \
+			-e "}"
+		;;
+	esac
+
+	# [2.68.3]
+	case "${VER}" in
+	"2.68.3")
+#		meson rewrite kwargs set project / timeout 30
+		;;
+	esac
+}
+
 pre_configure() {
 	# tests は作らない。
 	sed -i.orig {gio,glib,gobject}/meson.build \
@@ -67,19 +90,27 @@ pre_configure() {
 local build_host_dir="_build_host"
 	[[ -d "${build_host_dir}" ]] && rm -r "${build_host_dir}"
 	mkdir -p "${build_host_dir}" &&
-	meson "${build_host_dir}" --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=static --optimization=2 --strip  -Dselinux=disabled -Dxattr=false -Dlibmount=false -Dinternal_pcre=true -Dman=false -Ddtrace=false -Dsystemtap=false -Dgtk_doc=false -Dfam=false &&
+	# [2.64.0] -Dlibmount のオプションが変更された。
+local libmount_disabled="disabled"
+	compare_vernum_ge "2.64.0" "${VER}" || libmount_disabled="false"
+	meson "${build_host_dir}" --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=static --optimization=2 --strip  -Dselinux=disabled -Dxattr=false -Dlibmount=${libmount_disabled} -Dinternal_pcre=true -Dman=false -Ddtrace=false -Dsystemtap=false -Dgtk_doc=false -Dfam=false &&
 	ninja -C "${build_host_dir}" gio/glib-compile-resources &&
 	ninja -C "${build_host_dir}" gio/glib-compile-schemas
 }
 
 run_configure() {
 	# -Dinternal_pcre=true : pcre は内蔵のものを使用する。
-	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CFLAGS="`${XMINGW}/cross --archcflags --cflags` \
 		-pipe -O2 -fomit-frame-pointer -ffast-math" \
+	CXXFLAGS="`${XMINGW}/cross --archcflags --cflags` \
+		-pipe -O2 -fomit-frame-pointer -ffast-math ${OLD_CXX_ABI}" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 		-Wl,--enable-auto-image-base -Wl,-s" \
-	${XMINGW}/cross-meson _build --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=shared  -Dinternal_pcre=true -Dinstalled_tests=false
+	${XMINGW}/cross-meson _build --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=shared \
+		-Dinternal_pcre=true \
+		-Dlibelf=disabled \
+		-Dtests=false -Dinstalled_tests=false \
+		-Dgtk_doc=false
 }
 
 post_configure_win64() {
@@ -96,7 +127,11 @@ post_configure() {
 }
 
 run_make() {
+#	WINEPATH="$PWD/gio;$PWD/gthread;$PWD/gmodule;$PWD/gobject;$PWD/glib" \
+
+	WINEPATH="./gio;./gthread;./gmodule;./gobject;./glib" \
 	${XMINGW}/cross ninja -C _build &&
+	WINEPATH="./gio;./gthread;./gmodule;./gobject;./glib" \
 	${XMINGW}/cross ninja -C _build install
 }
 
@@ -104,7 +139,7 @@ pre_pack() {
 	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
 	install_license_files "${MOD}" COPYING*
 
-	# *.exe ファイルは OS のものを使用する。
+	# *.exe ファイルは使わずホストのものを使用する。
 	(cd "${INSTALL_TARGET}" &&
 		for f in lib/pkgconfig/*.pc
 		do
@@ -122,14 +157,18 @@ local build_host_dir="_build_host"
 run_pack() {
 	# share/glib-2.0/gettext は glib-gettextize が参照している。
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll share/locale share/doc &&
+	pack_archive "${__BINZIP}" bin/*.dll bin/gspawn-*.exe share/locale share/doc &&
 	pack_archive "${__DEVZIP}" bin/{gdbus-codegen,glib-genmarshal,glib-mkenums,glib-compile-resources,glib-compile-schemas} include lib/*.{def,a} lib/glib-2.0 lib/pkgconfig share/aclocal share/glib-2.0/codegen &&
-#	pack_archive "${__DOCZIP}" share/gtk-doc &&
-	pack_archive "${__TOOLSZIP}" bin/*.exe bin/{glib-gettextize,gtester-report} share/bash-completion share/gettext share/glib-2.0/{gdb,schemas,gettext} &&
+	pack_archive "${__TOOLSZIP}" $(ls -1 bin/*.exe | grep -vie "^gspawn-") bin/{glib-gettextize,gtester-report} share/bash-completion share/gettext share/glib-2.0/{gdb,schemas,gettext} &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
-#	store_packed_archive "${__DOCZIP}" &&
-	store_packed_archive "${__TOOLSZIP}"
+	store_packed_archive "${__TOOLSZIP}" &&
+
+	if [[ -d "share/gtk-doc" ]]
+	then
+		pack_archive "${__DOCZIP}" share/gtk-doc &&
+		store_packed_archive "${__DOCZIP}"
+	fi
 }
 
 

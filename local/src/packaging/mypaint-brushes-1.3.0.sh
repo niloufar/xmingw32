@@ -27,13 +27,13 @@ init_var() {
 	__ARCHIVE="${MOD}-${VER}"
 #	__PATCH_ARCHIVE="${MOD}_${VER}-${PATCH}"
 
-	__BINZIP="${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}"
-	__DEVZIP="${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}"
+	__BINZIP="${MOD}-${VER}-${REV}-bin"
+	__DEVZIP="${MOD}-dev-${VER}-${REV}"
 #	__DOCZIP="${MOD}-${VER}-${REV}-doc"
 #	__TOOLSZIP="${MOD}-${VER}-${REV}-tools"
 
 	# アーキテクチャを指定しない場合は NOARCH=yes する。
-#	NOARCH=yes
+	NOARCH=yes
 }
 
 dependencies() {
@@ -102,7 +102,8 @@ local lib_pkgconfig_dir="${lib_dir}/pkgconfig"
 	fi &&
 
 	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
-	install_license_files "${MOD}" COPYING* Licenses*
+local licenses="$(ls -1 {AUTHORS,Licenses}* 2>/dev/null)"
+	install_license_files "${MOD}" COPYING* ${licenses}
 }
 
 run_pack() {

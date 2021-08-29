@@ -13,7 +13,7 @@ fi
 # ARCH は package が設定している。
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
-	XLIBRARY_SET=${XLIBRARY}/gimp_build_set
+	XLIBRARY_SET="gtk gimp_build"
 
 	# package に返す変数。
 	MOD=poppler
@@ -67,20 +67,27 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
-pre_configure() {
-	# [0.60.0] gobject-introspection を無効にする。
+run_patch() {
 	# [0.75.0] nss3 を無効にする。
 	sed -i.orig CMakeLists.txt \
-		-e 's/^\s*macro_optional_find_package(GObjectIntrospection .*$/\0\nset(INTROSPECTION_FOUND OFF)/' \
 		-e '/^if (NSS3_FOUND)$/,/^endif()$/ {' -e 's/^/#/' -e '}'
+}
+
+pre_configure() {
+	mkdir -p _build
 }
 
 run_configure() {
 	# [0.80.0] glib のインクルード パスがコンパイラに渡されてない。
+	# [20.11.0] libpng のインクルード パスがコンパイラに渡されてない。
 local add_include=
 	case "${VER}" in
-	0.8[02].*)
-		add_include="`${XMINGW}/cross pkg-config --cflags glib-2.0`"
+	0.8[0246].*)
+		add_include="$(${XMINGW}/cross pkg-config --cflags glib-2.0)"
+		;;
+	20.11.* | 21.0[58].*)
+		add_include="$(${XMINGW}/cross pkg-config --cflags libpng16)"
+		;;
 	esac
 	${XMINGW}/cross-cmake -G "Unix Makefiles" -H. -B. -DALLOW_IN_SOURCE_BUILD:bool=true -DCMAKE_BUILD_TYPE:string=RELEASE -DCMAKE_INSTALL_PREFIX:string="${INSTALL_TARGET}" \
 	"-DCMAKE_C_FLAGS:string=`${XMINGW}/cross --archcflags --cflags` ${add_include} -pipe -O2 -fomit-frame-pointer -ffast-math " \
@@ -94,13 +101,16 @@ local add_include=
 	-DENABLE_ZLIB=yes \
 	-DENABLE_LIBOPENJPEG=openjpeg2 \
 	-DENABLE_CMS=lcms2 \
-	"-DPNG_PNG_INCLUDE_DIR=`${XMINGW}/cross pkg-config --variable=includedir libpng16`" \
+	"-DPNG_PNG_INCLUDE_DIR=$(${XMINGW}/cross pkg-config --variable=includedir libpng16)" \
 	-DENABLE_SPLASH=yes \
+	-DENABLE_GTK_DOC=no -DENABLE_GOBJECT_INTROSPECTION=yes \
 	-DENABLE_LIBCURL=no \
-	-DENABLE_QT4=no -DENABLE_QT5=no
+	-DENABLE_BOOST=no \
+	-DENABLE_QT4=no -DENABLE_QT5=no -DENABLE_QT6=no
 }
 
 run_make() {
+	WINEPATH="${PWD};${PWD}/glib" \
 	${XMINGW}/cross make install VERBOSE=1
 }
 
@@ -204,8 +214,8 @@ EOS
 
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll share/doc &&
-	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig &&
+	pack_archive "${__BINZIP}" bin/*.dll lib/girepository-* share/doc &&
+	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig share/gir-* &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&

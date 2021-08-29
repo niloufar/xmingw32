@@ -13,6 +13,7 @@ fi
 # ARCH は package が設定している。
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
+	XLIBRARY_SET="gtk"
 	# package に返す変数。
 	MOD=libwmf
 	[ "" = "${VER}" ]   && VER=0.2.8.4
@@ -71,11 +72,13 @@ local name
 }
 
 run_patch() {
+local libpng_name="libpng16"
 	# configure が -lpng 決め打ちで依存チェックしているのでごまかす。
 	mkdir -p libpng &&
-	ln -f -s ${XLIBRARY}/lib/include/libpng16 libpng/include &&
+	ln -f -s "$($XMINGW/cross pkg-config ${libpng_name} --variable includedir)" libpng/include &&
 	mkdir -p libpng/lib &&
-	ln -f -s ${XLIBRARY}/lib/lib/libpng16.dll.a libpng/lib/libpng.dll.a &&
+	ln -f -s "$($XMINGW/cross pkg-config ${libpng_name} --variable libdir
+)/${libpng_name}.dll.a" libpng/lib/libpng.dll.a &&
 	patch_adhoc -p 1 <<\EOF
 --- libwmf-0.2.8.4.orig/src/ipa/ipa/bmp.h
 +++ libwmf-0.2.8.4/src/ipa/ipa/bmp.h

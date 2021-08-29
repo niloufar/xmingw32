@@ -32,6 +32,18 @@ dependencies() {
 EOS
 }
 
+optional_dependencies() {
+	cat <<EOS
+EOS
+}
+
+license() {
+	cat <<EOS
+libffi
+
+EOS
+}
+
 
 run_expand_archive() {
 local name
@@ -52,10 +64,23 @@ run_make() {
 	${XMINGW}/cross make install
 }
 
+pre_pack() {
+	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
+	install_license_files "${MOD}" LICENSE
+}
+
 run_pack() {
+local include_dir
+	# [3.3] include フォルダーの場所が変更された。
+	if [[ -d "${INSTALL_TARGET}/include" ]]
+	then
+		include_dir="include"
+	else
+		include_dir="lib/${DIRECTORY}"
+	fi
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll &&
-	pack_archive "${__DEVZIP}" lib/${DIRECTORY} lib/*.{def,a} lib/pkgconfig share/{info,man/man3} &&
+	pack_archive "${__BINZIP}" bin/*.dll share/doc &&
+	pack_archive "${__DEVZIP}" ${include_dir} lib/*.{def,a} lib/pkgconfig share/{info,man/man3} &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}"
 }

@@ -13,7 +13,7 @@ fi
 # ARCH は package が設定している。
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
-	#XLIBRARY_SET=${XLIBRARY}/gimp_build_set
+	XLIBRARY_SET="gtk"
 
 	# package に返す変数。
 	MOD=gtk+
@@ -62,6 +62,15 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
+run_patch() {
+	# [3.24.29] 実行可能属性が付いていない。
+local f="gtk/generate-uac-manifest.py"
+	if [[ -e "${f}" ]]
+	then
+		chmod u+x "${f}"
+	fi
+}
+
 run_configure() {
 	# ビルドに gtk-update-icon-cache, gtk-query-immodules-3.0 が必要。
 	# ない場合は apt-get install libgtk-3-dev しておく。
@@ -76,14 +85,18 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math  -static-libgcc" \
-	CC_FOR_BUILD=build-cc \
+	CC_FOR_BUILD="${XMINGW}/cross-host cc" \
 	PKG_CONFIG_FOR_BUILD="$XMINGW/cross-host pkg-config" \
 	CFLAGS_FOR_BUILD= \
 	CPPFLAGS_FOR_BUILD= \
 	LDFLAGS_FOR_BUILD= \
 	GOBJECT_QUERY=gobject-query \
 	GLIB_COMPILE_RESOURCES=glib-compile-resources \
-	${XMINGW}/cross-configure --disable-static  --prefix="${INSTALL_TARGET}" --enable-win32-backend --enable-gtk2-dependency --with-included-immodules --disable-cups --disable-schemas-compile --disable-introspection
+	${XMINGW}/cross-configure --disable-static  --prefix="${INSTALL_TARGET}" \
+		--enable-win32-backend --enable-gtk2-dependency \
+		--with-included-immodules \
+		--disable-cups --disable-schemas-compile \
+		--enable-introspection
 }
 
 post_configure() {
@@ -96,6 +109,11 @@ post_configure() {
 	then
 		ln --force --symbolic "`which gtk-update-icon-cache`" gtk/gtk-update-icon-cache
 	fi
+
+	# [3.24.29] 
+	sed -i.orig gtk/Makefile \
+		-e '/^Gtk-3.0.gir:/ s/\$(INTROSPECTION_SCANNER)//'
+
 }
 
 pre_make() {
@@ -114,14 +132,12 @@ pre_make() {
 
 run_make() {
 	# [3.24.8] GLIB_COMPILE_RESOURCES が空になっている。
+	WINEPATH="${PWD}/gdk/.libs;${PWD}/gtk/.libs" \
 	${XMINGW}/cross make gtk_def= gdk_def= GLIB_COMPILE_RESOURCES=glib-compile-resources all install
 }
 
 pre_pack() {
-local docdir="${INSTALL_TARGET}/share/doc/${MOD}"
-	mkdir -p "${docdir}" &&
-	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
-	cp COPYING "${docdir}/."
+	install_license_files "${MOD}" COPYING*
 
 #	# 3.14.4: ごまかしビルドの extract-strings をコピーしておく。
 #	cp util/extract-strings.exe "${INSTALL_TARGET}/bin/_extract-strings"
@@ -133,8 +149,8 @@ local TESTZIP="${MOD}-${VER}-${REV}-test_${ARCHSUFFIX}"
 	store_packed_archive "${TESTZIP}"
 
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll bin/gtk-query-immodules-3.0.exe etc `find lib -name \*.dll` share/{locale,themes} share/doc &&
-	pack_archive "${__DEVZIP}" include `find lib -name \*.def -or -name \*.a` lib/pkgconfig share/{aclocal,gettext/its,glib-2.0,gtk-3.0} &&
+	pack_archive "${__BINZIP}" bin/*.dll bin/gtk-query-immodules-3.0.exe etc `find lib -name \*.dll` lib/girepository-* share/{locale,themes} share/doc &&
+	pack_archive "${__DEVZIP}" include `find lib -name \*.def -or -name \*.a` lib/pkgconfig share/{aclocal,gettext/its,gir-*,glib-2.0,gtk-3.0} &&
 	pack_archive "${__DOCZIP}" share/gtk-doc &&
 	pack_archive "${__TOOLSZIP}" bin/gtk-{builder-tool,encode-symbolic-svg,launch,query-settings,update-icon-cache}.exe share/man/man1/b* share/man/man1/gtk-* &&
 	store_packed_archive "${__BINZIP}" &&

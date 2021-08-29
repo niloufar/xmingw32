@@ -82,11 +82,12 @@ run_configure() {
 	# [1.4.0] --disable-gegl するのは古い gegl 0.3系に依存しているため。
 	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CXX="g++ `${XMINGW}/cross --archcflags`" \
-	CPPFLAGS="`${XMINGW}/cross --cflags`" \
+	CFLAGS="`${XMINGW}/cross --cflags` \
+		-pipe -O2 -fomit-frame-pointer -ffast-math " \
+	CXXFLAGS="`${XMINGW}/cross --cflags` \
+		-pipe -O2 -fomit-frame-pointer -ffast-math " \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
-	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math " \
-	CXXFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math " \
 	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --disable-gegl --enable-openmp --with-glib --enable-introspection=no
 }
 

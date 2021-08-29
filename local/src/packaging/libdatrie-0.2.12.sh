@@ -13,8 +13,6 @@ fi
 # ARCHSUFFIX は package が設定している。
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
-	#XLIBRARY_SET=${XLIBRARY}/gimp_build_set
-
 	# package に返す変数。
 	MOD=libdatrie
 	[ "" = "${VER}" ] && VER=0.2.12
@@ -103,7 +101,7 @@ run_pack() {
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
-	store_packed_archive "${__TOOLSZIP}" 
+	store_packed_archive "${__TOOLSZIP}"
 #	put_exclude_files 
 }
 

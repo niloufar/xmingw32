@@ -13,8 +13,6 @@ fi
 # ARCH は package が設定している。
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
-	#XLIBRARY_SET=${XLIBRARY}/gimp_build_set
-
 	# package に返す変数。
 	MOD=jasper
 	[ "" = "${VER}" ] && VER=2.0.6
@@ -22,11 +20,16 @@ init_var() {
 
 	# [2.0.16] アーカイブとフォルダーの名称が変更された。
 local __mod="${MOD}"
-	case "${VER}" in
-	"2.0.16")
-		__mod="${MOD}-version"
-		;;
-	esac
+	if compare_vernum_ge "2.0.16" "${VER}"
+	then
+		if compare_vernum_ge "2.0.32" "${VER}"
+		then
+			:
+		else
+			__mod="${MOD}-version"
+		fi
+		
+	fi
 	DIRECTORY="${__mod}-${VER}"
 
 

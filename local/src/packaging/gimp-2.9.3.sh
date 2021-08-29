@@ -14,7 +14,7 @@ fi
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
 	# cross に渡す変数。
-	XLIBRARY_SET=${XLIBRARY}/gimp_build_set
+	XLIBRARY_SET="gtk gimp_build"
 
 	# package に返す変数。
 	MOD=gimp
@@ -98,10 +98,11 @@ local name
 run_patch() {
 	# libwmf が -lpng 決め打ちしているのでごまかす。
 	# 下は libpng16 を設定している。場所は ${XLIBRARY}/lib 
+local libwmf_png="libpng16"
 	mkdir -p libpng &&
-	ln -f -s ${XLIBRARY}/lib/include/libpng16 libpng/include &&
+	ln -s "$(${XMINGW}/cross pkg-config --variable=includedir ${libwmf_png})" libpng/include &&
 	mkdir -p libpng/lib &&
-	ln -f -s ${XLIBRARY}/lib/lib/libpng16.dll.a libpng/lib/libpng.dll.a &&
+	ln -s "$(${XMINGW}/cross pkg-config --variable=libdir ${libwmf_png})/${libwmf_png}.dll.a" libpng/lib/libpng.dll.a &&
 	mkdir -p "${INSTALL_TARGET}" &&
 	# ファイル パスに GIMP_APP_VERSION が含まれていた場合に発生する不具合への対処。
 	patch_adhoc -p 1 <<EOS
@@ -152,10 +153,12 @@ pre_configure() {
 	# 2017/4/3mon: --enable-vector-icons のチェックがクロス コンパイルを考慮していないため強制的に有効にする。
 	# 	 DirectInput も強制的に有効にする。
 	# 2017/6/10sat: libmng の __stdcall 関係が面倒なため強制的に有効にする。
+	# [2.10.20] NATIVE_GLIB_{LIBS,CFLAGS} を上書きしないようにする。
 	sed -i.orig configure \
 		-e 's/enable_vector_icons=".*"/enable_vector_icons="yes"/' \
 		-e 's/^have_dx_dinput=no/have_dx_dinput=yes/' \
-		-e 's/ac_cv_lib_mng_mng_create=no/ac_cv_lib_mng_mng_create=yes/'
+		-e 's/ac_cv_lib_mng_mng_create=no/ac_cv_lib_mng_mng_create=yes/' \
+		-e 's/^\s\+NATIVE_GLIB_\(LIBS\|CFLAGS\)=.\+pkg-config /#\0/'
 
 	# [2.10.14] mypaint-brush v2 系への対応。
 #	sed -i.orig configure -e 's/\"mypaint-brushes-1.0\"/\"mypaint-brushes-2.0\"/'
@@ -177,7 +180,24 @@ run_configure() {
 	-L${PWD}/libpng/lib \
 	-lgdi32 -lwsock32 -lole32 -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --enable-mmx --enable-sse --disable-python  --without-x --with-libjasper --with-libmng --with-librsvg --with-libxpm --without-openexr --without-xmc --with-webp --with-wmf --with-cairo-pdf --with-poppler --without-libbacktrace --without-libunwind --without-webkit --with-print --with-directx-sdk="" CC_FOR_BUILD="$XMINGW/cross-host gcc"  NATIVE_GLIB_CFLAGS="`$XMINGW/cross-host pkg-config g{lib,io}-2.0 --cflags`" NATIVE_GLIB_LIBS="`$XMINGW/cross-host pkg-config g{lib,io}-2.0 --libs`" --enable-vector-icons
+	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" \
+		--enable-relocatable-bundle \
+		--enable-mmx --enable-sse \
+		--disable-python --without-python \
+		--without-javascript --without-lua \
+		--enable-vala=yes \
+		--without-x \
+		--with-libjasper --with-libmng --with-librsvg --with-libxpm \
+		--without-openexr --without-xmc \
+		--with-webp --with-wmf --with-cairo-pdf --with-poppler \
+		--without-libbacktrace --without-libunwind --without-webkit \
+		--without-appstream-glib --without-libarchive \
+		--with-print --with-directx-sdk="" \
+		--disable-check-update \
+		CC_FOR_BUILD="$XMINGW/cross-host gcc" \
+		NATIVE_GLIB_CFLAGS="`$XMINGW/cross-host pkg-config g{lib,io}-2.0 --cflags`" \
+		NATIVE_GLIB_LIBS="`$XMINGW/cross-host pkg-config g{lib,io}-2.0 --libs`" \
+		--enable-vector-icons
 }
 
 post_configure() {
@@ -185,9 +205,21 @@ post_configure() {
 	ln -s $PWD/git-version.h $PWD/build/windows/git-version.h
 
 	bash ${XMINGW}/replibtool.sh shared static-libgcc
+
+	# [2.99.6] いくつかライブラリーがリンクされない。
+	case "${VER}" in
+	2.99.6)
+		sed -i.orig libgimp/Makefile \
+			-e '/^libgimp_3.0_la_LIBADD/,/^$/ {' \
+				-e '/$(RT_LIBS)/i\  $(GEXIV2_LIBS)          \\' -e '}' \
+			-e '/^libgimpui_3.0_la_LIBADD/,/^$/ {' \
+				-e '/$(libgimpcolor)/i\  $(libgimpconfig)        \\' -e '}'
+		;;
+	esac
 }
 
 run_make() {
+	WINEPATH="${PWD}/libgimpbase/.libs/;${PWD}/libgimpmath/.libs;${PWD}/libgimpconfig/.libs;${PWD}/libgimpcolor/.libs;${PWD}/libgimpmodule/.libs;${PWD}/libgimpwidgets/.libs;${PWD}/libgimpthumb/.libs;${PWD}/libgimp/.libs" \
 	${XMINGW}/cross make all install
 }
 

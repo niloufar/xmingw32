@@ -13,11 +13,11 @@ fi
 # ARCH は package が設定している。
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
-	#XLIBRARY_SET=${XLIBRARY}/gimp_build_set
+	XLIBRARY_SET="gtk"
 
 	# package に返す変数。
 	MOD=libepoxy
-	[ "" = "${VER}" ] && VER="git-20062c2"
+	[ "" = "${VER}" ] && VER="1.5.5"
 	[ "" = "${REV}" ] && REV=1
 	DIRECTORY="${MOD}-${VER}"
 
@@ -58,33 +58,25 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
-pre_configure() {
-	if [ ! -e configure ]
-	then
-		NOCONFIGURE=1 $XMINGW/cross-host sh ./autogen.sh
-	fi
-}
-
 run_configure() {
-	CC="gcc `${XMINGW}/cross --archcflags`" \
-	CXX="g++ `${XMINGW}/cross --archcflags`" \
-	CPPFLAGS="`${XMINGW}/cross --cflags`" \
+	CFLAGS="`${XMINGW}/cross --cflags` \
+		-pipe -O2 -fomit-frame-pointer -ffast-math" \
+	CXXFLAGS="`${XMINGW}/cross --cflags` \
+		-pipe -O2 -fomit-frame-pointer -ffast-math ${OLD_CXX_ABI}" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
-	-Wl,--enable-auto-image-base -Wl,-s" \
-	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math " \
-	CXXFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math " \
-	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}"
+		-Wl,--enable-auto-image-base -Wl,-s" \
+	${XMINGW}/cross-meson _build --prefix="${INSTALL_TARGET}" --buildtype release --default-library=shared \
+		-Ddocs=true
 }
 
 run_make() {
-	${XMINGW}/cross make all install
+	${XMINGW}/cross ninja -C _build &&
+	${XMINGW}/cross ninja -C _build install
 }
 
 pre_pack() {
-local docdir="${INSTALL_TARGET}/share/doc/${MOD}"
-	mkdir -p "${docdir}" &&
 	# ライセンスなどの情報は share/doc/<MOD>/ に入れる。
-	cp COPYING "${docdir}/."
+	install_license_files "${MOD}" COPYING*
 }
 
 run_pack() {

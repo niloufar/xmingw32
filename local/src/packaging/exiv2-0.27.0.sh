@@ -13,7 +13,7 @@ fi
 # ARCH は package が設定している。
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
-	XLIBRARY_SET=${XLIBRARY}/gimp_build_set
+	XLIBRARY_SET="gtk gimp_build"
 
 	# package に返す変数。
 	MOD=exiv2
@@ -88,7 +88,10 @@ run_configure() {
 	"-DCMAKE_SHARED_LINKER_FLAGS:string=`${XMINGW}/cross --ldflags` -Wl,--enable-auto-image-base -Wl,-s -Wl,--export-all-symbols" \
 	"-DCMAKE_EXE_LINKER_FLAGS:string=-Wl,--allow-multiple-definition -Wl,-s" \
 	-DEXIV2_ENABLE_WIN_UNICODE:bool=ON \
-	-DEXIV2_BUILD_PO:bool=ON
+	-DEXIV2_BUILD_PO:bool=ON \
+	-DEXIV2_ENABLE_PNG=ON \
+	-DEXIV2_BUILD_EXIV2_COMMAND=ON \
+	-DEXIV2_BUILD_DOC=OFF
 }
 
 post_configure() {

@@ -13,6 +13,8 @@ fi
 # ARCH は package が設定している。
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
+	XLIBRARY_SET="gtk gimp_build"
+
 	# package に返す変数。
 	MOD=cairo
 	[ "" = "${VER}" ] && VER=1.12.14
@@ -85,10 +87,12 @@ pre_configure() {
 }
 
 run_configure() {
+	# [2020/6/21] gcc -D_FORTIFY_SOURCE=2 により __memcpy_chk をリンクしようとするが
+	# libssp をリンクしないためにエラーになっていた。 -lssp を追加している。
 	png_REQUIRES=libpng16 \
 	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
-	LDFLAGS="`${XMINGW}/cross --ldflags` \
+	LDFLAGS="`${XMINGW}/cross --ldflags` -lssp \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
 	${XMINGW}/cross-configure --prefix="${INSTALL_TARGET}" --disable-static --without-x --disable-xlib --disable-qt --disable-xcb --enable-win32 --enable-png --enable-script --enable-ft=yes --enable-fc=yes --enable-ps=no --enable-pdf --enable-svg --enable-xml --enable-interpreter

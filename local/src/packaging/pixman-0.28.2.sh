@@ -13,6 +13,7 @@ fi
 # ARCH は package が設定している。
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
+	XLIBRARY_SET="gtk"
 	# package に返す変数。
 	MOD=pixman
 	[ "" = "${VER}" ] && VER=0.28.2

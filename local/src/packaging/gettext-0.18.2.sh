@@ -102,6 +102,17 @@ EOS
         gl_cv_prog_as_underscore=no
 EOS
 	fi
+
+	# [0.21] windows で __imp_formatstring_ruby がリンクエラーになる問題の対処。
+	if [[ "0.21" == "${VER}" ]]
+	then
+		# build: Fix build failure on Cygwin and mingw. <https://git.savannah.gnu.org/gitweb/?p=gettext.git;a=commit;h=7cf68dffb2adb76375bfb0781e277510523a1f3e>
+		if [[ "" == "$(grep gettext-tools/woe32dll/gettextsrc-exports.c -e formatstring_ruby)" ]]
+		then
+			sed -i.orig gettext-tools/woe32dll/gettextsrc-exports.c \
+				-e '/VARIABLE(formatstring_qt_plural)/ a  VARIABLE(formatstring_ruby)'
+		fi
+	fi
 }
 
 run_configure() {

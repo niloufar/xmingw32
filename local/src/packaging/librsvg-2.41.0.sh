@@ -5,7 +5,7 @@
 
 if [ "" = "${IN_PACKAGE_SCRIPT}" ]
 then
-	echo FAIL: \${XMINGW}/package から実行してください。
+	echo "FAIL: \${XMINGW}/package から実行してください。"
 	exit 1
 fi
 
@@ -13,7 +13,7 @@ fi
 # ARCH は package が設定している。
 # XLIBRARY_SOURCES は xmingw のための環境変数。 env.sh で設定している。
 init_var() {
-	XLIBRARY_SET=${XLIBRARY}/gimp_build_set
+	XLIBRARY_SET="gtk"
 
 	# package に返す変数。
 	MOD=librsvg
@@ -96,7 +96,10 @@ run_configure() {
 	-lws2_32 -luserenv \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure  --enable-shared --disable-static --prefix="${INSTALL_TARGET}" --enable-pixbuf-loader --enable-gtk-doc-html --disable-vala --disable-introspection
+	RUST_TARGET="`$XMINGW/scripts/cross-rust --target-name`" \
+	${XMINGW}/cross-configure  --enable-shared --disable-static --disable-rpath --prefix="${INSTALL_TARGET}" \
+		--enable-pixbuf-loader \
+		--enable-gtk-doc-html --enable-vala --enable-introspection
 }
 
 post_configure() {
@@ -172,7 +175,7 @@ local rust_target="`$XMINGW/scripts/cross-rust --target-name`"
 		# [2.42.6] rustc 1.26.2
 		sed -i.orig Makefile -e "s/^RUST_TARGET = \(x86_64\|i686\)-w64-mingw32/RUST_TARGET = ${rust_target}/"
 		;;
-	2.46.[3])
+	2.46.[34])
 		# [2.46.3] rustc 1.39.0
 		sed -i.orig Makefile -e "s/^RUST_TARGET = \(x86_64\|i686\)-w64-mingw32/RUST_TARGET = ${rust_target}/"
 
@@ -183,7 +186,14 @@ local rust_target="`$XMINGW/scripts/cross-rust --target-name`"
 		ln --symbolic --force \
 			"${PWD}/target/${rust_target}/release/rsvg_c_api.lib" \
 			"librsvg_c_api.a"
-		sed -i Makefile -e "/^librsvg_2_la_LIBADD/,/^\s*$/ {" -e "s/librsvg_c_api.la/librsvg_c_api.a/" -e "}"
+		sed -i Makefile -e "/^librsvg_2_la_LIBADD/,/^\s*$/ {" -e "s/librsvg_c_api.la/${PWD}/librsvg_c_api.la/" -e "}"
+		;;
+	2.48.7 | 2.50.*)
+		# [2.48.7] rustc 1.44.0
+		mkdir -p "target/${rust_target}/release/"
+		ln --symbolic --force \
+			"${PWD}/target/${rust_target}/release/librsvg_c_api.a" \
+			"target/${rust_target}/release/rsvg_c_api.lib"
 		;;
 	*)
 		echo "${version} はサポートしていないバージョンです。 rust まわりのパッチを確認してください。"
@@ -195,6 +205,7 @@ local rust_target="`$XMINGW/scripts/cross-rust --target-name`"
 
 run_make() {
 	# [2.41.0] librsvg-2 のリンクでフラグを渡してくれない。
+	WINEPATH="${PWD}/.libs" \
 	${XMINGW}/cross make all install LIBS="\$(LIBRSVG_LIBS) \$(LDFLAGS)"
 }
 
@@ -206,8 +217,8 @@ pre_pack() {
 run_pack() {
 local bin_add=""
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll `find lib -name \*.dll` share/{doc,locale} &&
-	pack_archive "${__DEVZIP}" include `find lib -name \*.a` lib/pkgconfig &&
+	pack_archive "${__BINZIP}" bin/*.dll `find lib -name \*.dll` lib/girepository-* share/{doc,locale} &&
+	pack_archive "${__DEVZIP}" include `find lib -name \*.a` lib/pkgconfig share/gir-* share/vala/vapi/ &&
 	pack_archive "${__DOCZIP}" share/gtk-doc &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 &&
 	store_packed_archive "${__BINZIP}" &&
