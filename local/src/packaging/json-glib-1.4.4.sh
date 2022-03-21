@@ -66,6 +66,11 @@ local name
 }
 
 run_configure() {
+local docs_flsg=""
+	if compare_vernum_le "${VER}" "1.6.5"
+	then
+		docs_flsg="-Ddocs=true"
+	fi
 	MESONTEST="meson test" \
 	CFLAGS="`${XMINGW}/cross --cflags` \
 		-pipe -O2 -fomit-frame-pointer -ffast-math" \
@@ -74,7 +79,7 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 		-Wl,--enable-auto-image-base -Wl,-s" \
 	${XMINGW}/cross-meson _build --prefix="${INSTALL_TARGET}" --buildtype release --default-library=shared \
-		-Ddocs=true -Dman=false \
+		${docs_flsg} -Dgtk_doc=enabled -Dman=false \
 		-Dintrospection=enabled
 }
 
@@ -91,10 +96,16 @@ pre_pack() {
 }
 
 run_pack() {
+local gtk_doc="share/doc"
+	if [[ -e "${INSTALL_TARGET}"/share/gtk-doc ]]
+	then
+		gtk_doc="share/gtk-doc"
+	fi
+
 	cd "${INSTALL_TARGET}" &&
 	pack_archive "${__BINZIP}" bin/*.dll lib/girepository-1.0 share/locale "${LICENSE_DIR}" &&
 	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig share/gir-* &&
-	pack_archive "${__DOCZIP}" share/gtk-doc/ &&
+	pack_archive "${__DOCZIP}" ${gtk_doc} &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&

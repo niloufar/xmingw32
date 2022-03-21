@@ -87,13 +87,19 @@ local IFS=""
 			sed -i.orig "${f}" -e 's/^crate-type/#\0/'
 		fi
 	done	
+
+	# [2.52.6] cairo ps を削除する。
+	sed -i.orig Cargo.toml \
+		-e '/^cairo-ps =/ s/^/# /' \
+		-e '/^cairo-rs =/ s/,\s\+"ps"//'
 }
 
 run_configure() {
+	# [2.52.6] BCryptGenRandom シンボルが未定義。 -lbcrypt を追加した。
 	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CPPFLAGS="`${XMINGW}/cross --cflags`" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
-	-lws2_32 -luserenv \
+	-lws2_32 -luserenv -lbcrypt \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
 	RUST_TARGET="`$XMINGW/scripts/cross-rust --target-name`" \
@@ -188,7 +194,7 @@ local rust_target="`$XMINGW/scripts/cross-rust --target-name`"
 			"librsvg_c_api.a"
 		sed -i Makefile -e "/^librsvg_2_la_LIBADD/,/^\s*$/ {" -e "s/librsvg_c_api.la/${PWD}/librsvg_c_api.la/" -e "}"
 		;;
-	2.48.7 | 2.50.*)
+	2.48.7 | 2.50.* | 2.52.*)
 		# [2.48.7] rustc 1.44.0
 		mkdir -p "target/${rust_target}/release/"
 		ln --symbolic --force \
@@ -216,9 +222,20 @@ pre_pack() {
 
 run_pack() {
 local bin_add=""
+local dev_add=""
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll `find lib -name \*.dll` lib/girepository-* share/locale "${LICENSE_DIR}" &&
-	pack_archive "${__DEVZIP}" include `find lib -name \*.a` lib/pkgconfig share/gir-* share/vala/vapi/ &&
+	{
+		if [[ -d "share/locale" ]]
+		then
+			bin_add="${bin_add} share/locale"
+		fi
+		if [[ -d "share/doc" ]]
+		then
+			dev_add="${dev_add} share/doc"
+		fi
+	} &&
+	pack_archive "${__BINZIP}" bin/*.dll `find lib -name \*.dll` lib/girepository-* ${bin_add} "${LICENSE_DIR}" &&
+	pack_archive "${__DEVZIP}" include `find lib -name \*.a` lib/pkgconfig ${dev_add} share/gir-* share/vala/vapi/ &&
 	pack_archive "${__DOCZIP}" share/gtk-doc &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 &&
 	store_packed_archive "${__BINZIP}" &&

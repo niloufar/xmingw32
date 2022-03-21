@@ -20,9 +20,9 @@ init_var() {
 
 	# [2.0.16] アーカイブとフォルダーの名称が変更された。
 local __mod="${MOD}"
-	if compare_vernum_ge "2.0.16" "${VER}"
+	if compare_vernum_le "2.0.16" "${VER}"
 	then
-		if compare_vernum_ge "2.0.32" "${VER}"
+		if compare_vernum_le "2.0.32" "${VER}"
 		then
 			:
 		else
@@ -40,6 +40,7 @@ local __mod="${MOD}"
 
 	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
 	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
+	__DOCZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
 	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 }
 
@@ -89,13 +90,20 @@ EOS
 }
 
 run_configure() {
+local JAS3_FLAG=""
+	case "${VER}" in
+		"3.0."*)
+			JAS3_FLAG="-DJAS_STDC_VERSION=6 -DJAS_CROSSCOMPILING=on"
+			;;
+	esac
 	${XMINGW}/cross-cmake -G "Unix Makefiles" -H. -B. -DALLOW_IN_SOURCE_BUILD:bool=true -DCMAKE_BUILD_TYPE:string=RELEASE -DCMAKE_INSTALL_PREFIX:string="${INSTALL_TARGET}" \
 	"-DCMAKE_C_FLAGS:string=`${XMINGW}/cross --archcflags --cflags` -pipe -O2 -fomit-frame-pointer -ffast-math " \
 	"-DCMAKE_CXX_FLAGS:string=`${XMINGW}/cross --archcflags --cflags` -pipe -O2 -fomit-frame-pointer -ffast-math " \
 	"-DCMAKE_C_FLAGS_RELEASE:string=-DNDEBUG " \
 	"-DCMAKE_CXX_FLAGS_RELEASE:string=-DNDEBUG " \
 	"-DCMAKE_SHARED_LINKER_FLAGS:string=`${XMINGW}/cross --ldflags` -Wl,--enable-auto-image-base -Wl,-s -Wl,--export-all-symbols" \
-	-DJAS_ENABLE_SHARED:bool=true -DJAS_ENABLE_LIBJPEG:bool=true -DJAS_ENABLE_OPENGL:bool=true
+	-DJAS_ENABLE_SHARED:bool=true -DJAS_ENABLE_LIBJPEG:bool=true -DJAS_ENABLE_OPENGL:bool=true \
+	${JAS3_FLAG}
 }
 
 post_configure() {
@@ -109,6 +117,9 @@ run_make() {
 }
 
 pre_pack() {
+	# ライセンスなどの情報は share/licenses/<MOD>/ に入れる。
+	install_license_files "${MOD}" LICENSE*
+
 	if [ -e "./man" ]
 	then
 		(cd "${INSTALL_TARGET}" &&
@@ -130,7 +141,12 @@ run_pack() {
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
-	store_packed_archive "${__TOOLSZIP}"
+	store_packed_archive "${__TOOLSZIP}" &&
+	if [[ "share/doc" ]]
+	then
+		pack_archive "${__DOCZIP}" share/doc &&
+	store_packed_archive "${__DOCZIP}"
+	fi
 }
 
 

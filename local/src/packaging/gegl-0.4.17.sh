@@ -94,6 +94,14 @@ pre_configure() {
 }
 
 run_configure() {
+local add_flags=""
+	# [0.4.36] ruby に関するオプションが削除されていた。
+	if compare_vernum_le "${VER}" "0.4.35"
+	then
+		add_flags="-Druby=disabled"
+	else
+		add_flags="-Dmaxflow=disabled -Dparallel-tests=false"
+	fi
 	CFLAGS="`${XMINGW}/cross --archcflags --cflags` \
 		-pipe -O2 -fomit-frame-pointer -ffast-math" \
 	CXXFLAGS="`${XMINGW}/cross --archcflags --cflags` \
@@ -101,7 +109,6 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 		-Wl,--enable-auto-image-base -Wl,-s" \
 	${XMINGW}/cross-meson _build --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=shared \
-		-Druby=disabled \
 		-Dlua=disabled \
 		-Dopenexr=disabled \
 		-Dsdl1=disabled -Dsdl2=disabled \
@@ -114,21 +121,18 @@ run_configure() {
 		-Dlibv4l=disabled -Dlibv4l2=disabled \
 		-Dlibspiro=disabled \
 		-Dpygobject=disabled \
-		-Ddocs=true -Dintrospection=true -Dvapigen=enabled
-}
-
-post_configure() {
-	# [0.4.26] tools/introspect.exe をうまく実行できない。
-	#  細工した wine から実行する。
-	sed -i.orig _build/build.ninja \
-		-e '/ COMMAND .*introspect.exe$/ s!/operations /usr/!/operations wine /usr/!'
+		-Ddocs=false -Dgtk-doc=true \
+		-Dintrospection=true -Dvapigen=enabled \
+		${add_flags}
 }
 
 run_make() {
-	WINEPATH="$PWD/_build/gegl" \
-	${XMINGW}/cross ninja -C _build &&
-	WINEPATH="$PWD/_build/gegl" \
-	${XMINGW}/cross ninja -C _build install
+#	WINEPATH="$PWD/_build/gegl;$PWD/_build/seamless-clone;$PWD/_build/libs/npd" \
+#	WINEPATH="./_build/gegl;./_build/seamless-clone;./_build/libs/npd" \
+	WINEPATH="./gegl;./seamless-clone;./libs/npd" \
+	LANG=C ${XMINGW}/cross ninja -C _build &&
+	WINEPATH="./gegl;./seamless-clone;./libs/npd" \
+	LANG=C ${XMINGW}/cross ninja -C _build install
 }
 
 pre_pack() {

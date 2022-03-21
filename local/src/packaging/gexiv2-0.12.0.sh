@@ -83,6 +83,11 @@ EOS
 }
 
 run_configure() {
+local python2_flags=""
+	if compare_vernum_le "${VER}" "0.11"
+	then
+		python2_flags="-Dpython2_girdir=no"
+	fi
 	CC="gcc `${XMINGW}/cross --archcflags`" \
 	CFLAGS="`${XMINGW}/cross --archcflags --cflags` \
 		-pipe -O2 -fomit-frame-pointer -ffast-math" \
@@ -92,7 +97,7 @@ run_configure() {
 		-Wl,--enable-auto-image-base -Wl,-s" \
 	${XMINGW}/cross-meson _build --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=shared \
 		-Dgtk_doc=false  -Dintrospection=true -Dvapi=true \
-		-Dpython2_girdir=no -Dpython3_girdir=no
+		${python2_flags} -Dpython3_girdir=no
 }
 
 run_make() {
@@ -108,8 +113,9 @@ pre_pack() {
 }
 
 run_pack() {
+local python_module=$(cd "${INSTALL_TARGET}" && ls -d -1 "lib/python"*)
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll lib/girepository-* "${LICENSE_DIR}" &&
+	pack_archive "${__BINZIP}" bin/*.dll lib/girepository-* "${python_module}" "${LICENSE_DIR}" &&
 	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig share/gir-* share/vala/vapi/ &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}"

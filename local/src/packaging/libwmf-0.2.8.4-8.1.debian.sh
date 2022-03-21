@@ -38,6 +38,9 @@ init_var() {
 dependencies() {
 	cat <<EOS
 freetype2
+gdk-pixbuf
+glib
+jpeg
 libpng
 libxml2
 zlib
@@ -47,9 +50,6 @@ EOS
 optional_dependencies() {
 	cat <<EOS
 gd
-gdk-pixbuf
-glib
-jpeg
 plot
 EOS
 }
@@ -60,6 +60,7 @@ GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
 EOS
 }
+
 
 run_expand_archive() {
 local name
@@ -101,32 +102,52 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --enable-shared --disable-static --with-libxml2 --without-expat --with-png=${PWD}/libpng --without-x --without-sys-gd --disable-gd --prefix="${INSTALL_TARGET}"
+	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}" \
+		--with-libxml2 --without-expat \
+		--with-png=${PWD}/libpng \
+		--with-docdir="${INSTALL_TARGET}/share/doc/${MOD}" \
+		--without-x --without-sys-gd --disable-gd
 }
 
 post_configure() {
 	# make で autoconf && automake してしまう。
 	# aclocal.m4, configure.ac が更新されるため。
-	sed -i.orig -e 's/^\(AUTOCONF = \).\+/\1 echo "autoconf"/' \
-				-e 's/^\(AUTOMAKE = \).\+/\1 echo "automake"/' Makefile
+	sed -i.orig Makefile \
+		-e 's/^\(AUTOCONF = \).\+/\1 echo "autoconf"/' \
+		-e 's/^\(AUTOHEADER = \).\+/\1 echo "autoheader"/' \
+		-e 's/^\(AUTOMAKE = \).\+/\1 echo "automake"/'
 	# shared ファイルを作ってくれない場合の対処。
 	# -lpng に対し libtool が面倒事をおこすため mix を付けている。
 	bash ${XMINGW}/replibtool.sh shared mix
 }
 
 run_make() {
-	${XMINGW}/cross make install
+	${XMINGW}/cross make install &&
+	if [[ ! -e "${INSTALL_TARGET}/share/doc/${MOD}" ]]
+	then
+		(cd doc &&
+		${XMINGW}/cross make install)
+	fi
 }
 
 pre_pack() {
+	# ライセンスなどの情報は share/licenses/<MOD>/ に入れる。
+	install_license_files "${MOD}" COPYING* AUTHORS*
+
 local NAME="${INSTALL_TARGET}/bin/${__LIBNAME}-config"
 	sed -i -e "s#^\s*\(prefix=\).*${INSTALL_TARGET}\$#\1\`dirname \$0\`/..#" "${NAME}"
 }
 
 run_pack() {
+local pkgconfig_dir=""
+	if [[ -e "${INSTALL_TARGET}/lib/pkgconfig" ]]
+	then
+		pkgconfig_dir="lib/pkgconfig"
+	fi
+
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll share/libwmf `find lib -name \*.dll` &&
-	pack_archive "${__DEVZIP}" bin/libwmf-config include `find lib -name \*.a` &&
+	pack_archive "${__BINZIP}" bin/*.dll share/libwmf `find lib -name \*.dll` "${LICENSE_DIR}" &&
+	pack_archive "${__DEVZIP}" bin/libwmf-config include `find lib -name \*.a` ${pkgconfig_dir} &&
 	pack_archive "${__DOCZIP}" share/doc/libwmf &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} bin/libwmf-fontmap &&
 	store_packed_archive "${__BINZIP}" &&

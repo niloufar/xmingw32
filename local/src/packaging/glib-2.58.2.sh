@@ -37,6 +37,7 @@ gettext-runtime
 iconv
 libffi
 libxml2
+pcre
 zlib
 EOS
 }
@@ -72,13 +73,6 @@ run_patch() {
 			-e "}"
 		;;
 	esac
-
-	# [2.68.3]
-	case "${VER}" in
-	"2.68.3")
-#		meson rewrite kwargs set project / timeout 30
-		;;
-	esac
 }
 
 pre_configure() {
@@ -88,18 +82,30 @@ pre_configure() {
 
 	# ネイティブの glib-compile-resources, glib-compile-schemas コマンドを作成する。
 local build_host_dir="_build_host"
+local pcre_flag=""
+	case "${VER}" in
+	2.5?.* | 2.6?.*)
+		pcre_flag="-Dinternal_pcre=true"
+		;;
+	esac
 	[[ -d "${build_host_dir}" ]] && rm -r "${build_host_dir}"
 	mkdir -p "${build_host_dir}" &&
 	# [2.64.0] -Dlibmount のオプションが変更された。
 local libmount_disabled="disabled"
-	compare_vernum_ge "2.64.0" "${VER}" || libmount_disabled="false"
-	meson "${build_host_dir}" --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=static --optimization=2 --strip  -Dselinux=disabled -Dxattr=false -Dlibmount=${libmount_disabled} -Dinternal_pcre=true -Dman=false -Ddtrace=false -Dsystemtap=false -Dgtk_doc=false -Dfam=false &&
+	compare_vernum_le "2.64.0" "${VER}" || libmount_disabled="false"
+	meson "${build_host_dir}" --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=static --optimization=2 --strip  -Dselinux=disabled -Dxattr=false -Dlibmount=${libmount_disabled} ${pcre_flag} -Dman=false -Ddtrace=false -Dsystemtap=false -Dgtk_doc=false -Dfam=false &&
 	ninja -C "${build_host_dir}" gio/glib-compile-resources &&
 	ninja -C "${build_host_dir}" gio/glib-compile-schemas
 }
 
 run_configure() {
-	# -Dinternal_pcre=true : pcre は内蔵のものを使用する。
+local pcre_flag=""
+	case "${VER}" in
+	2.5?.* | 2.6?.*)
+		# -Dinternal_pcre=true : pcre は内蔵のものを使用する。
+		pcre_flag="-Dinternal_pcre=true"
+		;;
+	esac
 	CFLAGS="`${XMINGW}/cross --archcflags --cflags` \
 		-pipe -O2 -fomit-frame-pointer -ffast-math" \
 	CXXFLAGS="`${XMINGW}/cross --archcflags --cflags` \
@@ -107,9 +113,9 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 		-Wl,--enable-auto-image-base -Wl,-s" \
 	${XMINGW}/cross-meson _build --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=shared \
-		-Dinternal_pcre=true \
+		${pcre_flag} \
 		-Dlibelf=disabled \
-		-Dtests=false -Dinstalled_tests=false \
+		-Dtests=false -Dinstalled_tests=true \
 		-Dgtk_doc=false
 }
 

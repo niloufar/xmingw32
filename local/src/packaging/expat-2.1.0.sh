@@ -79,7 +79,7 @@ pre_pack() {
 
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll "${LICENSE_DIR}" &&
+	pack_archive "${__BINZIP}" bin/*.dll "${LICENSE_DIR}" share/doc &&
 	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig lib/cmake &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 &&
 	store_packed_archive "${__BINZIP}" &&

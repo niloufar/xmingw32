@@ -104,10 +104,16 @@ pre_pack() {
 }
 
 run_pack() {
+local gtk_doc="share/doc"
+	if [[ -e "${INSTALL_TARGET}"/share/gtk-doc ]]
+	then
+		gtk_doc="share/gtk-doc"
+	fi
+
 	(cd "${INSTALL_TARGET}" &&
 	pack_archive "${__BINZIP}" bin/*.dll lib/girepository-* "${LICENSE_DIR}" &&
 	pack_archive "${__DEVZIP}" include lib/*.{def,a} lib/pkgconfig share/gir-* &&
-	pack_archive "${__DOCZIP}" share/doc share/gtk-doc &&
+	pack_archive "${__DOCZIP}" ${gtk_doc} &&
 	pack_archive "${__TOOLSZIP}" bin/*.exe &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&

@@ -27,6 +27,7 @@ init_var() {
 
 	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
 	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
+	__DOCZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
 #	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 }
 
@@ -35,19 +36,20 @@ dependencies() {
 glib
 fontconfig
 freetyte2
+gdk-pixbuf
+gtk+
 libpng
+librsvg
 pixman
+poppler
 zlib
 EOS
 }
 
 optional_dependencies() {
 	cat <<EOS
-gdk-pixbuf
-gtk+
-librsvg
+libspectre
 opengl
-poppler
 skia
 EOS
 }
@@ -60,7 +62,7 @@ local name
 
 run_patch() {
 	# 1.14.0: configure のつまらないバグ。
-	(patch_adhoc -p 0 <<\EOF; return 0)
+	patch_adhoc -p 0 <<\EOF
 --- configure.orig
 +++ configure
 @@ -18930,10 +18930,10 @@
@@ -77,10 +79,12 @@ run_patch() {
      ax_cv_c_float_words_bigendian=no
    else
 EOF
+
+	return 0
 }
 
 pre_configure() {
-	if [ ! -e "./configure" ]
+	if [[ ! -e "./configure" ]]
 	then
 		NOCONFIGURE=1 $XMINGW/cross-host sh ./autogen.sh
 	fi
@@ -95,7 +99,14 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` -lssp \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --prefix="${INSTALL_TARGET}" --disable-static --without-x --disable-xlib --disable-qt --disable-xcb --enable-win32 --enable-png --enable-script --enable-ft=yes --enable-fc=yes --enable-ps=no --enable-pdf --enable-svg --enable-xml --enable-interpreter
+	${XMINGW}/cross-configure --prefix="${INSTALL_TARGET}" --disable-static \
+		--without-x --disable-xlib --disable-qt --disable-xcb \
+		--enable-win32 \
+		--enable-script --enable-interpreter \
+		--enable-ft=yes --enable-fc=yes \
+		--enable-ps=no --enable-pdf \
+		--enable-png --enable-svg --enable-xml \
+		--enable-gobject=yes
 }
 
 post_configure() {
@@ -103,6 +114,7 @@ post_configure() {
 }
 
 run_make() {
+	WINEPATH="$PWD/src/.libs" \
 	${XMINGW}/cross make all install 
 }
 
@@ -111,14 +123,17 @@ pre_pack() {
 
 	# ライセンスなどの情報は share/licenses/<MOD>/ に入れる。
 	install_license_files "${MOD}" COPYING COPYING-LGPL-2.1 COPYING-MPL-1.1
+
 }
 
 run_pack() {
 	(cd "${INSTALL_TARGET}" &&
 	pack_archive "${__BINZIP}" bin/*.dll "${LICENSE_DIR}" &&
-	pack_archive "${__DEVZIP}" include lib/*.{def,a} lib/pkgconfig share/*doc &&
+	pack_archive "${__DEVZIP}" include lib/*.{def,a} lib/pkgconfig &&
+	pack_archive "${__DOCZIP}" share/*doc &&
 	store_packed_archive "${__BINZIP}" &&
-	store_packed_archive "${__DEVZIP}") &&
+	store_packed_archive "${__DEVZIP}" &&
+	store_packed_archive "${__DOCZIP}") &&
 
 	(
 	__PERFZIP=${MOD}-${VER}-${REV}-perf_${ARCHSUFFIX} &&

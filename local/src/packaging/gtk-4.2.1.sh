@@ -80,13 +80,26 @@ run_patch() {
 
 	# shooter を作成しない。
 	cat /dev/null > docs/tools/meson.build
+
+	# [4.4.0] mingw-w64 への対応が十分でない。
+	if [[ -f "gsk/ngl/fp16.c" ]]
+	then
+		sed -i.orig gsk/ngl/fp16.c \
+			-e '/^#if defined(_MSC_VER) /,/^\/\* based on info from / {' \
+				-e 's/_MSC_VER/_WIN32/' \
+				-e '/^\/\*/i#include <intrin.h>' \
+			-e '}'
+	fi
 }
 
-# meson を使用する場合。
-# run_configure を削除し、下記関数定義行頭のコロンを削除する。
 run_configure() {
+local gtk4_40_flags=""
+	case "${VER}" in
+		"4.40."*)
+			gtk4_40_flags="-Dprint-cloudprint=disabled -Dxinerama=disabled"
+			;;
+	esac
 	CFLAGS="`${XMINGW}/cross --archcflags --cflags` \
-		-D_WIN32_WINNT=_WIN32_WINNT_VISTA \
 		-pipe -O2 -fomit-frame-pointer -ffast-math" \
 	CXXFLAGS="`${XMINGW}/cross --archcflags --cflags` \
 		-pipe -O2 -fomit-frame-pointer -ffast-math ${OLD_CXX_ABI}" \
@@ -94,17 +107,32 @@ run_configure() {
 		-Wl,--enable-auto-image-base -Wl,-s" \
 	${XMINGW}/cross-meson _build --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=shared \
 		-Doptimization=2 \
-		-Dwin32-backend=true \
+		-Dwin32-backend=true -Dmacos-backend=false \
+		-Dwayland-backend=false -Dx11-backend=false \
 		-Dmedia-ffmpeg=disabled -Dmedia-gstreamer=disabled \
-		-Dprint-cups=disabled -Dprint-cloudprint=disabled \
+		-Dprint-cups=disabled \
 		-Dvulkan=disabled \
-		-Dxinerama=disabled -Dcloudproviders=disabled \
+		-Dcloudproviders=disabled \
 		-Dinstall-tests=false \
 		-Dgtk_doc=true -Dintrospection=enabled
+		${gtk4_40_flags}
 }
 
-# meson を使用する場合。
-# run_make を削除し、下記関数定義行頭のコロンを削除する。
+post_configure() {
+	# [4.4.0] windows では利用できない関数が参照され、エラーになる。
+	# [4.6.1] ld -z noexecstack が問題になる。 gcc -Wa,--noexecstack する解決策を採用したいが、追いきれていない。
+	sed -i.orig _build/build.ninja \
+		-e '/^\s\+COMMAND\s*.\+gi-docgen/ {' \
+			-e 's/ --fatal-warnings /  /' \
+		-e '}' \
+		-e '/^\s*COMMAND = .*\/ld / s/ -z noexecstack /  /'
+	# [4.6.1] win32 でリンクエラーになる。
+	# objcopy --add-symbol _g_binary_gtkdemo_resource_data=.data:0 を
+	# 行うが、元の meson-generated_.._gtkdemo_resources.c.obj もリンクしようとする。
+	sed -i _build/build.ninja \
+		-e '/build demos\/.*\.exe: c_LINKER / s# demos/\(gtk-demo\|widget-factory\)/gtk4-[^ ]\+\.exe\.p/meson-generated_\.\._\(gtkdemo\|widgetfactory\)_resources\.c\.obj#  #'
+}
+
 run_make() {
 	WINEPATH="${PWD}/_build/gtk" \
 	${XMINGW}/cross ninja -C _build &&
@@ -125,11 +153,13 @@ run_pack() {
 	pack_archive "${__BINZIP}" bin/*.dll lib/girepository-* "${LICENSE_DIR}" &&
 	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig share/gir-* &&
 	pack_archive "${__DOCZIP}" share/doc &&
-	pack_archive "${__TOOLSZIP}" bin/*.{exe,exe.manifest,exe.local} share/{glib-2.0/schemas,gtk-4.0,icons,locale,metainfo} &&
+	pack_archive "${__TOOLSZIP}" bin/gtk4-{builder,encode,icon,print,query,update,widget}*.{exe,exe.manifest,exe.local} share/{glib-2.0/schemas,gtk-4.0,icons,locale} share/metainfo/org.gtk.{Icon,Print,Widget}*.appdata.xml &&
+	pack_archive "${__DEMOZIP}" bin/gtk4-demo*.{exe,exe.manifest,exe.local} share/metainfo/*Demo* &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
 	store_packed_archive "${__DOCZIP}" &&
 	store_packed_archive "${__TOOLSZIP}" &&
+	store_packed_archive "${__DEMOZIP}" &&
 	put_exclude_files share/{applications,gettext/its}
 }
 

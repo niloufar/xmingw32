@@ -71,6 +71,14 @@ run_patch() {
 	# [0.75.0] nss3 を無効にする。
 	sed -i.orig CMakeLists.txt \
 		-e '/^if (NSS3_FOUND)$/,/^endif()$/ {' -e 's/^/#/' -e '}'
+
+	# [22.03.0] basetsd.h が読み込まれていない場合に jpeg の jmorecfg.h が INT32 を typedef し conflict を起こす。
+	case "${VER}" in
+	22.03.*)
+		sed -i.orig "poppler/ImageEmbeddingUtils.cc" \
+			-e '/^#ifdef ENABLE_LIBJPEG$/ a#include <basetsd.h>'
+		;;
+	esac
 }
 
 pre_configure() {
@@ -85,7 +93,7 @@ local add_include=
 	0.8[0246].*)
 		add_include="$(${XMINGW}/cross pkg-config --cflags glib-2.0)"
 		;;
-	20.11.* | 21.0[58].*)
+	20.11.* | 21.0[589].* | 22.0[3].*)
 		add_include="$(${XMINGW}/cross pkg-config --cflags libpng16)"
 		;;
 	esac
