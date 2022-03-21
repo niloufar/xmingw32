@@ -15,8 +15,23 @@ case "${__SCRIPT_NAME}" in
 g-ir-scanner)
 	echo "cross-gir(${__SCRIPT_NAME}): INFO: Mingw-w64 のために置き換えられたコマンドを実行しています。" >> /dev/stderr
 	# ln -s -f /usr/lib/gobject-introspection/giscanner/_giscanner.cpython-*-linux-gnu.so "$($XMINGW/cross pkg-config gobject-introspection-1.0 --variable libdir)/gobject-introspection/giscanner/."
-	PYTHONPATH="$($XMINGW/cross pkg-config gobject-introspection-1.0 --variable libdir)/gobject-introspection:${PYTHONPATH}" \
-	$($XMINGW/cross pkg-config gobject-introspection-1.0 --variable bindir)/g-ir-scanner --use-binary-wrapper="$XMINGW/scripts/cross-wine" --use-ldd-wrapper=ldd --cflags-begin $(${XMINGW}/cross --cflags) --cflags-end "$@"
+	if [[ "" == "${CROSS_GIR_LIBDIR}" ]]
+	then
+		CROSS_GIR_LIBDIR="$($XMINGW/cross pkg-config gobject-introspection-1.0 --variable libdir)/gobject-introspection"
+	else
+		echo "cross-gir(${__SCRIPT_NAME}): INFO: CROSS_GIR_LIBDIR 環境変数の値を PYTHONPATH 環境変数の先頭へ追加します。${CROSS_GIR_LIBDIR}" >> /dev/stderr
+	fi
+	PYTHONPATH="${CROSS_GIR_LIBDIR}:${PYTHONPATH}"
+	if [[ "" == "${CROSS_GIR_BINDIR}" ]]
+	then
+		CROSS_GIR_BINDIR="$($XMINGW/cross pkg-config gobject-introspection-1.0 --variable bindir)"
+	else
+		echo "cross-gir(${__SCRIPT_NAME}): INFO: CROSS_GIR_BINDIR 環境変数に設定されたパスの g-ir-scanner を実行します。${CROSS_GIR_BINDIR}" >> /dev/stderr
+	fi
+	${CROSS_GIR_BINDIR}/g-ir-scanner --use-binary-wrapper="$XMINGW/scripts/cross-wine" --use-ldd-wrapper=ldd --cflags-begin $(${XMINGW}/cross --cflags) --cflags-end "$@"
+	exit_code="$?"
+	echo "cross-gir(${__SCRIPT_NAME}): INFO: 処理を終えました。このメッセージはタイミング バグを検知するために表示しています。" >> /dev/stderr
+	exit ${exit_code}
 	;;
 gtkdoc-scangobj)
 	echo "cross-gir(${__SCRIPT_NAME}): INFO: Mingw-w64 のために置き換えられたコマンドを実行しています。" >> /dev/stderr

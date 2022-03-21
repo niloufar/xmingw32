@@ -52,6 +52,10 @@ EOS
 
 license() {
 	cat <<EOS
+GNU GENERAL PUBLIC LICENSE
+Version 2, June 1991
+GNU LIBRARY GENERAL PUBLIC LICENSE
+Version 2, June 1991
 EOS
 }
 
@@ -152,6 +156,13 @@ EOS
 			-e "asys.path.append(os.path.join(filedir, '..'))" \
 		-e '}'
 	chmod +x tools/g-ir-tool-template.in
+
+	# [0.70.0] このバージョンのバグ。とりあえず無効にする。
+	sed -i giscanner/meson.build \
+		-e "/^install_subdir('doctemplates',/,/^\s\+'@INPUT@', '@OUTPUT@'])/ {" \
+			-e 's/^/#/' \
+		-e '}'
+
 }
 
 run_configure() {
@@ -162,9 +173,11 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 		-Wl,--enable-auto-image-base -Wl,-s" \
 	${XMINGW}/cross-meson _build --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=shared \
-		-Dgtk_doc=false \
+		-Dgi_cross_use_prebuilt_gi=true \
 		-Dgi_cross_binary_wrapper=wine \
-		-Dbuild_introspection_data=true
+		-Dgi_cross_ldd_wrapper=ldd \
+		-Dbuild_introspection_data=true \
+		-Dgtk_doc=false
 }
 
 post_configure() {
@@ -197,12 +210,16 @@ post_configure() {
 }
 
 run_make() {
-	GI_SCANNER_DEBUG=1 \
+#	GI_SCANNER_DEBUG=1 \
 	CROSS_EXTRA_GISCANNER_CFLAGS="--cflags-begin $(${XMINGW}/cross --cflags) --cflags-end" \
 	WINEPATH="$PWD/_build/girepository" \
-	${XMINGW}/cross ninja -C _build &&
+	CROSS_GIR_LIBDIR="$PWD/_build" \
+	CROSS_GIR_BINDIR="$PWD/_build/tools" \
+	${XMINGW}/cross ninja -C _build -j 1 &&
 	CROSS_EXTRA_GISCANNER_CFLAGS="--cflags-begin $(${XMINGW}/cross --cflags) --cflags-end" \
 	WINEPATH="$PWD/_build/girepository" \
+	CROSS_GIR_LIBDIR="$PWD/_build" \
+	CROSS_GIR_BINDIR="$PWD/_build/tools" \
 	${XMINGW}/cross ninja -C _build install
 }
 
