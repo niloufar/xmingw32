@@ -54,6 +54,28 @@ local name
 	expand_archive "${__ARCHIVEDIR}/${name}"
 }
 
+run_patch() {
+	# [2.24.33] 半角英数の入力が半角カタカナになる、CTRLの状態が認識されないバグ。
+	# see: gdkkeys-win32.c: fix initialisation of key_state in update_keymap (!3741) ・ Merge requests ・ GNOME / gtk ・ GitLab <https://gitlab.gnome.org/GNOME/gtk/-/merge_requests/3741/diffs?commit_id=73038543106f8af8f41132f4a245056a94322c92>
+	if [[ "2.24.33" == "${VER}" ]]
+	then
+		patch_adhoc -p 1 <<\EOS
+diff --git a/gdk/win32/gdkkeys-win32.c b/gdk/win32/gdkkeys-win32.c
+index b4753e1f797e0d82d5a450369a329d0a7ad0cd37..4ef8c4b10246bda9c45302c13137aa99d9c7ed1b 100644
+--- a/gdk/win32/gdkkeys-win32.c
++++ b/gdk/win32/gdkkeys-win32.c
+@@ -692,6 +692,7 @@ update_keymap (GdkKeymap *gdk_keymap)
+   if (hkls_len != keymap->layout_handles->len)
+     keymap->keysym_tab = g_renew (guint, keymap->keysym_tab, keysym_tab_size);
+ 
++  memset (key_state, 0, sizeof(key_state));
+   memset (keymap->keysym_tab, 0, keysym_tab_size);
+   g_array_set_size (keymap->layout_handles, hkls_len);
+   g_array_set_size (keymap->options, hkls_len);
+EOS
+	fi
+}
+
 pre_configure() {
 	if gtk-update-icon-cache --help | grep -ie "--include-image-data" > /dev/null
 	then
