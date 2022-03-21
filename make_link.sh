@@ -45,6 +45,7 @@ do
 done <<- EOS
 ar
 as
+cc
 c++
 cpp
 dlltool
@@ -54,6 +55,7 @@ gcc
 gcov
 gprof
 ld
+ld.bfd
 nm
 objcopy
 objdump
@@ -97,10 +99,24 @@ EOS
 source=${XMINGW}/scripts
 destination=${XMINGW}/bin
 destination64=${XMINGW}/bin64
-make_symlink "${destination}/rustc" "${source}/cross-rust"
-make_symlink "${destination64}/rustc" "${source}/cross-rust"
-make_symlink "${destination}/cargo" "${source}/cross-rust"
-make_symlink "${destination64}/cargo" "${source}/cross-rust"
+IFS="	"	# タブ。
+while read cmd fl
+do
+	rl="${source}/${fl}"
+
+	sym="${destination}/${cmd}"
+	make_symlink "${sym}" "${rl}"
+
+	sym="${destination64}/${cmd}"
+	make_symlink "${sym}" "${rl}"
+done <<- EOS
+rustc	cross-rust
+cargo	cross-rust
+wine	cross-wine
+g-ir-scanner	cross-gir
+gtkdoc-scangobj	cross-gir
+ldd	mingw-w64-ldd
+EOS
 
 # ${XMINGW}/* で使えるスクリプトのリンク。
 source=${XMINGW}/scripts
@@ -115,6 +131,7 @@ env.sh
 cross
 cross-host
 cross-meson
+cross-wine
 package
 replibtool.sh
 reppc.sh
