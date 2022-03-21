@@ -167,7 +167,7 @@ patch_adhoc() {
 }
 
 # 0: $1 <= $2
-compare_vernum_ge() {
+compare_vernum_le() {
 local x=$1
 local y=$2
 local result
