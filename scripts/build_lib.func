@@ -15,7 +15,7 @@ local name
 	shift
 	for base in "$1" `echo "$1" | sed -e's/-/_/' -e's/\$/.orig/'`
 	do
-		for tail in tar.gz tgz tar.bz2 tar.xz tar.lzma zip 7z
+		for tail in tar.gz tgz tar.bz2 tar.lz tar.xz tar.lzma tar.zst zip 7z
 		do 
 			name="${base}.${tail}"
 			if [ -f "${directory}/${name}" ]
@@ -37,11 +37,17 @@ local UNZIPCMD="unzip"
 	*.7z)
 		${SEVENZIPCMD} -y x "${NAME}"
 		;;
+	*.tar.lz)
+		${TARCMD} --lzip -xf "${NAME}"
+		;;
 	*.tar.xz)
 		${TARCMD} -Jxf "${NAME}"
 		;;
 	*.tar.lzma)
 		${TARCMD} --lzma -xf "${NAME}"
+		;;
+	*.tar.zst)
+		${TARCMD} --zstd -xf "${NAME}"
 		;;
 	*.tar.bz2)
 		${TARCMD} -jxf "${NAME}"
