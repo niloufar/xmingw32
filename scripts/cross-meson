@@ -111,7 +111,7 @@ __create_meson_cross_file "${meson_cross_file}"
 CC_FOR_BUILD="$XMINGW/cross-host cc" \
 CXX_FOR_BUILD="$XMINGW/cross-host c++" \
 PKG_CONFIG_PATH_FOR_BUILD="$($XMINGW/cross --pkgconfigpath)" \
-${XMINGW}/cross meson "${build_dir}" --cross-file="${meson_cross_file}" "$@"
+${XMINGW}/cross meson setup "${build_dir}" --cross-file="${meson_cross_file}" "$@"
 
 #echo "done."
 
