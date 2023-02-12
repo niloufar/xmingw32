@@ -101,7 +101,7 @@ run_configure() {
 		-pipe -O2 -fomit-frame-pointer -ffast-math ${OLD_CXX_ABI}" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 		-Wl,--enable-auto-image-base -Wl,-s" \
-	${XMINGW}/cross-meson _build --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=shared \
+	${XMINGW}/cross-meson _build --prefix="${INSTALL_TARGET}" --buildtype=release --optimization=2 --default-library=shared \
 		-Dgtk_doc=true -Dintrospection=enabled
 }
 
@@ -130,6 +130,8 @@ run_make() {
 # meson を使用する場合。
 # run_make を削除し、下記関数定義行頭のコロンを削除する。
 :run_make() {
+	# 複数パスはセミコロン(;)で連結する。
+	# ./${MOD} でも問題ないようだ。
 	WINEPATH="${PWD}/_build/${MOD}" \
 	${XMINGW}/cross ninja -C _build &&
 	WINEPATH="${PWD}/_build/${MOD}" \
@@ -146,7 +148,7 @@ run_make_example() {
 
 pre_pack() {
 	# ライセンスなどの情報は share/licenses/<MOD>/ に入れる。
-	install_license_files "${MOD}" COPYING*
+	install_license_files "${MOD}" COPYING* AUTHORS*
 }
 
 run_pack() {
@@ -156,7 +158,7 @@ run_pack() {
 	cd "${INSTALL_TARGET}" &&
 	pack_archive "${__BINZIP}" bin/*.dll lib/girepository-* "${LICENSE_DIR}" &&
 	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig share/gir-* share/man/man3 &&
-	pack_archive "${__DOCZIP}" share/doc &&
+	pack_archive "${__DOCZIP}" share/gtk-doc &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,exe.manifest,exe.local} share/man/man1 share/locale &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
