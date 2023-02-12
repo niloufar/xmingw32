@@ -194,7 +194,7 @@ local rust_target="`$XMINGW/scripts/cross-rust --target-name`"
 			"librsvg_c_api.a"
 		sed -i Makefile -e "/^librsvg_2_la_LIBADD/,/^\s*$/ {" -e "s/librsvg_c_api.la/${PWD}/librsvg_c_api.la/" -e "}"
 		;;
-	2.48.7 | 2.50.* | 2.52.*)
+	2.48.7 | 2.50.* | 2.52.* | 2.54.*)
 		# [2.48.7] rustc 1.44.0
 		mkdir -p "target/${rust_target}/release/"
 		ln --symbolic --force \
@@ -217,7 +217,7 @@ run_make() {
 
 pre_pack() {
 	# ライセンスなどの情報は share/licenses/<MOD>/ に入れる。
-	install_license_files "${MOD}" COPYING*
+	install_license_files "${MOD}" COPYING* AUTHORS*
 }
 
 run_pack() {
@@ -234,10 +234,20 @@ local dev_add=""
 			dev_add="${dev_add} share/doc"
 		fi
 	} &&
+local doc_dir="share/gtk-doc"
+	if [[ -d "share/doc/Rsvg-2.0" ]]
+	then
+		doc_dir="share/doc/Rsvg-2.0"
+	fi &&
+local tools_man_dir="share/man/man1"
+	if [[ ! -d "${tools_man_dir}" ]]
+	then
+		tools_man_dir=""
+	fi &&
 	pack_archive "${__BINZIP}" bin/*.dll `find lib -name \*.dll` lib/girepository-* ${bin_add} "${LICENSE_DIR}" &&
 	pack_archive "${__DEVZIP}" include `find lib -name \*.a` lib/pkgconfig ${dev_add} share/gir-* share/vala/vapi/ &&
-	pack_archive "${__DOCZIP}" share/gtk-doc &&
-	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 &&
+	pack_archive "${__DOCZIP}" ${doc_dir} &&
+	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} ${tools_man_dir} &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
 	store_packed_archive "${__DOCZIP}" &&

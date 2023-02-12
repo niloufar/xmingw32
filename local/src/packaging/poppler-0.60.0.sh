@@ -74,7 +74,7 @@ run_patch() {
 
 	# [22.03.0] basetsd.h が読み込まれていない場合に jpeg の jmorecfg.h が INT32 を typedef し conflict を起こす。
 	case "${VER}" in
-	22.03.*)
+	22.* | 23.01.*)
 		sed -i.orig "poppler/ImageEmbeddingUtils.cc" \
 			-e '/^#ifdef ENABLE_LIBJPEG$/ a#include <basetsd.h>'
 		;;
@@ -93,7 +93,7 @@ local add_include=
 	0.8[0246].*)
 		add_include="$(${XMINGW}/cross pkg-config --cflags glib-2.0)"
 		;;
-	20.11.* | 21.0[589].* | 22.0[3].*)
+	20.11.* | 21.0[589].* | 22.0[3].* | 23.01.*)
 		add_include="$(${XMINGW}/cross pkg-config --cflags libpng16)"
 		;;
 	esac
@@ -124,7 +124,7 @@ run_make() {
 
 pre_pack() {
 	# ライセンスなどの情報は share/licenses/<MOD>/ に入れる。
-	install_license_files "${MOD}" COPYING*
+	install_license_files "${MOD}" COPYING* AUTHORS*
 
 	# [0.60.0] pkgconfig file が作成されなくなった。
 local cairover=`sed CMakeLists.txt -ne 's/^set(CAIRO_VERSION "\([^"]\+\)")/\1/p'`

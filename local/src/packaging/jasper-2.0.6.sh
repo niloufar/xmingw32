@@ -92,7 +92,7 @@ EOS
 run_configure() {
 local JAS3_FLAG=""
 	case "${VER}" in
-		"3.0."*)
+		"3.0."* | "4.0."*)
 			JAS3_FLAG="-DJAS_STDC_VERSION=6 -DJAS_CROSSCOMPILING=on"
 			;;
 	esac

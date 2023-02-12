@@ -28,6 +28,7 @@ init_var() {
 	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
 	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
 #	__DOCZIP=${MOD}-${VER}-${REV}-doc_${ARCHSUFFIX}
+	__TOOLSZIP=${MOD}-${VER}-${REV}-tools_${ARCHSUFFIX}
 }
 
 dependencies() {
@@ -89,7 +90,13 @@ run_pack() {
 	pack_archive "${__BINZIP}" bin/*.dll lib/babl-0.1/*.dll lib/girepository-* "${LICENSE_DIR}" &&
 	pack_archive "${__DEVZIP}" include lib/*.a lib/babl-0.1/*.a lib/pkgconfig share/gir-* share/vala/vapi/ &&
 	store_packed_archive "${__BINZIP}" &&
-	store_packed_archive "${__DEVZIP}"
+	store_packed_archive "${__DEVZIP}" &&
+
+	if 	[[ -e 'bin/babl.exe' ]]
+	then
+		pack_archive "${__TOOLSZIP}" bin/*.exe &&
+		store_packed_archive "${__TOOLSZIP}"
+	fi
 }
 
 

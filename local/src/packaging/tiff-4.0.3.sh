@@ -39,9 +39,11 @@ EOS
 optional_dependencies() {
 	cat <<EOS
 libjpeg
-liblzma
+libwebp
 opengl
+xz
 zlib
+zstd
 EOS
 }
 
@@ -86,7 +88,8 @@ run_make() {
 
 pre_pack() {
 	# ライセンスなどの情報は share/licenses/<MOD>/ に入れる。
-	install_license_files "${MOD}" COPYRIGHT*
+	install_license_files "${MOD}" COPYRIGHT* LICENSE*
+	return 0
 }
 
 run_pack() {

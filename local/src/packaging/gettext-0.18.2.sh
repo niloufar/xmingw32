@@ -113,6 +113,14 @@ EOS
 				-e '/VARIABLE(formatstring_qt_plural)/ a  VARIABLE(formatstring_ruby)'
 		fi
 	fi
+
+	# [0.21.1] gettext-tools/libgrep の unistd.in.h の処理がおかしい。
+	# close_used_without_requesting_gnulib_module_close が参照される。
+	if [[ "0.21.1" == "${VER}" ]]
+	then
+		sed -i.orig gettext-tools/configure \
+			-e 's/^\(\s*GL_GRGL_GNULIB_CLOSE\)=0/\1=1/'
+	fi
 }
 
 run_configure() {
@@ -132,13 +140,13 @@ post_configure() {
 	# static なライブラリーのリンクはこうしないと libtool がいろいろ面倒をみてしまう。
 #	bash ${XMINGW}/replibtool.sh mix
 	# libstdc++ を静的リンクする。
-	for subdir in gettext-runtime gettext-runtime/libasprintf gettext-tools
-	do
-		(
-			cd ${subdir} &&
-			bash ${XMINGW}/replibtool.sh static-libgcc
-		)
-	done
+#	for subdir in gettext-runtime gettext-runtime/libasprintf gettext-tools
+#	do
+#		(
+#			cd ${subdir} &&
+#			bash ${XMINGW}/replibtool.sh static-libgcc
+#		)
+#	done
 	# 追加で libtool を書き換える場合は replibtool.sh の実行後に行う。
 
 	# [0.20.1] エラーになるため gettext-tools/gnulib-tests をビルドしない。

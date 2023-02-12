@@ -64,6 +64,9 @@ local name
 # meson を使用する場合。
 # run_configure を削除し、下記関数定義行頭のコロンを削除する。
 run_configure() {
+local legacy_options="-Denable_avx512=false"
+	compare_vernum_le "1.0.0" "${VER}" && legacy_options=""
+
 	CFLAGS="`${XMINGW}/cross --archcflags --cflags` \
 		-pipe -O2 -fomit-frame-pointer -ffast-math" \
 	CXXFLAGS="`${XMINGW}/cross --archcflags --cflags` \
@@ -71,7 +74,7 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 		-Wl,--enable-auto-image-base -Wl,-s" \
 	${XMINGW}/cross-meson _build --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=shared \
-		-Denable_asm=true -Denable_avx512=false \
+		-Denable_asm=true ${legacy_options} \
 		-Denable_tools=true \
 		-Denable_examples=false \
 		-Denable_tests=false -Dtestdata_tests=false \

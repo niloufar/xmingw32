@@ -32,12 +32,14 @@ init_var() {
 }
 
 dependencies() {
+local pcre="pcre"
+	compare_vernum_le "2.74.0" "${VER}" && pcre="pcre2"
 	cat <<EOS
 gettext-runtime
 iconv
 libffi
 libxml2
-pcre
+${pcre}
 zlib
 EOS
 }
@@ -65,7 +67,7 @@ run_patch() {
 	# [2.68.0]
 	# see: docs: Fix configuration with gtk_doc=true and installed_tests=false (!1424) ・ Merge Requests ・ GNOME / GLib ・ GitLab <https://gitlab.gnome.org/GNOME/glib/-/merge_requests/1424>
 	case "${VER}" in
-	"2.68."[023])
+	"2.68."[023] | 2.70.[45] | 2.72.[012] | 2.74.4)
 		sed -i.orig docs/reference/gio/meson.build \
 			-e "s/^  subdir('gdbus-object-manager-example')/#\0/" \
 			-e "/^  content_files += \[/,/^  \]/ {" \
@@ -81,6 +83,7 @@ pre_configure() {
 		-e "s/subdir('tests')/#\0/"
 
 	# ネイティブの glib-compile-resources, glib-compile-schemas コマンドを作成する。
+	# ドキュメントの生成とインストールも行う。
 local build_host_dir="_build_host"
 local pcre_flag=""
 	case "${VER}" in
@@ -93,7 +96,9 @@ local pcre_flag=""
 	# [2.64.0] -Dlibmount のオプションが変更された。
 local libmount_disabled="disabled"
 	compare_vernum_le "2.64.0" "${VER}" || libmount_disabled="false"
-	meson "${build_host_dir}" --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=static --optimization=2 --strip  -Dselinux=disabled -Dxattr=false -Dlibmount=${libmount_disabled} ${pcre_flag} -Dman=false -Ddtrace=false -Dsystemtap=false -Dgtk_doc=false -Dfam=false &&
+local fam_flag="-Dfam=false"
+	compare_vernum_le "2.74.0" "${VER}" && fam_flag=""
+	meson "${build_host_dir}" --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=static --optimization=2 --strip  -Dselinux=disabled -Dxattr=false -Dlibmount=${libmount_disabled} ${pcre_flag} -Dman=false -Ddtrace=false -Dsystemtap=false -Dtests=false -Dinstalled_tests=true -Dgtk_doc=false ${fam_flag} &&
 	ninja -C "${build_host_dir}" gio/glib-compile-resources &&
 	ninja -C "${build_host_dir}" gio/glib-compile-schemas
 }
@@ -116,7 +121,7 @@ local pcre_flag=""
 		${pcre_flag} \
 		-Dlibelf=disabled \
 		-Dtests=false -Dinstalled_tests=true \
-		-Dgtk_doc=false
+		-Dgtk_doc=true
 }
 
 post_configure_win64() {
@@ -133,12 +138,13 @@ post_configure() {
 }
 
 run_make() {
+	# [2.74.4] gtkdoc-scan(gtk-doc 1.33.2-1) の実行で
+	#  デッドロックが発生している様子があり、 -j 1 している。
 #	WINEPATH="$PWD/gio;$PWD/gthread;$PWD/gmodule;$PWD/gobject;$PWD/glib" \
-
 	WINEPATH="./gio;./gthread;./gmodule;./gobject;./glib" \
-	${XMINGW}/cross ninja -C _build &&
+	${XMINGW}/cross ninja -C _build -j 1 &&
 	WINEPATH="./gio;./gthread;./gmodule;./gobject;./glib" \
-	${XMINGW}/cross ninja -C _build install
+	${XMINGW}/cross ninja -C _build -j 1 install
 }
 
 pre_pack() {
@@ -163,9 +169,9 @@ local build_host_dir="_build_host"
 run_pack() {
 	# share/glib-2.0/gettext は glib-gettextize が参照している。
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll bin/gspawn-*.exe share/locale "${LICENSE_DIR}" &&
+	pack_archive "${__BINZIP}" bin/*.dll bin/{gdbus,glib-compile-schemas,gspawn-*}.exe share/locale "${LICENSE_DIR}" &&
 	pack_archive "${__DEVZIP}" bin/{gdbus-codegen,glib-genmarshal,glib-mkenums,glib-compile-resources,glib-compile-schemas} include lib/*.{def,a} lib/glib-2.0 lib/pkgconfig share/aclocal share/glib-2.0/codegen &&
-	pack_archive "${__TOOLSZIP}" $(ls -1 bin/*.exe | grep -vie "^gspawn-") bin/{glib-gettextize,gtester-report} share/bash-completion share/gettext share/glib-2.0/{gdb,schemas,gettext} &&
+	pack_archive "${__TOOLSZIP}" $(ls -1 bin/*.exe | grep -vie "/gspawn-\|glib-compile-schemas\|/gdbus.exe") bin/{glib-gettextize,gtester-report} share/bash-completion share/gettext share/glib-2.0/{gdb,schemas,gettext} &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
 	store_packed_archive "${__TOOLSZIP}" &&

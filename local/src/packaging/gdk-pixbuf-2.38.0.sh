@@ -61,6 +61,9 @@ run_patch() {
 }
 
 run_configure() {
+local legacy_options="-Djasper=true -Dx11=false"
+	compare_vernum_le "2.42.10" "${VER}" && legacy_options=""
+
 	CFLAGS="`${XMINGW}/cross --archcflags --cflags` \
 		-pipe -O2 -fomit-frame-pointer -ffast-math" \
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
@@ -68,7 +71,7 @@ run_configure() {
 	${XMINGW}/cross-meson _build --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=shared \
 		-Ddocs=true -Dman=false \
 		-Drelocatable=true -Dnative_windows_loaders=false \
-		-Djasper=true -Dx11=false -Dinstalled_tests=false \
+		${legacy_options} -Dinstalled_tests=false \
 		-Dgio_sniffing=false \
 		-Dintrospection=enabled
 }

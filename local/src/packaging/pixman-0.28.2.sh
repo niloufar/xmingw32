@@ -24,13 +24,25 @@ init_var() {
 	__ARCHIVEDIR="${XLIBRARY_SOURCES}/libs/pic"
 	__ARCHIVE="${MOD}-${VER}"
 
-#	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
+	__BINZIP=${MOD}-${VER}-${REV}-bin_${ARCHSUFFIX}
 	__DEVZIP=${MOD}-dev-${VER}-${REV}_${ARCHSUFFIX}
 }
 
 dependencies() {
 	cat <<EOS
 libpng
+EOS
+}
+
+optional_dependencies() {
+	cat <<EOS
+EOS
+}
+
+license() {
+	cat <<EOS
+MIT license
+
 EOS
 }
 
@@ -47,17 +59,25 @@ run_configure() {
 	LDFLAGS="`${XMINGW}/cross --ldflags` \
 	-Wl,--enable-auto-image-base -Wl,-s" \
 	CFLAGS="-pipe -fpic -O2 -fomit-frame-pointer -ffast-math" \
-	${XMINGW}/cross-configure --disable-shared --prefix="${INSTALL_TARGET}"
+	${XMINGW}/cross-configure --enable-shared --disable-static --prefix="${INSTALL_TARGET}"
 }
 
 run_make() {
 	${XMINGW}/cross make install
 }
 
+pre_pack() {
+	# ライセンスなどの情報は share/licenses/<MOD>/ に入れる。
+	install_license_files "${MOD}" COPYING* AUTHORS*
+}
+
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
+	pack_archive "${__BINZIP}" bin/*.dll "${LICENSE_DIR}" &&
 	pack_archive "${__DEVZIP}" include lib/*.{def,a} lib/pkgconfig &&
+	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}"
 }
+
 
 

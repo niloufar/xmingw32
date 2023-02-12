@@ -66,10 +66,14 @@ local name
 }
 
 run_patch() {
-	[1.7.0] AOM は使わない。
+	# [1.7.0] AOM は使わない。
 	sed -i.orig configure \
 		-e 's|^$as_echo "#define HAVE_AOM 1"|#\0|' \
 		-e 's|have_aom="yes"|have_aom="no"|'
+
+	# [1.14.2] 変数が初期化されていない。
+	sed -i libheif/heif_colorconversion.cc \
+		-e 's/\(^\s*float minCost\);$/\1 = border_states[0].color_state.costs.total(options.criterion);/'
 }
 
 run_configure_win32() {

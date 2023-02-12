@@ -80,6 +80,9 @@ run_make() {
 }
 
 pre_pack() {
+	# ライセンスなどの情報は share/licenses/<MOD>/ に入れる。
+	install_license_files "${MOD}" LICENSE AUTHORS*
+
 	# ファイルの配置確認を外す。
 	sed -i "${INSTALL_TARGET}/lib/"openjpeg-*"/OpenJPEGTargets.cmake" \
 		-e'/^\s*if(NOT EXISTS "${file}" )$/,/^\s*endif()$/ {' \
@@ -87,7 +90,7 @@ pre_pack() {
 		-e'}'
 
 	# libopenjp3d.dll がコピーされない。
-	cp --no-clobber bin/*.dll "${INSTALL_TARGET}/bin/."
+#	cp --no-clobber bin/*.dll "${INSTALL_TARGET}/bin/."
 
 	# [2.4.0] lib/openjpeg-2.4/OpenJPEGConfig.cmake にビルド時のパスが含まれる。
 	sed -i "${INSTALL_TARGET}/lib/"openjpeg-*"/OpenJPEGConfig.cmake" \
@@ -96,14 +99,19 @@ pre_pack() {
 
 run_pack() {
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll share/doc &&
+	pack_archive "${__BINZIP}" bin/*.dll "${LICENSE_DIR}" &&
 	pack_archive "${__DEVZIP}" include lib/*.a lib/openjpeg* lib/pkgconfig share/man/man3 &&
 	pack_archive "${__TOOLSZIP}" bin/*.{exe,manifest,local} share/man/man1 &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
 	store_packed_archive "${__TOOLSZIP}" &&
 
-	put_exclude_files lib/libopenjp3d.dll
+	if [[ -d share/doc ]]
+	then
+		put_exclude_files share/doc
+	fi
+
+#	put_exclude_files lib/libopenjp3d.dll
 }
 
 

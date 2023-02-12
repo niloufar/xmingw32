@@ -204,7 +204,17 @@ post_configure() {
 	# [2018/2/6tue] git-version.h へのインクルード パスが設定されていない。
 	ln -s $PWD/git-version.h $PWD/build/windows/git-version.h
 
-	bash ${XMINGW}/replibtool.sh shared static-libgcc
+	# 使用する場合は bash ${XMINGW}/replibtool.sh にオプションを並べる。
+	# shared ファイルを作ってくれない場合の対処。
+#	bash ${XMINGW}/replibtool.sh shared
+	# __stdcall な関数を適切にエクスポートできない場合の対処。
+#	bash ${XMINGW}/replibtool.sh stdcall
+	# static なライブラリーのリンクはこうしないと libtool がいろいろ面倒をみてしまう。
+#	bash ${XMINGW}/replibtool.sh mix
+	# libstdc++ を静的リンクする。
+#	bash ${XMINGW}/replibtool.sh static-libgcc
+	# 追加で libtool を書き換える場合は replibtool.sh の実行後に行う。
+	bash ${XMINGW}/replibtool.sh shared mix static-libgcc
 
 	# [2.99.6] いくつかライブラリーがリンクされない。
 	case "${VER}" in

@@ -114,7 +114,7 @@ local gtk4_40_flags=""
 		-Dvulkan=disabled \
 		-Dcloudproviders=disabled \
 		-Dinstall-tests=false \
-		-Dgtk_doc=true -Dintrospection=enabled
+		-Dgtk_doc=true -Dintrospection=enabled \
 		${gtk4_40_flags}
 }
 
@@ -150,17 +150,17 @@ run_pack() {
 	# dev-* はビルドに必要なものをまとめる。ツールはビルド環境のものを使用し、含めない。
 	# *-tools はその他の実行ファイル等をまとめる。
 	cd "${INSTALL_TARGET}" &&
-	pack_archive "${__BINZIP}" bin/*.dll lib/girepository-* "${LICENSE_DIR}" &&
+	pack_archive "${__BINZIP}" bin/*.dll lib/girepository-* share/glib-2.0/schemas/org.gtk.gtk4.Settings.* "${LICENSE_DIR}" &&
 	pack_archive "${__DEVZIP}" include lib/*.a lib/pkgconfig share/gir-* &&
 	pack_archive "${__DOCZIP}" share/doc &&
-	pack_archive "${__TOOLSZIP}" bin/gtk4-{builder,encode,icon,print,query,update,widget}*.{exe,exe.manifest,exe.local} share/{glib-2.0/schemas,gtk-4.0,icons,locale} share/metainfo/org.gtk.{Icon,Print,Widget}*.appdata.xml &&
-	pack_archive "${__DEMOZIP}" bin/gtk4-demo*.{exe,exe.manifest,exe.local} share/metainfo/*Demo* &&
+	pack_archive "${__TOOLSZIP}" bin/gtk4-{builder,encode,icon,node-editor,print,query,update}*.{exe,exe.manifest,exe.local} share/{gtk-4.0,icons,locale} share/glib-2.0/schemas/*Demo* share/applications share/metainfo/org.gtk.{Icon,gtk4.NodeEditor,Print,Widget}*.appdata.xml &&
+	pack_archive "${__DEMOZIP}" bin/gtk4-{demo,widget-factory}*.{exe,exe.manifest,exe.local} share/metainfo/*Demo* &&
 	store_packed_archive "${__BINZIP}" &&
 	store_packed_archive "${__DEVZIP}" &&
 	store_packed_archive "${__DOCZIP}" &&
 	store_packed_archive "${__TOOLSZIP}" &&
 	store_packed_archive "${__DEMOZIP}" &&
-	put_exclude_files share/{applications,gettext/its}
+	put_exclude_files share/gettext/its
 }
 
 
