@@ -14,9 +14,8 @@ MINGW_W64_GCC_RT_PATH="$(${XMINGW}/cross --gccrtpath)"
 export MINGW_W64_GCC_RT_PATH="${MINGW_W64_GCC_RT_PATH//:/;}"
 
 binpath="$(${XMINGW}/cross --binpath)"
-#export XMINGW_BIN_PATH="${EXTRA_PATH_FOR_WINE};${binpath//:/;}"
-#echo "XMINGW_BIN_PATH: ${XMINGW_BIN_PATH}" >> /dev/stderr
-export WINEPATH="${EXTRA_PATH_FOR_WINE};${binpath//:/;};${WINEPATH}"
+export WINEPATH="${EXTRA_PATH_FOR_WINE};${WINEPATH};${binpath//:/;}"
+
 echo "WINEPATH: ${WINEPATH}" >> /dev/stderr
 
 # exeext のないバイナリーを実行する場合を考慮する。
