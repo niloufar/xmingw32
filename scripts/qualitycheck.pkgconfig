@@ -58,17 +58,30 @@ __qualitycheck_pkgconfig_file() {
 local TARGET=$1
 local INSTALL_TARGET=$2
 local warning=""
-local line
+local line iline
 local focus=""
 local irregular=""
 local unfocus=""
+local prefix_found="no"
+local exec_prefix_found="no"
 local k
 	while read -r line
 	do
-		k="`__qualitycheck_pkgconfig_file_key "${line}"`"
-		case "`echo "${line}" | tr [:upper:] [:lower:]`" in
+		iline="$(echo "${line}" | tr [:upper:] [:lower:])"
+
+		# prefix, exec_prefix 行の有無を調べる。
+		case "${iline}" in
 		prefix=*)
-			# ignore
+			prefix_found="yes"
+			;;
+		exec_prefix=*)
+			exec_prefix_found="yes"
+			;;
+		esac
+
+		k="$(__qualitycheck_pkgconfig_file_key "${line}")"
+		case "${iline}" in
+		prefix=*)
 			;;
 		exec_prefix=* | libdir=* | includedir=* | sharedlibdir=*)
 			case "${line}" in
@@ -76,7 +89,7 @@ local k
 				focus="${focus} ${k}"
 				;;
 			*)
-				case "${line}" in
+				case "${iline}" in
 				'exec_prefix=${prefix}')
 					;;
 				'sharedlibdir=${prefix}')
@@ -117,27 +130,37 @@ local k
 		esac
 	done < "${TARGET}"
 
-	if [ ! "" = "${focus}" ]
+	if [[ "no" == "${prefix_found}" ]]
 	then
-		focus="`echo "${focus}" | sed -e 's/^ //' -e 's/ /, /g'`"
+		warning="${warning} prefix 行がありません。"
+	fi
+
+	if [[ "no" == "${exec_prefix_found}" ]]
+	then
+		warning="${warning} exec_prefix 行がありません。"
+	fi
+
+	if [[ ! "" == "${focus}" ]]
+	then
+		focus="$(echo "${focus}" | sed -e 's/^ //' -e 's/ /, /g')"
 		warning="${warning} ${focus} に仮インストール先のアドレスが埋め込まれています( fix コマンドで正規化できます)。"
 	fi
 
-	if [ ! "" = "${irregular}" ]
+	if [[ ! "" == "${irregular}" ]]
 	then
-		irregular="`echo "${irregular}" | sed -e 's/^ //' -e 's/ /, /g'`"
+		irregular="$(echo "${irregular}" | sed -e 's/^ //' -e 's/ /, /g')"
 		warning="${warning} ${irregular} が標準ではない形式で記述されています(望ましくない記述です)。"
 	fi
 
-	if [ ! "" = "${unfocus}" ]
+	if [[ ! "" == "${unfocus}" ]]
 	then
-		unfocus="`echo "${unfocus}" | sed -e 's/^ //' -e 's/ /, /g'`"
+		unfocus="$(echo "${unfocus}" | sed -e 's/^ //' -e 's/ /, /g')"
 		warning="${warning} ${unfocus} に仮インストール先のアドレスが埋め込まれています(影響はないと思われます)。"
 	fi
 
-	if [ ! "" = "${warning}" ]
+	if [[ ! "" == "${warning}" ]]
 	then
-		echo "WARNING(qualitycheck.pkgconfig): pkgconfig ファイル ${TARGET} に不具合があります。${warning}" >/dev/stderr
+		echo "WARNING(qualitycheck.pkgconfig): pkgconfig ファイル ${TARGET} に不具合があります。${warning}" >> /dev/stderr
 		return 1
 	else
 		return 0
@@ -160,25 +183,25 @@ local fixed
 local d
 local f
 local result=0
-	if [ "" = "${INSTALL_TARGET}" ]
+	if [[ "" == "${INSTALL_TARGET}" ]]
 	then
 		INSTALL_TARGET="${TARGET_DIR}"
 	fi
 
-	files="`qualitycheck_pkgconfig_file "${TARGET_DIR}" "${INSTALL_TARGET}"`"
-	if [ ! "" = "${files}" ]
+	files="$(qualitycheck_pkgconfig_file "${TARGET_DIR}" "${INSTALL_TARGET}")"
+	if [[ ! "" == "${files}" ]]
 	then
 		d="${TARGET_DIR}/lib/pkgconfig"
 		# IFS=""; while read -r f; do; done << EOS するべき。
 		for f in ${files}
 		do
-			echo "INFO(qualitycheck.pkgconfig): pkgconfig ファイル ${f} を修正しています。" > /dev/stderr
+			echo "INFO(qualitycheck.pkgconfig): pkgconfig ファイル ${f} を修正しています。" >> /dev/stderr
 			fixed="${f}.tmp"
 			__qualitycheck_pkgconfig_file_fix "${d}/${f}" "${INSTALL_TARGET}" > "${d}/${fixed}"
-			if [ ! 0 -eq $? ]
+			if [[ ! 0 == $? ]]
 			then
 				rm "${d}/${fixed}"
-				echo "FATAL(qualitycheck.pkgconfig): pkgconfig ファイルの修正作業中にエラーが発生しました。" > /dev/stderr
+				echo "FATAL(qualitycheck.pkgconfig): pkgconfig ファイルの修正作業中にエラーが発生しました。" >> /dev/stderr
 				result=1
 				break
 			else
@@ -195,7 +218,9 @@ local result=0
 __qualitycheck_pkgconfig_file_fix() {
 local TARGET=$1
 local INSTALL_TARGET=$2
-local line
+local line iline
+local prefix_found="no"
+local exec_prefix_found="no"
 	if [ "-" = "${TARGET}" ]
 	then
 		TARGET="/dev/stdin"
@@ -203,24 +228,47 @@ local line
 
 	while read -r line
 	do
-		case "`echo "${line}" | tr [:upper:] [:lower:]`" in
+		iline="$(echo "${line}" | tr [:upper:] [:lower:])"
+
+		case "${iline}" in
+		prefix=*)
+			prefix_found="yes"
+			;;
+		exec_prefix=*)
+			exec_prefix_found="yes"
+			;;
+		libdir=* |  includedir=* | sharedlibdir=* | cflags:* | libs:* | libs.private:*)
+			if [[ ! "yes" == "${prefix_found}" ]]
+			then
+				echo "prefix=${INSTALL_TARGET}"
+				prefix_found="yes"
+			fi
+			if [[ ! "yes" == "${exec_prefix_found}" ]]
+			then
+				echo 'exec_prefix=${prefix}'
+				exec_prefix_found="yes"
+			fi
+			;;
+		esac
+
+		case "${iline}" in
 		prefix=*)
 			# ignore
 			;;
 		exec_prefix=* | sharedlibdir=*)
-			line="`__qualitycheck_pkgconfig_file_replace "${line}" "${INSTALL_TARGET}" '${prefix}'`"
+			line="$(__qualitycheck_pkgconfig_file_replace "${line}" "${INSTALL_TARGET}" '${prefix}')"
 			;;
 		libdir=*)
-			line="`__qualitycheck_pkgconfig_file_replace "${line}" "${INSTALL_TARGET}" '${exec_prefix}'`"
+			line="$(__qualitycheck_pkgconfig_file_replace "${line}" "${INSTALL_TARGET}" '${exec_prefix}')"
 			;;
 		includedir=*)
-			line="`__qualitycheck_pkgconfig_file_replace "${line}" "${INSTALL_TARGET}" '${prefix}'`"
+			line="$(__qualitycheck_pkgconfig_file_replace "${line}" "${INSTALL_TARGET}" '${prefix}')"
 			;;
 		libs:* | libs.private:*)
-			line="`__qualitycheck_pkgconfig_file_replace "${line}" "-L${INSTALL_TARGET}/lib" '-L${libdir}'`"
+			line="$(__qualitycheck_pkgconfig_file_replace "${line}" "-L${INSTALL_TARGET}/lib" '-L${libdir}')"
 			;;
 		cflags:*)
-			line="`__qualitycheck_pkgconfig_file_replace "${line}" "-I${INSTALL_TARGET}/include" '-I${includedir}'`"
+			line="$(__qualitycheck_pkgconfig_file_replace "${line}" "-I${INSTALL_TARGET}/include" '-I${includedir}')"
 			;;
 		esac
 		echo "${line}"
