@@ -110,7 +110,7 @@ local add_flags=""
 		-Wl,--enable-auto-image-base -Wl,-s" \
 	${XMINGW}/cross-meson _build --prefix="${INSTALL_TARGET}" --buildtype=release --default-library=shared \
 		-Dlua=disabled \
-		-Dopenexr=disabled \
+		-Dopenexr=enabled \
 		-Dsdl1=disabled -Dsdl2=disabled \
 		-Dlibraw=disabled \
 		-Dgraphviz=disabled \

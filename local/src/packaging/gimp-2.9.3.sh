@@ -188,7 +188,7 @@ run_configure() {
 		--enable-vala=yes \
 		--without-x \
 		--with-libjasper --with-libmng --with-librsvg --with-libxpm \
-		--without-openexr --without-xmc \
+		--with-openexr --without-xmc \
 		--with-webp --with-wmf --with-cairo-pdf --with-poppler \
 		--without-libbacktrace --without-libunwind --without-webkit \
 		--without-appstream-glib --without-libarchive \
@@ -274,8 +274,9 @@ style "win-font"
 widget "*" style "win-font"
 EOF
 	# side-by-side
-	echo > bin/gimp-2.9.exe.local &&
-	echo > bin/gimp-console-2.9.exe.local)	
+locat short_ver=${VER%.*}
+	touch "bin/gimp-${short_ver}.exe.local" &&
+	touch "bin/gimp-console-${short_ver}.exe.local")	
 }
 
 run_pack() {
