@@ -68,8 +68,10 @@ optional_dependencies() {
 glib-networking
 jasper
 libaa
+libarchive
 libexif
 libheif
+libjxl
 libmng
 libwebp
 libwmf
@@ -138,8 +140,13 @@ EOS
  #include <libgimp/gimp.h>
 EOS
 
-	# OpenEXR の PixelType 列挙型の列挙子の namespace 問題への対処。
-#	sed -i.orig -e 's/ \(UINT\|HALF\|FLOAT\)\(,\|:\|)\)/ Imf::\1\2/' plug-ins/file-exr/openexr-wrapper.cc
+	# [2.10.34] export されていない関数を def ファイルから削除する。
+	if [[ "2.10.34" == "${VER}" ]]
+	then
+		sed -i.orig libgimpwidgets/gimpwidgets.def \
+			-e '/^\s*gimp_color_picker_cursors_get_resource/ d' \
+			-e '/^\s*gimp_icon_pixbufs_get_resource/ d'
+	fi
 
 	return 0
 }
@@ -188,10 +195,10 @@ run_configure() {
 		--enable-vala=yes \
 		--without-x \
 		--with-libjasper --with-libmng --with-librsvg --with-libxpm \
-		--with-openexr --without-xmc \
+		--with-openexr --with-jpegxl --without-xmc \
 		--with-webp --with-wmf --with-cairo-pdf --with-poppler \
 		--without-libbacktrace --without-libunwind --without-webkit \
-		--without-appstream-glib --without-libarchive \
+		--without-appstream-glib --with-libarchive \
 		--with-print --with-directx-sdk="" \
 		--disable-check-update \
 		CC_FOR_BUILD="$XMINGW/cross-host gcc" \
