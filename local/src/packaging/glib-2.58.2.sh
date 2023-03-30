@@ -67,7 +67,7 @@ run_patch() {
 	# [2.68.0]
 	# see: docs: Fix configuration with gtk_doc=true and installed_tests=false (!1424) ・ Merge Requests ・ GNOME / GLib ・ GitLab <https://gitlab.gnome.org/GNOME/glib/-/merge_requests/1424>
 	case "${VER}" in
-	"2.68."[023] | 2.70.[45] | 2.72.[012] | 2.74.4)
+	2.68.* | 2.70.* | 2.72.* | 2.74.*)
 		sed -i.orig docs/reference/gio/meson.build \
 			-e "s/^  subdir('gdbus-object-manager-example')/#\0/" \
 			-e "/^  content_files += \[/,/^  \]/ {" \

@@ -76,13 +76,21 @@ run_patch() {
 		-e 's/\(^\s*float minCost\);$/\1 = border_states[0].color_state.costs.total(options.criterion);/'
 }
 
+pre_configure() {
+	# [1.15.1] configure がなかった。
+	if [[ ! -f configure ]]
+	then
+		./autogen.sh 
+	fi
+}
+
 run_configure_win32() {
 #local ver="`sed configure.ac -ne '/^AC_INIT(\[libheif\]/ {' -e 's/.*\[\([0-9.]\+\)\].*/\1/p' -e '}'`"
 #local gccver="`$XMINGW/cross gcc --version | head -n 1 | cut '-d ' -f 3`"
 	# [1.3.2] mingw-w64-gcc 8.[13].0 のバグか #include <thread> の
 	#  __x._M_thread == __y._M_thread が no match for ‘operator==’ になる。
 	case "${VER}" in
-	"1.3."*|"1.4."*|"1.5.1"|"1.6."[12]|"1.7.0")
+	"1.3."*|"1.4."*|"1.5."*|"1.6."*|"1.7."*)
 		run_configure__ --disable-multithreading
 		;;
 	*)
