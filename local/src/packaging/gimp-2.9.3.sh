@@ -281,7 +281,7 @@ style "win-font"
 widget "*" style "win-font"
 EOF
 	# side-by-side
-locat short_ver=${VER%.*}
+local short_ver=${VER%.*}
 	touch "bin/gimp-${short_ver}.exe.local" &&
 	touch "bin/gimp-console-${short_ver}.exe.local")	
 }
